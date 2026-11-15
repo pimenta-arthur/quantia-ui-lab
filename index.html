@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantia UI Lab</title>
+<link rel="stylesheet" href="padrao/base.css">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <span class="rotulo">Laboratório isolado</span>
+    <h1>Quantia UI Lab</h1>
+    <div class="meta"><span>Variações de layout e visual para o Quantia Energia App. Dados fictícios.</span></div>
+  </section>
+  <section>
+    <h2>Variantes</h2>
+    <ul id="lista"></ul>
+  </section>
+</main>
+<script>
+  // Cada variante em variantes/<nome>/index.html; registrar aqui ao criar uma nova.
+  const variantes = [
+    { pasta: "00-padrao", titulo: "Padrão atual (referência)" },
+  ];
+  document.getElementById("lista").innerHTML = variantes
+    .map(v => `<li><a href="variantes/${v.pasta}/index.html">${v.titulo}</a></li>`).join("");
+</script>
+</body>
+</html>
