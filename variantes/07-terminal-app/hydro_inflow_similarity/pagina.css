@@ -1,0 +1,157 @@
+/* Variante 07 · Terminal (app real) · Hydro Inflow Similarity · pagina.css
+   Estilos próprios das quatro páginas (Afluências e ENSO, Indicadores climáticos, Fundamentos, Metodologia), por cima
+   do padrão v2.0. Cores novas como tokens: escuro em :root, claro em :root[data-theme="light"] (o tema não segue o
+   sistema). Subsistemas usam --sm-se, --sm-s, --sm-ne, --sm-n do padrão. "Azul" e "laranja" dos textos do app
+   continuam azul e laranja (--azul, --laranja), e o âmbar do terminal fica para o modelo-v1. */
+:root {
+  --c-se: var(--sm-se); --c-s: var(--sm-s); --c-ne: var(--sm-ne); --c-n: var(--sm-n);
+  --sim: #5ccac3;                       /* anos similares (recomposição) */
+  --azul: #6fa6e6; --laranja: #e3a06c;  /* El Niño forte / La Niña forte; ganha / perde; mais / menos ENA */
+  --c-sul: #6fa6e6; --c-resto: #e3a06c; /* blocos do SE */
+  --c-2026: var(--ink);                 /* 2026 realizado nas trajetórias */
+  --g1: #6fa6e6; --g2: #e3a06c; --g3: #5ccac3; --g4: #d4bb5f; --g5: #a993d6; --g-demais: var(--bar-saz);
+  --frio-3: #6fa6e6; --frio-2: #4f86c6; --frio-1: #2f5584; --neutro: #5a646d;
+  --quente-1: #8a5631; --quente-2: #c06d33; --quente-3: #e48b4a; --quente-4: #f2b07a;
+  --sim-faixa: color-mix(in srgb, var(--sim) 16%, transparent);
+}
+:root[data-theme="light"] {
+  --sim: #1d8a84; --azul: #2a78d6; --laranja: #a8592a; --c-sul: #2a78d6; --c-resto: #a8592a;
+  --g1: #2a78d6; --g2: #a8592a; --g3: #1d8a84; --g4: #7d6a1c; --g5: #6b4fa0;
+  --frio-3: #1c5cab; --frio-2: #4f86c6; --frio-1: #9dbfe3; --neutro: #b8c0c8;
+  --quente-1: #f2c094; --quente-2: #e48b4a; --quente-3: #c4561f; --quente-4: #8f3410;
+}
+
+/* título do painel: a seção do app (pequena, cinza) antes do título do bloco */
+.painel-cab .ttl .sec { color: var(--ink-3); font-weight: 500; margin-right: 8px; }
+.painel-cab .ttl .sec::after { content: " ›"; }
+.painel-cab .ttl .sec.so::after { content: ""; }
+.painel-cab .ttl .n-cap { color: var(--t-sobre); background: var(--t-ambar); padding: 0 5px; margin-right: 8px; }
+.painel-cab .ttl .resumo-anos { color: var(--sim); margin-left: 10px; text-transform: none; }
+.painel-cab .controles { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: flex-end; }
+.painel.sem-titulo .painel-corpo { padding-top: 8px; }
+.painel-corpo > .sub, .painel-corpo .sub { font-size: 0.9rem; color: var(--ink-2); max-width: 110ch; }
+.painel-corpo .sub b { color: var(--ink); font-weight: 600; }
+.abas button:disabled { opacity: 0.4; cursor: not-allowed; }
+.abas button { white-space: nowrap; }
+details.abrir > summary { font-family: var(--f-data); font-size: 0.78rem; padding-block: 4px; }
+details.abrir[open] > summary { margin-bottom: 6px; }
+svg text.ano { paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; font-weight: 500; }
+.leg-i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--ink); }
+
+/* resumo de cada gráfico de ENA */
+.resumo { font-family: var(--f-data); font-size: 0.76rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.resumo b { color: var(--ink); font-weight: 600; }
+.resumo .sim, .sim { color: var(--sim); }
+
+/* pequenos múltiplos em quatro (duas no meio, uma no celular) */
+.grade4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; background: var(--rule); }
+.grade4.duas-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1180px) { .grade4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .grade4, .grade4.duas-col { grid-template-columns: 1fr; } }
+.grade4 .mini { border: 0; }
+.mini .barra-mini { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 8px; }
+
+/* tabela mês a mês */
+.tab-mes th:first-child, .tab-mes td:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+.tab-mes td.rot { white-space: nowrap; color: var(--ink-2); }
+.tab-mes tr.grupo-ini td { border-top: 2px solid var(--rule); }
+.tab-mes td.n { line-height: 1.25; white-space: nowrap; }
+.tab-mes td.n .mw { display: block; font-size: 0.68rem; color: var(--ink-3); }
+.tab-mes td.n.sim { color: var(--sim); }
+.tab-mes .fx { color: var(--ink-3); }
+
+/* anos similares */
+.chips { display: flex; flex-wrap: wrap; gap: 2px; }
+.chip { display: grid; gap: 2px; padding: 6px 10px; background: var(--vazio); min-width: 8rem; }
+.chip b { font: 600 1.15rem var(--f-data); color: var(--sim); }
+.chip span { font-family: var(--f-data); font-size: 0.68rem; color: var(--ink-3); }
+td.n.bom, td.bom { color: var(--azul); font-weight: 600; } td.n.ruim, td.ruim { color: var(--laranja); }
+
+/* chaves liga/desliga (Dispersão, ENA armazenável) */
+.chave { display: inline-flex; align-items: center; gap: 6px; font: 500 0.7rem var(--f-data); color: var(--ink-2); cursor: pointer; user-select: none; position: relative; }
+.chave input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chave .trilho { position: relative; width: 26px; height: 14px; background: var(--rule); flex: none; }
+.chave .trilho::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; background: var(--ink-2); }
+.chave input:checked + .trilho { background: var(--t-ambar); }
+.chave input:checked + .trilho::after { transform: translateX(12px); background: var(--t-sobre); }
+.chave input:focus-visible + .trilho { outline: 2px solid var(--t-ambar); outline-offset: 2px; }
+
+/* camada de El Niño forte */
+.linha-estado { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 0.85rem; color: var(--ink-2); }
+.estado { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-data); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; background: var(--vazio); color: var(--ink-2); }
+.estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.estado.ativo { background: var(--accent-soft); color: var(--t-ambar); }
+.dir { font-family: var(--f-data); white-space: nowrap; }
+.dir.cima { color: var(--azul); } .dir.baixo { color: var(--laranja); } .dir.sem { color: var(--ink-3); }
+td.fraco { color: var(--ink-3); }
+
+/* clima: abas do topo, leitura, fichas, tabela histórica */
+.abas-topo { background: var(--surface); padding: 6px 10px; }
+.abas-topo button { font-size: 0.78rem; padding: 4px 12px; }
+.leitura { display: grid; }
+.leitura .item { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) minmax(0, 1.2fr); gap: 6px 18px; padding: 10px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.leitura .item:last-child { border-bottom: 0; }
+.leitura .grupo { font: 600 0.85rem var(--f-data); display: grid; gap: 4px; color: var(--ink); text-transform: uppercase; }
+.leitura .grupo a { font: 400 0.72rem var(--f-data); text-decoration: none; text-transform: none; }
+.leitura .estado-txt, .leitura .implica { font-size: 0.9rem; }
+.leitura .estado-txt b { font-weight: 600; }
+.leitura .implica { color: var(--ink-2); padding-left: 12px; border-left: 3px solid var(--rule); }
+.leitura .implica.forte { border-left-color: var(--t-ambar); color: var(--ink); }
+.leitura .rot { display: block; font: 0.64rem var(--f-data); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); margin-bottom: 2px; }
+@media (max-width: 760px) { .leitura .item { grid-template-columns: 1fr; } }
+.tab-todos td a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--ink-3); }
+.tab-todos td, .tab-todos th { white-space: nowrap; }
+.tab-prev th, .tab-prev td { text-align: center; white-space: nowrap; }
+.painel-cab .selo { font-size: 0.62rem; padding: 1px 6px; background: var(--vazio); color: var(--ink-2); margin-left: 10px; text-transform: uppercase; vertical-align: 1px; font-weight: 500; }
+.painel-cab .selo.cenario { background: var(--accent-soft); color: var(--t-ambar); }
+.painel-cab .selo.teste { background: color-mix(in srgb, var(--quente-2) 22%, transparent); color: var(--quente-3); }
+.ficha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 10px 18px; scroll-margin-top: 90px; }
+@media (max-width: 860px) { .ficha { grid-template-columns: 1fr; } }
+.ficha .bloco-t { display: grid; gap: 6px; min-width: 0; font-size: 0.9rem; align-content: start; }
+.ficha .bloco-t p { color: var(--ink-2); }
+.ficha .bloco-t p b { color: var(--ink); }
+.ficha h4 { margin: 6px 0 0; font: 600 0.7rem var(--f-data); text-transform: uppercase; letter-spacing: 0.05em; color: var(--t-ambar); }
+.ficha .bloco-g { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.mini-tab td, .mini-tab th { white-space: nowrap; }
+.hist { grid-column: 1 / -1; border-top: 1px solid var(--rule); padding-top: 6px; }
+.hist .legenda-tab { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--f-data); font-size: 0.7rem; color: var(--ink-2); margin: 6px 0; }
+.hist .legenda-tab span { display: inline-flex; align-items: center; gap: 5px; }
+.hist .legenda-tab i { width: 14px; height: 12px; border: 1px solid var(--rule); }
+.hist .legenda-tab b { color: var(--t-ambar); }
+.hist .caixa { max-height: 440px; overflow: auto; border: 1px solid var(--rule); }
+.tab-hist { font: 0.72rem var(--f-data); border-collapse: separate; border-spacing: 0; width: 100%; }
+.tab-hist th, .tab-hist td { padding: 2px 6px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--surface); background: none; }
+.tab-hist thead th { position: sticky; top: 0; background: var(--surface); color: var(--t-ambar); z-index: 1; border-bottom: 1px solid var(--rule); }
+.tab-hist th.ano { width: 4.5rem; position: sticky; left: 0; background: var(--surface); text-align: left; color: var(--ink-2); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 0.72rem; }
+.tab-hist th.ano.sim { color: var(--t-ambar); font-weight: 600; }
+.tab-hist tbody tr:nth-child(even) td, .tab-hist tbody tr:hover td { background: none; }
+.tab-hist td.q1, .legenda-tab i.q1 { background: color-mix(in srgb, var(--quente-3) 20%, transparent) !important; }
+.tab-hist td.q2, .legenda-tab i.q2 { background: color-mix(in srgb, var(--quente-3) 40%, transparent) !important; }
+.tab-hist td.q3, .legenda-tab i.q3 { background: color-mix(in srgb, var(--quente-3) 62%, transparent) !important; }
+.tab-hist td.q4, .legenda-tab i.q4 { background: color-mix(in srgb, var(--quente-3) 88%, transparent) !important; color: var(--surface); font-weight: 600; }
+.tab-hist td.f1, .legenda-tab i.f1 { background: color-mix(in srgb, var(--frio-3) 22%, transparent) !important; }
+.tab-hist td.f2, .legenda-tab i.f2 { background: color-mix(in srgb, var(--frio-3) 45%, transparent) !important; }
+.tab-hist td.f3, .legenda-tab i.f3 { background: color-mix(in srgb, var(--frio-3) 80%, transparent) !important; color: var(--surface); font-weight: 600; }
+.fontes li { font-size: 0.88rem; }
+
+/* fundamentos */
+.hero .lead, .hero > .sub { flex-basis: 100%; font-size: 0.92rem; color: var(--ink-2); max-width: 110ch; }
+.conclusao { font-size: 0.92rem; color: var(--ink); max-width: 90ch; border-left: 3px solid var(--t-ambar); padding: 2px 0 2px 12px; }
+.conclusao strong { font-weight: 600; color: var(--t-ambar); }
+.fluxo .passo a { color: var(--t-ambar); }
+.fluxo h3 { font-size: 0.85rem; }
+
+/* metodologia */
+.hero .indice { flex-basis: 100%; font-family: var(--f-data); font-size: 0.74rem; }
+.passos2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
+@media (max-width: 1180px) { .passos2 { grid-template-columns: 1fr; } }
+.texto-corrido .passo-det h3 { margin-top: 0; }
+.passo-det .texto { padding-block: 0; max-width: 80ch; }
+.tecnico > summary { font-family: var(--f-data); font-size: 0.76rem; }
+.tecnico[open] > summary { margin-bottom: 8px; }
+.tecnico > div { display: grid; gap: 10px; }
+table.memorial td:first-child { font-family: var(--f-data); color: var(--t-ambar); width: 2.5rem; }
+table.memorial td.n { white-space: nowrap; }
+.versoes td:first-child { white-space: nowrap; }
+.texto-corrido .texto-sol { font-family: var(--f-body); font-size: 0.92rem; color: var(--ink-2); max-width: 90ch; }
+.painel[id] { scroll-margin-top: 90px; }

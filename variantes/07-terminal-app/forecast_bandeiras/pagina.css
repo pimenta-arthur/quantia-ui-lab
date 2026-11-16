@@ -1,0 +1,158 @@
+/* Variante 07 · Terminal (app real) · Forecast Bandeiras · pagina.css
+   Peças próprias das páginas Projeções, Relato do DECOMP e Metodologia, por cima do padrão v2.0
+   (base.css + painel.css) e de ../app.css. Cores novas como tokens: escuro em :root, claro em
+   :root[data-theme="light"] (o tema não segue o sistema). Nomes que colidiam com o padrão foram trocados:
+   o painel de probabilidades do app (.painel) virou .pp-grade; o ✗ das células (.erro) virou .errou. */
+:root { --esc: #8a3a74; --on-esc: #ffffff; --marca-neutra: #ffffff; --marca-neutra-ink: #1b2226; }
+:root[data-theme="light"] { --esc: #4b1d3f; --on-esc: #ffffff; --marca-neutra: #ffffff; --marca-neutra-ink: #1b2226; }
+
+/* cores das bandeiras como classes (fundo + texto legível) */
+.Verde { background: var(--vd); color: var(--on-flag); } .Amarela { background: var(--am); color: var(--on-am); }
+.V1 { background: var(--v1); color: var(--on-flag); } .V2 { background: var(--v2); color: var(--on-flag); } .Esc { background: var(--esc); color: var(--on-esc); }
+.selo-cor { font: 500 0.72rem var(--f-data); color: var(--on-flag); padding: 1px 7px; white-space: nowrap; }
+.selo-cor.am { color: var(--on-am); }
+
+/* ---------- Projeções: painel de probabilidade por mês ---------- */
+.pp-grade { display: grid; gap: 4px 6px; align-items: center; width: max-content; min-width: 100%; padding-block: 4px; }
+.pp-grade .rp { font-family: var(--f-data); font-size: 0.74rem; color: var(--ink-2); position: sticky; left: 0; background: var(--surface); z-index: 1; height: 100%; display: flex; align-items: center; padding-right: 8px; }
+.pp-grade .rp small { font-size: 0.64rem; color: var(--ink-3); }
+.pp-grade .rp .sw { display: inline-block; width: 10px; height: 10px; margin-right: 6px; flex: none; }
+.pp-grade .mcab { display: grid; gap: 2px; text-align: center; }
+.pp-grade .mcab b { font: 600 1rem var(--f-data); color: var(--ink); }
+.pp-grade .mcab span { font-family: var(--f-data); font-size: 0.66rem; color: var(--ink-3); }
+.pp-grade .mcab .of { color: var(--t-ambar); }
+.pp-grade .mcel { height: 30px; display: grid; place-items: center; font: 0.8rem var(--f-data); font-variant-numeric: tabular-nums; cursor: default; }
+.pp-grade .mval { text-align: center; font: 0.72rem var(--f-data); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.pp-grade .cfino { display: grid; justify-items: center; gap: 2px; padding-block: 2px; font: 0.68rem var(--f-data); color: var(--ink-3); font-variant-numeric: tabular-nums; cursor: default; }
+.pp-grade .cfino .chipc { justify-self: stretch; text-align: center; font-weight: 500; padding: 2px 6px; font-size: 0.66rem; }
+.pp-grade .btit { grid-column: 1 / -1; display: flex; align-items: center; font: 0.66rem var(--f-data); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-2); padding-block: 2px 4px; }
+.pp-grade .pt { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; flex: none; }
+.pp-grade .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin-block: 8px 4px; }
+
+/* ---------- pequenos múltiplos (trajetórias e composição do GSF) ---------- */
+.mini6 .mini .graf { height: 252px; min-height: 252px; }
+.mini .ttl b.selo-cor { font-size: 0.64rem; }
+.leg-bloco { display: grid; gap: 6px; padding-inline: 10px; }
+.legenda-mini i.ponto { border-radius: 50%; width: 10px; height: 10px; }
+.legenda-mini i.losango { width: 8px; height: 8px; transform: rotate(45deg); }
+.legenda-mini i.traco { width: 3px; height: 12px; }
+
+/* ---------- tabela de rodadas (Histórico e projeção) ---------- */
+.tempo { display: grid; gap: 3px; width: max-content; min-width: 100%; }
+.tempo .lin { display: grid; gap: 3px; align-items: center; }
+.tempo .rot { font: 0.74rem var(--f-data); color: var(--ink-2); position: sticky; left: 0; background: var(--surface); z-index: 1; height: 100%; display: flex; align-items: center; padding-right: 6px; min-width: 0; }
+.tempo .rot > span { min-width: 0; }
+.tempo .rot b, .tempo .rot small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tempo .rot b { font-weight: 400; font-size: 0.72rem; color: var(--ink-2); }
+.tempo .rot small { font-size: 0.64rem; color: var(--ink-3); }
+.tempo .rot.recon b, .tempo .rot.recon small { color: var(--ink-3); }
+.tempo .rot.atual b { color: var(--t-ambar); }
+.tempo .rot .novo { color: var(--t-ambar); font-weight: 600; }
+.tempo .rot .hora { font-size: 0.6rem; color: var(--ink-3); }
+.tempo .rot.titulo-col { font-size: 0.62rem; color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.05em; }
+.tempo .cab { font: 0.62rem var(--f-data); color: var(--ink-3); text-align: center; overflow: hidden; }
+.tempo .cab.ano { color: var(--ink); font-weight: 600; }
+.tempo .c { height: 26px; display: grid; place-items: center; font: 0.64rem var(--f-data); background: var(--vazio); position: relative; white-space: nowrap; overflow: hidden; cursor: default; min-width: 0; }
+.tempo .c.Verde { background: var(--vd); color: var(--on-flag); } .tempo .c.Amarela { background: var(--am); color: var(--on-am); }
+.tempo .c.V1 { background: var(--v1); color: var(--on-flag); } .tempo .c.V2 { background: var(--v2); color: var(--on-flag); } .tempo .c.Esc { background: var(--esc); color: var(--on-esc); }
+.tempo .c .seta { font-size: 0.58rem; margin-left: 2px; }
+.tempo .c.proj { outline: 2px dashed color-mix(in srgb, var(--ink) 55%, transparent); outline-offset: -2px; }
+.tempo .c.errou::after { content: "✗"; position: absolute; top: 0; right: 3px; font-size: 0.6rem; }
+.tempo.num .c { height: 32px; color: var(--ink); line-height: 1.1; text-align: center; }
+.tempo.num .c small { display: block; font-size: 0.56rem; color: var(--ink-2); }
+.tempo.num .c.ofi { font-weight: 600; background: none; border: 1px solid var(--rule); }
+
+/* ---------- Relato do DECOMP: formulário ---------- */
+.campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end; }
+label.campo { display: grid; gap: 4px; font: 0.74rem var(--f-data); color: var(--ink-2); min-width: 0; }
+label.campo small, .seletor-mes small { color: var(--ink-3); font-size: 0.66rem; }
+.form-terminal input[type="text"], .form-terminal input[type="number"] { font: 0.85rem var(--f-data); color: var(--ink); background: var(--t-cmd); border: 1px solid var(--rule); border-radius: 0; padding: 5px 8px; width: 100%; min-width: 0; }
+.form-terminal input:focus-visible { outline: 1px solid var(--t-ambar); outline-offset: 0; border-color: var(--t-ambar); }
+.seletor-mes { grid-column: 1 / -1; display: grid; gap: 6px; }
+.linha-ano { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font: 0.76rem var(--f-data); color: var(--ink-2); }
+.seletor-mes #mes-rotulo { color: var(--ink); font-weight: 600; }
+.dd { position: relative; }
+.dd-btn { display: inline-flex; align-items: center; gap: 8px; font: 600 0.8rem var(--f-data); color: var(--t-sobre); background: var(--t-ambar); border: 1px solid var(--t-ambar); border-radius: 0; padding: 3px 10px; cursor: pointer; }
+.dd-btn .seta { width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .15s; }
+.dd-btn[aria-expanded="true"] .seta { transform: translateY(1px) rotate(-135deg); }
+.dd-lista { position: absolute; z-index: 20; top: calc(100% + 2px); left: 0; margin: 0; padding: 2px; list-style: none; display: grid; gap: 2px; min-width: 100%; background: var(--t-barra); border: 1px solid var(--t-ambar); }
+.dd-lista li { font: 500 0.8rem var(--f-data); color: var(--ink-2); background: var(--surface); padding: 3px 12px; cursor: pointer; text-align: center; }
+.dd-lista li:hover { color: var(--t-ambar); }
+.dd-lista li[aria-selected="true"] { background: var(--t-ambar); color: var(--t-sobre); }
+.dd-lista li:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: -2px; }
+.grade-mes { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; }
+.grade-mes button { position: relative; font: 500 0.76rem var(--f-data); text-transform: uppercase; color: var(--ink-2); background: var(--surface); border: 1px solid var(--rule); border-radius: 0; padding: 5px 0; cursor: pointer; }
+.grade-mes button:hover:not(:disabled) { color: var(--t-ambar); border-color: var(--t-ambar); }
+.grade-mes button[aria-pressed="true"] { background: var(--t-ambar); border-color: var(--t-ambar); color: var(--t-sobre); }
+.grade-mes button:disabled { opacity: 0.35; cursor: not-allowed; }
+.grade-mes button.estimado:not([aria-pressed="true"]) { border-style: dashed; }
+.grade-mes button.publicado::after { content: ""; position: absolute; top: 3px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+@media (max-width: 640px) { .grade-mes { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.sub-ttl { font: 600 0.7rem var(--f-data); text-transform: uppercase; letter-spacing: 0.05em; color: var(--t-ambar); border-top: 1px solid var(--rule); padding-top: 8px; }
+.execs { display: grid; gap: 2px; }
+.exec { background: var(--bg); border: 1px solid var(--rule); padding: 8px; display: grid; gap: 8px; }
+.exec-topo { display: flex; gap: 8px; align-items: center; }
+.idx, .idx-m { font: 600 0.7rem var(--f-data); width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--marca-neutra); border: 1.5px solid var(--marca-neutra-ink); color: var(--marca-neutra-ink); flex: none; }
+.exec-topo input { flex: 1; }
+.exec .arqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.arq { display: grid; gap: 4px; font: 0.74rem var(--f-data); color: var(--ink-2); min-width: 0; }
+.arq .nome { font-size: 0.7rem; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arq .nome.ok { color: var(--t-ambar); }
+.arq input[type="file"] { font: 0.72rem var(--f-data); color: var(--ink-2); max-width: 100%; }
+.arq input[type="file"]::file-selector-button { font: 500 0.7rem var(--f-data); color: var(--ink); background: var(--t-barra); border: 1px solid var(--rule); padding: 3px 8px; margin-right: 8px; cursor: pointer; }
+.botoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.botao { font: 500 0.74rem var(--f-data); color: var(--ink); background: var(--t-barra); border: 1px solid var(--rule); border-radius: 0; padding: 4px 12px; cursor: pointer; }
+.botao:hover { color: var(--t-ambar); border-color: var(--t-ambar); }
+.botao.leve { background: transparent; border-color: transparent; color: var(--ink-3); padding: 4px 8px; }
+.botao.leve:hover { color: var(--t-ambar); }
+
+/* ---------- Relato: resultado ---------- */
+.rel-probs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; background: var(--rule); }
+.rel-prob { background: var(--surface); padding: 10px; display: grid; gap: 6px; border-left: 3px solid transparent; }
+.rel-prob .v { font: 600 1.9rem/1 var(--f-data); color: var(--ink); }
+.rel-prob .barra { height: 8px; background: var(--vazio); overflow: hidden; }
+.rel-prob .barra i { display: block; height: 100%; }
+.rel-prob.maior { border-left-color: var(--t-ambar); background: var(--accent-soft); }
+@media (max-width: 1180px) { .rel-probs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .rel-probs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tab-res { min-width: 760px; }
+.tab-res td.idx { width: 1%; }
+.tab-res td.msg-erro { color: var(--desce); }
+.tab-res td.vazio-msg, .tab-res td.sem-arq { color: var(--ink-3); }
+.fonte { font: 0.68rem var(--f-data); color: var(--ink-3); display: block; }
+.fonte.aprox { color: var(--desce); }
+.muda { display: grid; gap: 3px; font-size: 0.74rem; color: var(--ink-2); }
+.alerta { display: block; font-size: 0.7rem; line-height: 1.35; color: var(--desce); margin-top: 3px; max-width: 34ch; white-space: normal; }
+.oficial { font: 0.74rem var(--f-data); color: var(--ink-2); padding-inline: 10px; }
+
+/* ---------- Relato: conferência das contas (detalhes expansíveis no painel) ---------- */
+.painel.conf-painel { padding-bottom: 0; }
+.sec-conf { display: grid; min-width: 0; }
+.sec-conf[open] { padding-bottom: 8px; gap: 6px; }
+.sec-conf > summary.painel-cab { cursor: pointer; list-style: none; justify-content: flex-start; }
+.sec-conf > summary::-webkit-details-marker { display: none; }
+.sec-conf > summary::before { content: "▸"; color: var(--t-barra-ink); font-family: var(--f-data); transition: transform .15s; }
+.sec-conf[open] > summary::before { transform: rotate(90deg); }
+.sec-conf .dica-sum { font: 0.68rem var(--f-data); color: var(--ink-3); }
+.sec-conf > summary:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: -2px; }
+.barra-conf { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; }
+.conf { display: grid; gap: 18px; }
+.conf-passo { display: grid; gap: 8px; min-width: 0; }
+.conf-passo h3 { font-size: 0.8rem; color: var(--t-ambar); text-transform: uppercase; }
+.conf table { font-size: 0.76rem; }
+.conf td, .conf th { white-space: nowrap; }
+.conf td.n.med, .conf th.med { border-left: 2px solid var(--rule); font-weight: 600; }
+.conf .tit-tab { font: 0.72rem var(--f-data); color: var(--ink-2); margin-top: 4px; }
+.conf .lim { color: var(--desce); font-weight: 600; white-space: nowrap; }
+.conf tr.cor-atual td { font-weight: 600; background: var(--accent-soft); }
+.conf .rolagem { border: 1px solid var(--rule); }
+.conf .fonte { display: inline; margin-left: 8px; text-transform: none; }
+
+/* ---------- Metodologia ---------- */
+.texto-corrido .painel-corpo { padding-block: 6px; }
+.texto-corrido .painel-corpo > p, .texto-corrido .painel-corpo > ul, .texto-corrido .painel-corpo > dl { font-family: var(--f-body); font-size: 0.95rem; }
+.texto-corrido .painel-corpo h3 { color: var(--t-ambar); text-transform: uppercase; margin-top: 6px; }
+.texto-corrido .passo-det h3 { margin-top: 0; }
+.texto-corrido .lista li { font-family: var(--f-body); }
+.lead-meto { font-family: var(--f-body); font-size: 1rem; color: var(--ink-2); max-width: 90ch; }
+.rodape-meto { font: 0.72rem var(--f-data); color: var(--ink-3); background: var(--surface); padding: 8px 10px; }

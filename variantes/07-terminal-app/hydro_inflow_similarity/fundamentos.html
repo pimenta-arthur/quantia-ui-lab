@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fundamentos de ENA e ENSO · Quant Energia</title>
+<!-- Variante 07 · Terminal (app real) · Hydro Inflow Similarity · Fundamentos (fundamentos.html do app).
+     Os 8 capítulos e o "Do diagnóstico ao modelo", com os mesmos gráficos, abas, tooltips e conclusões do app, em painéis.
+     Dados FICTÍCIOS em dados.js (window.HYD.fundamentos, mesmo formato de fundamentos.json). -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../app.css">
+<link rel="stylesheet" href="pagina.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>HYD</b> Fundamentos</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="../index.html"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="../forecast_bandeiras/index.html"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="../risk_lab_dessem/index.html"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="../pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="../hydro_inflow_similarity/index.html" aria-current="page"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <nav class="t-sub" aria-label="Páginas de Hydro Inflow Similarity">
+    <span class="t-sub-nome">Hydro Inflow Similarity</span>
+    <a href="index.html">Afluências e ENSO</a>
+    <a href="clima.html">Indicadores climáticos</a>
+    <a href="fundamentos.html" aria-current="page">Fundamentos</a>
+    <a href="metodologia.html">Metodologia</a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero" aria-labelledby="titulo">
+      <span class="rotulo">ENA de 1931 a 2026 · ENSO, Atlântico e Índico</span>
+      <h1 id="titulo">O que o clima diz sobre a afluência</h1>
+      <p class="lead">O que 95 anos de ENA mostram sobre o El Niño, a La Niña e as outras variáveis climáticas, subsistema por subsistema. Esta página descreve o que aconteceu, para quem quer entender a projeção e também criticá-la. As contas do modelo estão na <a href="metodologia.html">Metodologia</a>.</p>
+      <div class="meta" id="meta"><span>ENA: ONS (série oficial 1931–2024 na configuração atual + ENA diária desde 2025)</span><span>Clima: NOAA (ERSST v6, ONI, PDO)</span></div>
+    </section>
+    <div class="grade">
+      <!-- 1. O normal mudou -->
+      <section class="painel" data-tam="xl" aria-labelledby="c1">
+        <header class="painel-cab"><h2 class="ttl" id="c1"><span class="n-cap">1</span><span class="sec">O normal mudou</span>ENA anual (barras) e normal dos 30 anos anteriores (linha), % da MLT</h2></header>
+        <div class="painel-corpo">
+          <p class="sub">A MLT é a média de 1931 a 2024. O "normal" de uma época é a média dos 30 anos anteriores: é contra ele que o modelo compara cada mês.</p>
+          <div class="grade4 duas-col" id="normal"></div>
+          <div class="legenda-mini">
+            <span><i style="background:var(--bar-pers)"></i>ENA do ano (jan–dez)</span>
+            <span><i class="l" style="border-color:var(--accent)"></i>Normal: média dos 30 anos até o ano</span>
+            <span><i class="t" style="border-color:var(--ink-3)"></i>100% da MLT</span>
+          </div>
+        </div>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">1</span>O normal mudou</h3></header>
+        <div class="painel-corpo">
+          <div class="rolagem"><table>
+            <thead><tr><th>Normal (média do período)</th><th class="n">Sudeste</th><th class="n">Sul</th><th class="n">Nordeste</th><th class="n">Norte</th></tr></thead>
+            <tbody id="tab-normais"></tbody>
+          </table></div>
+          <p class="conclusao">O <strong>Nordeste</strong> tinha normal de 112% da MLT até 1990; hoje (1995–2024) é <strong>73%</strong>, e a última década ficou em 57%. O <strong>Sul</strong> fez o caminho inverso: de 82% (1931–1960) para <strong>114%</strong>. O <strong>Sudeste</strong> oscilou entre 96% e 105%, mas a última década ficou em 85%; o <strong>Norte</strong> caiu para 84% na última década. Um ano "na MLT" hoje é um ano acima do normal no Nordeste e abaixo do normal no Sul.</p>
+        </div>
+        <p class="leg">O que pode explicar (citado pelo ONS e pela literatura, não medido neste estudo): no Nordeste, a seca no São Francisco desde 2012 e o aumento do uso consuntivo (irrigação); no Sul, a tendência de mais chuva no sul do Brasil desde os anos 1970; no Sudeste e no Norte, a sequência de anos secos depois de 2014.</p>
+      </section>
+
+      <!-- 2. O El Niño forte separa o Sul do Norte -->
+      <section class="painel" data-tam="full" aria-labelledby="c2">
+        <header class="painel-cab"><h2 class="ttl" id="c2"><span class="n-cap">2</span><span class="sec">O El Niño forte separa o Sul do Norte</span>ENA de cada período úmido (nov–abr), % da MLT</h2></header>
+        <div class="painel-corpo">
+          <div class="grade4" id="umido"></div>
+          <div class="legenda-mini">
+            <span><i style="background:var(--azul)"></i>El Niño forte</span>
+            <span><i style="background:var(--laranja)"></i>La Niña forte (Niño 3.4 relativo ≤ −1,0)</span>
+            <span><i style="background:var(--bar-pers)"></i>Demais anos</span>
+            <span><i class="l" style="border-color:var(--ink)"></i>Média móvel de 10 anos</span>
+            <span><i class="t" style="border-color:var(--ink-3)"></i>100% da MLT</span>
+          </div>
+        </div>
+        <p class="leg">Cada barra é o período úmido que começa em novembro do ano indicado; os anos de El Niño forte (azul) e La Niña forte (laranja) vêm escritos sobre a barra. Fase pelo Niño 3.4 relativo médio de out–dez desse ano. No Sudeste, as abas mostram o SE-sul (Paranapanema, Tietê e Paraná incremental) e o SE-resto.</p>
+      </section>
+      <section class="painel" data-tam="full">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">2</span><span class="sec">O El Niño forte separa o Sul do Norte</span><span id="tt-comp">ENA do período úmido do evento por fase do ENSO, % da MLT</span></h3>
+          <div class="abas" id="abas-comp" role="group" aria-label="Período úmido">
+            <button type="button" data-v="evento" aria-pressed="true">Úmido do evento</button>
+            <button type="button" data-v="seguinte" aria-pressed="false">Úmido seguinte</button>
+          </div></header>
+        <div class="painel-corpo">
+          <div class="grade4" id="comp"></div>
+          <p class="leg">Cada ponto é um ano; traço = mediana. Forte ≥ 1,5; moderado 1,0–1,5; fraco 0,5–1,0; La Niña ≤ −0,5. Úmido do evento: nov/Y–abr/Y+1; úmido seguinte: nov/Y+1–abr/Y+2.</p>
+          <p class="conclusao">Nos 5 El Niños fortes (1965, 1972, 1982, 1997, 2015), o <strong>Sul ficou acima de 100% em todos</strong> (mediana 200%) e o <strong>Norte abaixo em todos</strong> (mediana 79%). Sudeste e Nordeste não mostram padrão, e a La Niña forte não tem efeito claro em nenhum subsistema (o Nordeste fica abaixo do normal na La Niña fraca, 77%). <strong>No úmido seguinte, o efeito do El Niño desaparece</strong> nos quatro.</p>
+        </div>
+      </section>
+
+      <!-- 3. O sinal é geográfico, não do subsistema -->
+      <section class="painel" data-tam="xl" aria-labelledby="c3">
+        <header class="painel-cab"><h2 class="ttl" id="c3"><span class="n-cap">3</span><span class="sec">O sinal é geográfico, não do subsistema</span><span id="tt-bac">ENA do período úmido por bacia, % da MLT</span></h2>
+          <div class="abas" id="abas-bac" role="group" aria-label="Fase do ENSO">
+            <button type="button" data-v="El Niño forte" aria-pressed="true">El Niño forte</button>
+            <button type="button" data-v="El Niño moderado" aria-pressed="false">El Niño moderado</button>
+            <button type="button" data-v="La Niña fraca" aria-pressed="false">La Niña fraca</button>
+            <button type="button" data-v="La Niña forte" aria-pressed="false">La Niña forte</button>
+          </div></header>
+        <div class="painel-corpo"><div id="g-bac"></div></div>
+        <p class="leg" id="leg-bac"></p>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">3</span>O sinal é geográfico, não do subsistema</h3></header>
+        <div class="painel-corpo">
+          <p class="conclusao">No El Niño forte, as bacias do Sul (Jacuí, Iguaçu, Itajaí, Uruguai) chegam perto de 200%, e o <strong>Paranapanema (186%), o Paraná (124%) e o Tietê (115%) respondem junto com elas</strong>; Grande, Paranaíba e São Francisco não respondem; Amazonas e Araguari ficam abaixo. No El Niño moderado, só as bacias do Sul repetem o desenho (Iguaçu 145%, Jacuí 153%), sem chegar ao Paranapanema. <strong>Na La Niña forte, só o Araguari se afasta dos anos neutros</strong> (1 de 23 bacias, o que pode ser acaso); na La Niña fraca, São Francisco (77%) e Paranaíba (82%) ficaram abaixo. O efeito do ENSO na ENA é assimétrico: forte e claro no El Niño, fraco e disperso na La Niña.</p>
+        </div>
+      </section>
+
+      <!-- 4. O Sudeste tem duas metades -->
+      <section class="painel" data-tam="xl" aria-labelledby="c4">
+        <header class="painel-cab"><h2 class="ttl" id="c4"><span class="n-cap">4</span><span class="sec">O Sudeste tem duas metades</span>Período úmido nos El Niños fortes: SE-sul, SE-resto e SE agregado, % da MLT</h2></header>
+        <div class="painel-corpo"><div id="g-blocos"></div></div>
+        <p class="leg">SE-sul: Paranapanema, Tietê e Paraná incremental (43% da MLT do SE). SE-resto: o restante do SE (Grande, Paranaíba, Paraíba do Sul, Doce e partes do Amazonas, Tocantins e São Francisco). Última coluna: mediana dos anos neutros.</p>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">4</span>O Sudeste tem duas metades</h3></header>
+        <div class="painel-corpo">
+          <p class="conclusao">O <strong>SE-sul encheu nos 5 eventos</strong> (111% a 191%). O SE-resto foi de 70% a 144%, e em 1997 e 2015 ficou seco. Somados, um compensa o outro, e o SE agregado parece não responder ao El Niño. <strong>Por isso o modelo trata o SE em dois blocos</strong> e a página de produto mostra o agregado e a contribuição de cada um.</p>
+        </div>
+      </section>
+
+      <!-- 5. 2026 ao lado dos El Niños fortes -->
+      <section class="painel" data-tam="xl" aria-labelledby="c5">
+        <header class="painel-cab"><h2 class="ttl" id="c5"><span class="n-cap">5</span><span class="sec">2026 ao lado dos El Niños fortes</span><span id="tt-traj">ENA mensal de julho do ano do evento a junho de dois anos depois, % da MLT</span></h2>
+          <div class="abas" id="abas-traj" role="group" aria-label="Subsistema ou bloco">
+            <button type="button" data-v="SE-sul" aria-pressed="true">SE-sul</button>
+            <button type="button" data-v="SE-resto" aria-pressed="false">SE-resto</button>
+            <button type="button" data-v="SE" aria-pressed="false">SE</button>
+            <button type="button" data-v="S" aria-pressed="false">Sul</button>
+            <button type="button" data-v="NE" aria-pressed="false">Nordeste</button>
+            <button type="button" data-v="N" aria-pressed="false">Norte</button>
+          </div></header>
+        <div class="painel-corpo">
+          <div id="g-traj"></div>
+          <div class="legenda-mini">
+            <span><i class="l" style="border-color:var(--bar-pers)"></i>El Niños fortes</span>
+            <span><i class="l" style="border-color:var(--accent)"></i>2023 (moderado pelo índice relativo)</span>
+            <span><i class="l" style="border-color:var(--c-2026);border-top-width:3px"></i>2026 (último mês parcial)</span>
+            <span><i style="background:var(--vazio);outline:1px solid var(--rule)"></i>Períodos úmidos</span>
+          </div>
+        </div>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">5</span>2026 ao lado dos El Niños fortes</h3></header>
+        <div class="painel-corpo">
+          <p class="conclusao">Em setembro e outubro de 2026, o SE-sul (cerca de 200%) e o Sul (230% a 266%) estão na faixa alta dos eventos fortes, e o Norte (45%) está no ponto mais baixo entre eles para a época. <strong>Até aqui, 2026 segue o padrão dos El Niños fortes</strong>, com mais intensidade no SE-sul que em 1997 e 2015.</p>
+        </div>
+      </section>
+
+      <!-- 6. Quando o sinal aparece e quanto dura -->
+      <section class="painel" data-tam="m" aria-labelledby="c6">
+        <header class="painel-cab"><h2 class="ttl" id="c6"><span class="n-cap">6</span><span class="sec">Quando o sinal aparece e quanto dura</span>Correlação do Niño 3.4 de jul–set com a ENA de cada mês seguinte</h2></header>
+        <div class="painel-corpo"><div id="g-corr"></div></div>
+        <p class="leg">Spearman, 1931–2026, Niño 3.4 relativo sem tendência. Ponto cheio: significativo após corrigir para os 11 mil testes do estudo (q &lt; 0,10).</p>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">6</span><span class="sec">Quando o sinal aparece e quanto dura</span>ONI no pico de cada El Niño forte e no úmido seguinte</h3></header>
+        <div class="painel-corpo"><div id="g-oni"></div></div>
+        <p class="leg">ONI oficial (CPC). Pico: máximo de jun/Y a abr/Y+1. Seguinte: média de out/Y+1 a fev/Y+2. Abaixo de −0,5 é La Niña.</p>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">6</span>Quando o sinal aparece e quanto dura</h3></header>
+        <div class="painel-corpo">
+          <p class="conclusao">No Sul, o ENSO de julho a setembro explica bem a ENA de <strong>novembro e dezembro</strong> (correlação 0,58 e 0,44) e quase nada de janeiro em diante. E <strong>nenhum El Niño forte continuou</strong> no período úmido seguinte: o ENSO voltou ao neutro ou virou La Niña. O sinal útil fica no úmido corrente.</p>
+        </div>
+      </section>
+
+      <!-- 7. A memória dos rios -->
+      <section class="painel" data-tam="xl" aria-labelledby="c7">
+        <header class="painel-cab"><h2 class="ttl" id="c7"><span class="n-cap">7</span><span class="sec">A memória dos rios</span>Correlação entre estações consecutivas, 1931–2025</h2></header>
+        <div class="painel-corpo"><div id="g-mem"></div></div>
+        <p class="leg">Spearman entre a ENA de uma estação e a da seguinte. Úmido = nov–abr; seca = mai–out. No Nordeste, parte da correlação vem da queda de patamar desde os anos 1990 (capítulo 1).</p>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">7</span>A memória dos rios</h3></header>
+        <div class="painel-corpo">
+          <p class="conclusao">Um período úmido forte deixa a seca seguinte alta: <strong>0,85 no Nordeste e 0,67 no Sudeste</strong>. Da seca para o próximo úmido a memória cai, e de um úmido para o outro é fraca (nula no Sul). Por isso a persistência é a base do modelo: nos primeiros meses, o estado atual dos rios pesa mais que o clima.</p>
+        </div>
+      </section>
+
+      <!-- 8. As outras variáveis -->
+      <section class="painel" data-tam="xl" aria-labelledby="c8">
+        <header class="painel-cab"><h2 class="ttl" id="c8"><span class="n-cap">8</span><span class="sec">As outras variáveis</span>Peso de cada variável climática na correção da persistência (1 a 6 meses)</h2></header>
+        <div class="painel-corpo"><div id="g-pesos"></div></div>
+        <p class="leg">Coeficiente médio escolhido pelo teste multivariado (efeito em log da ENA por 1 desvio-padrão da variável), emissões de 1993 a 2025. Zero quando o modelo volta à persistência. N·|N|: intensidade do ENSO, que pesa mais nos eventos fortes. Azul: mais ENA; laranja: menos.</p>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h3 class="ttl"><span class="n-cap">8</span>As outras variáveis</h3></header>
+        <div class="painel-corpo">
+          <p class="conclusao">Com todas as variáveis juntas, <strong>o Sul responde só ao ENSO</strong>, e o <strong>Norte ao ENSO forte e ao gradiente do Atlântico</strong> (Atlântico Norte mais quente que o Sul tira chuva da Amazônia). PDO, Atlântico Sul e Índico não pesam em nenhum subsistema, e Sudeste e Nordeste ficam com a persistência.</p>
+        </div>
+      </section>
+
+      <!-- Do diagnóstico ao modelo -->
+      <section class="painel" data-tam="full" aria-labelledby="c9">
+        <header class="painel-cab"><h2 class="ttl" id="c9">Do diagnóstico ao modelo</h2></header>
+        <div class="painel-corpo">
+          <div class="fluxo">
+            <div class="passo"><span class="n">Capítulos 1 e 7</span><h3>Persistência como base</h3><p>O número do modelo-v1 carrega a anomalia atual sobre a média dos últimos 30 anos, com a memória medida em 95 anos.</p></div>
+            <div class="passo"><span class="n">Capítulos 3 e 4</span><h3>Sudeste em dois blocos</h3><p>SE-sul e SE-resto são previstos separados e somados; a página mostra o agregado e a contribuição de cada um.</p></div>
+            <div class="passo"><span class="n">Capítulos 2, 5 e 6</span><h3>Camada de El Niño forte</h3><p>A direção histórica do desvio (Sul e SE-sul para cima, Norte para baixo) aparece ao lado do número, sem alterá-lo.</p></div>
+            <div class="passo"><span class="n">Capítulo 8 e limites</span><h3>Modelos-sombra</h3><p>Só 5 El Niños fortes desde 1950: os ajustes numéricos com clima ficam em teste ao vivo em 2026/27. <a href="metodologia.html">Ver a metodologia</a>.</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="aviso">
+      <span>Fatos descritivos calculados com a amostra inteira (dentro da amostra): mostram o que aconteceu, não quanto o modelo acerta. O desempenho fora da amostra está na <a href="index.html">página de produto</a> e na <a href="metodologia.html">Metodologia</a>.</span>
+      <span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App; os textos das conclusões são os do app e não foram recalculados com estes números.</span>
+    </div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Atualização 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="../../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../../migracao-terminal/padrao/terminal.js"></script>
+<script src="../comum.js"></script>
+<script src="dados.js"></script>
+<script src="hyd.js"></script>
+<script>
+"use strict";
+(function () {
+  // dados da página: no app, fetch de /dados/hydro_inflow_similarity/fundamentos.json; aqui, window.HYD.fundamentos (fictício)
+  const FUND = window.HYD.fundamentos;
+  const COR = { SE: "var(--c-se)", S: "var(--c-s)", NE: "var(--c-ne)", N: "var(--c-n)", "SE-sul": "var(--c-sul)", "SE-resto": "var(--c-resto)" };
+  const NOME = { SE: "Sudeste", S: "Sul", NE: "Nordeste", N: "Norte", "SE-sul": "SE-sul", "SE-resto": "SE-resto" };
+  const SUBS = ["SE", "S", "NE", "N"];
+  const novaMini = (caixa, titulo) => { const d = document.createElement("div"); d.className = "mini"; d.innerHTML = titulo; caixa.appendChild(d); return d; };
+  const legSvg = (svg, itens, x0, y0, passo) => itens.forEach(([t, cor], j) => { S(svg, "rect", { x: x0 + j * passo, y: y0, width: 10, height: 10, fill: cor }); S(svg, "text", { x: x0 + 14 + j * passo, y: y0 + 9 }, t); });
+
+  // 1. o normal mudou
+  (function () {
+    const A = FUND.anual, box = $("normal"), vals = SUBS.flatMap(k => A[k].filter(v => v != null));
+    SUBS.forEach(k => {
+      const antes = FUND.normais["1961–1990"][k], hoje = FUND.normais["1995–2024"][k];
+      const d = novaMini(box, `<div class="ttl">${NOME[k]}<span>normal ${n(antes)}% (1961–1990) → ${n(hoje)}% (1995–2024)</span></div>`);
+      grafico(d, (svg, W, H) => {
+        const m = { l: 34, r: 8, t: 8, b: 22 }, e = eixo(0, Math.max(...vals), 4);
+        const bw = (W - m.l - m.r) / A.anos.length, x = i => m.l + (i + 0.5) * bw, y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+        gradeY(svg, e, y, m, W);
+        A.anos.forEach((ano, i) => { const v = A[k][i]; if (v == null) return;
+          const r = S(svg, "rect", { x: x(i) - bw * 0.4, y: y(v), width: Math.max(1, bw * 0.8), height: y(0) - y(v), fill: "var(--bar-pers)" });
+          dicaEm(r, `<b>${ano}</b> · ${NOME[k]}<br>ENA do ano ${n(v)}% da MLT${A.normal[k][i] != null ? `<br>normal (${ano - 29}–${ano}) ${n(A.normal[k][i])}%` : ""}`);
+          if (ano % 20 === 0) S(svg, "text", { x: x(i), y: H - 6, "text-anchor": "middle" }, ano); });
+        S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(100), y2: y(100), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+        S(svg, "polyline", { points: A.normal[k].map((v, i) => (v == null ? null : `${x(i)},${y(v)}`)).filter(Boolean).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2.4 });
+      }, undefined, `ENA anual e normal de 30 anos do ${NOME[k]}`).style.height = "190px";
+    });
+    const N = FUND.normais, rotulo = { "1931–1960": "1931–1960", "1961–1990": "1961–1990", "1995–2024": "1995–2024 (normal de hoje)", "2015–2024": "2015–2024 (última década)" };
+    $("tab-normais").innerHTML = Object.keys(N).map(p => `<tr${p.startsWith("1995") ? ' class="destaque"' : ""}><td>${rotulo[p]}</td>${SUBS.map(k => `<td class="n">${n(N[p][k])}%</td>`).join("")}</tr>`).join("");
+  })();
+
+  // 2a. cada período úmido, com El Niño e La Niña fortes em destaque e média móvel de 10 anos
+  function umidoPainel(svg, W, H, serie, U) {
+    const m = { l: 34, r: 8, t: 20, b: 22 };
+    const todos = [...SUBS.flatMap(k => U[k]), ...FUND.umido_blocos["SE-sul"], ...FUND.umido_blocos["SE-resto"]].filter(v => v != null);
+    const e = eixo(0, Math.max(...todos), 4), v = serie;
+    const bw = (W - m.l - m.r) / U.anos.length, x = i => m.l + (i + 0.5) * bw, y = q => m.t + (H - m.t - m.b) * (1 - (q - e.a) / (e.b - e.a));
+    const cor = c => (c === "El Niño forte" ? "var(--azul)" : c === "La Niña forte" ? "var(--laranja)" : "var(--bar-pers)");
+    gradeY(svg, e, y, m, W);
+    const rotulos = [];
+    U.anos.forEach((ano, i) => { const q = v[i]; if (q == null) return; const c = U.classe[i];
+      const r = S(svg, "rect", { x: x(i) - bw * 0.4, y: y(q), width: Math.max(1, bw * 0.8), height: y(0) - y(q), fill: cor(c) });
+      dicaEm(r, `<b>Úmido ${ano}/${String(ano + 1).slice(2)}</b> · ${c ?? "—"}<br>${n(q)}% da MLT`);
+      if (c === "El Niño forte" || c === "La Niña forte")
+        rotulos.push({ el: S(svg, "text", { x: x(i), y: y(q) - 3, "text-anchor": "middle", class: "valor ano", style: `fill:${cor(c)}` }, ano), x: x(i), y: y(q) - 3, forte: c === "El Niño forte" });
+      if (ano % 20 === 0) S(svg, "text", { x: x(i), y: H - 6, "text-anchor": "middle" }, ano); });
+    S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(100), y2: y(100), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+    const mm = v.map((_, i) => { const jan = v.slice(Math.max(0, i - 5), i + 5).filter(q => q != null); return jan.length >= 6 ? jan.reduce((a, b) => a + b, 0) / jan.length : null; });
+    S(svg, "polyline", { points: mm.map((q, i) => (q == null ? null : `${x(i)},${y(q)}`)).filter(Boolean).join(" "), fill: "none", stroke: "var(--ink)", "stroke-width": 1.8 });
+    empilharRotulos([...rotulos.filter(r => r.forte), ...rotulos.filter(r => !r.forte)], 24, 10);
+  }
+  (function () {
+    const U = FUND.umido_anual, box = $("umido");
+    SUBS.forEach(k => {
+      if (k === "SE") {
+        const d = novaMini(box, `<div class="barra-mini"><div class="ttl" id="tt-umido-se">Sudeste</div><div class="abas" id="abas-umido-se" role="group" aria-label="Recorte do Sudeste">` +
+          `<button type="button" data-v="SE" aria-pressed="true">Agregado</button><button type="button" data-v="SE-sul" aria-pressed="false">SE-sul</button><button type="button" data-v="SE-resto" aria-pressed="false">SE-resto</button></div></div><div class="g"></div>`);
+        const g = d.querySelector(".g");
+        const des = q => { $("tt-umido-se").textContent = q === "SE" ? "Sudeste" : `Sudeste · ${q}`;
+          desenhar(g, (svg, W, H) => umidoPainel(svg, W, H, q === "SE" ? U.SE : FUND.umido_blocos[q], U), 200, "ENA de cada período úmido do Sudeste"); };
+        grupo("abas-umido-se", des); des("SE");
+      } else {
+        const d = novaMini(box, `<div class="ttl">${NOME[k]}</div>`);
+        grafico(d, (svg, W, H) => umidoPainel(svg, W, H, U[k], U), undefined, `ENA de cada período úmido do ${NOME[k]}`).style.height = "200px";
+      }
+    });
+  })();
+
+  // 2b. compostos por fase do ENSO
+  const CLASSES = ["El Niño forte", "El Niño moderado", "El Niño fraco", "Neutro", "La Niña"];
+  const CURTO = { "El Niño forte": "EN forte", "El Niño moderado": "EN mod.", "El Niño fraco": "EN fraco", "Neutro": "Neutro", "La Niña": "La Niña" };
+  function compostos(qual) {
+    const box = $("comp"); box.replaceChildren();
+    const P = FUND.compostos[qual];
+    $("tt-comp").textContent = qual === "evento" ? "ENA do período úmido do evento (nov/Y–abr/Y+1) por fase do ENSO, % da MLT" : "ENA do período úmido seguinte (nov/Y+1–abr/Y+2) por fase do ENSO de Y, % da MLT";
+    SUBS.forEach(k => {
+      const d = novaMini(box, `<div class="ttl">${NOME[k]}</div>`);
+      grafico(d, (svg, W, H) => {
+        const m = { l: 34, r: 6, t: 8, b: 32 }, vals = P[k].map(p => p.v), e = eixo(Math.min(...vals, 40), Math.max(...vals), 4);
+        const bw = (W - m.l - m.r) / CLASSES.length, x = i => m.l + (i + 0.5) * bw, y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+        gradeY(svg, e, y, m, W);
+        S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(100), y2: y(100), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+        CLASSES.forEach((c, i) => {
+          S(svg, "text", { x: x(i), y: H - 16, "text-anchor": "middle" }, CURTO[c]);
+          const pts = P[k].filter(p => p.classe === c).sort((a, b) => a.v - b.v);
+          pts.forEach((p, j) => {
+            const jit = ((j * 7919) % 11 - 5) / 5 * bw * 0.22, forte = c === "El Niño forte";
+            const ci = S(svg, "circle", { cx: x(i) + jit, cy: y(p.v), r: forte ? 4.5 : 3.2, fill: forte ? "var(--azul)" : "var(--bar-pers)", stroke: "var(--surface)", "stroke-width": 1 });
+            dicaEm(ci, `<b>${p.ano}${qual === "seguinte" ? ` → úmido ${p.ano + 1}/${String(p.ano + 2).slice(2)}` : `/${String(p.ano + 1).slice(2)}`}</b> · ${c}<br>${NOME[k]}: ${n(p.v)}% da MLT`);
+          });
+          if (pts.length) {
+            const meio = pts.length / 2, med = pts.length % 2 ? pts[Math.floor(meio)].v : (pts[meio - 1].v + pts[meio].v) / 2;
+            const tr = S(svg, "line", { x1: x(i) - bw * 0.32, x2: x(i) + bw * 0.32, y1: y(med), y2: y(med), stroke: "var(--ink)", "stroke-width": 2.2 });
+            dicaEm(tr, `<b>${c}</b> · ${NOME[k]}<br>mediana ${n(med)}% da MLT (${pts.length} anos)`);
+            S(svg, "text", { x: x(i), y: H - 4, "text-anchor": "middle" }, `n=${pts.length}`);
+          }
+        });
+      }, undefined, `${NOME[k]} por fase do ENSO`).style.height = "220px";
+    });
+  }
+  grupo("abas-comp", compostos); compostos("evento");
+
+  // 3. bacias por fase do ENSO
+  const NOME_BACIA = b => (b === "PARANA" ? "Paraná (incremental)" : b.toLowerCase().replace(/(^|\s)\S/g, s => s.toUpperCase())
+    .replace("Sao", "São").replace("Paraiba", "Paraíba").replace("Paranaiba", "Paranaíba").replace("Iguacu", "Iguaçu").replace("Jacui", "Jacuí")
+    .replace("Itajai", "Itajaí").replace("Parnaiba", "Parnaíba").replace("Paraguacu", "Paraguaçu").replace("Tiete", "Tietê").replace("Vit", "Vitória"));
+  function bacias(classe) {
+    const B = FUND.bacias_fase[classe].slice().sort((a, b) => b.mediana - a.mediana), anos = FUND.anos_fase[classe];
+    $("tt-bac").textContent = `ENA do período úmido por bacia: ${classe} contra anos neutros, % da MLT`;
+    $("leg-bac").textContent = `Ponto: mediana dos ${anos.length} anos de ${classe} (${anos.join(", ")}); barra: p10–p90; traço vertical: mediana dos anos neutros. Ponto azul: diferença com p < 0,05 (Mann-Whitney). La Niña forte: Niño 3.4 relativo ≤ −1,0 (só 1973 e 1988 chegam a −1,5). Paraná: incremental.`;
+    desenhar($("g-bac"), (svg, W, H) => {
+      const m = { l: 150, r: 20, t: 8, b: 26 }, todos = Object.values(FUND.bacias_fase).flat(), e = eixo(Math.min(...todos.map(b => b.p10), 40), Math.max(...todos.map(b => b.p90)), 6);
+      const x = v => m.l + (W - m.l - m.r) * (v - e.a) / (e.b - e.a), dy = (H - m.t - m.b) / B.length, y = i => m.t + (i + 0.5) * dy;
+      e.t.forEach(t => { S(svg, "line", { x1: x(t), x2: x(t), y1: m.t, y2: H - m.b, stroke: "var(--rule)" }); });
+      rotulosX(svg, e.t.map((_, i) => i), i => x(e.t[i]), H - 8, i => `${n(e.t[i])}%`, 40);
+      S(svg, "line", { x1: x(100), x2: x(100), y1: m.t, y2: H - m.b, stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+      B.forEach((b, i) => {
+        const nome = NOME_BACIA(b.nome);
+        S(svg, "text", { x: m.l - 8, y: y(i) + 3, "text-anchor": "end" }, nome);
+        S(svg, "line", { x1: x(b.p10), x2: x(b.p90), y1: y(i), y2: y(i), stroke: "var(--bar-pers)", "stroke-width": 4, "stroke-linecap": "round" });
+        S(svg, "line", { x1: x(b.neutro), x2: x(b.neutro), y1: y(i) - 7, y2: y(i) + 7, stroke: "var(--ink-3)", "stroke-width": 2 });
+        const c = S(svg, "circle", { cx: x(b.mediana), cy: y(i), r: 5.5, fill: b.p < 0.05 ? "var(--azul)" : "var(--ink-2)", stroke: "var(--surface)", "stroke-width": 1.5 });
+        const alvo = S(svg, "rect", { x: m.l, y: y(i) - dy / 2, width: W - m.l - m.r, height: dy, fill: "transparent" });
+        const t = `<b>${nome}</b> · ${classe}<br>mediana ${n(b.mediana)}% (p10–p90 ${n(b.p10)}–${n(b.p90)}%), ${b.n} anos<br>anos neutros: ${n(b.neutro)}% · p = ${n(b.p, 3)}`;
+        dicaEm(alvo, t); dicaEm(c, t);
+      });
+    }, 560, "ENA por bacia na fase do ENSO escolhida");
+  }
+  grupo("abas-bac", bacias); bacias("El Niño forte");
+
+  // 4. blocos do SE
+  desenhar($("g-blocos"), (svg, W, H) => {
+    const E = FUND.blocos_eventos, N0 = FUND.blocos_neutros, m = { l: 40, r: 12, t: 22, b: 28 };
+    const grupos = [...FUND.fortes.map(String), "neutros"], series = [["SE-sul", "var(--c-sul)"], ["SE-resto", "var(--c-resto)"], ["SE", "var(--ink-2)"]];
+    const val = (g, k) => (g === "neutros" ? N0[k] : E[g][k]);
+    const e = eixo(0, Math.max(...grupos.flatMap(g => series.map(([k]) => val(g, k)))), 5);
+    const gw = (W - m.l - m.r) / grupos.length, bw = Math.min(46, gw * 0.22), y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+    gradeY(svg, e, y, m, W);
+    S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(100), y2: y(100), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+    grupos.forEach((g, i) => {
+      const x0 = m.l + i * gw + gw / 2;
+      S(svg, "text", { x: x0, y: H - 8, "text-anchor": "middle", class: g === "neutros" ? null : "forte" }, g === "neutros" ? "anos neutros" : `${g}/${String(+g + 1).slice(2)}`);
+      series.forEach(([k, cor], j) => {
+        const v = val(g, k), xb = x0 + (j - 1) * (bw + 2) - bw / 2;
+        const r = S(svg, "rect", { x: xb, y: y(v), width: bw, height: y(0) - y(v), fill: cor, opacity: g === "neutros" ? 0.55 : 1 });
+        dicaEm(r, `<b>${g === "neutros" ? "Anos neutros (mediana)" : `Úmido ${g}/${String(+g + 1).slice(2)}`}</b><br>${NOME[k] ?? k}: ${n(v)}% da MLT`);
+      });
+    });
+    legSvg(svg, series.map(([k, cor]) => [k === "SE" ? "SE agregado" : k, cor]), m.l + 10, 4, 110);
+  }, 260, "SE-sul e SE-resto nos El Niños fortes");
+
+  // 5. trajetórias
+  const ROT_TRAJ = ["jul", "ago", "set", "out", "nov", "dez", "jan", "fev", "mar", "abr", "mai", "jun"];
+  function trajetorias(nome) {
+    $("tt-traj").textContent = `${NOME[nome]}: ENA mensal de julho do ano do evento a junho de dois anos depois, % da MLT`;
+    desenhar($("g-traj"), (svg, W, H) => {
+      const T = FUND.trajetorias, m = { l: 40, r: 50, t: 12, b: 28 };
+      const vals = Object.values(T).flatMap(t => t[nome].filter(v => v != null)), e = eixo(0, Math.max(...vals), 5);
+      const x = i => m.l + i * (W - m.l - m.r) / 23, y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+      [[4, 9], [16, 21]].forEach(([a, b]) => S(svg, "rect", { x: x(a) - 4, y: m.t, width: x(b) - x(a) + 8, height: H - m.t - m.b, fill: "var(--vazio)" }));
+      gradeY(svg, e, y, m, W);
+      S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(100), y2: y(100), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+      rotulosX(svg, [0, 3, 6, 9, 12, 15, 18, 21], i => x(i), H - 8, i => `${ROT_TRAJ[i % 12]}${i >= 12 ? " (+1)" : ""}`, 44);
+      const fins = [];
+      Object.entries(T).forEach(([ano, t]) => {
+        const v = t[nome], atual = ano === "2026", cor = atual ? "var(--c-2026)" : ano === "2023" ? "var(--accent)" : "var(--bar-pers)";
+        const pts = v.map((q, i) => (q == null ? null : [x(i), y(q)])).filter(Boolean);
+        const ultimoCompleto = atual ? v.findIndex((_, i) => t.parcial[i]) : -1;
+        const linha = atual && ultimoCompleto > 0 ? pts.slice(0, ultimoCompleto) : pts;
+        S(svg, "polyline", { points: linha.map(p => p.join(",")).join(" "), fill: "none", stroke: cor, "stroke-width": atual ? 3 : ano === "2023" ? 2 : 1.6 });
+        if (atual && ultimoCompleto > 0) { const [px, py] = pts[ultimoCompleto]; S(svg, "line", { x1: pts[ultimoCompleto - 1][0], y1: pts[ultimoCompleto - 1][1], x2: px, y2: py, stroke: cor, "stroke-width": 2, "stroke-dasharray": "3 3" }); S(svg, "circle", { cx: px, cy: py, r: 4.5, fill: "var(--surface)", stroke: cor, "stroke-width": 2 }); }
+        v.forEach((q, i) => { if (q == null) return; const c = S(svg, "circle", { cx: x(i), cy: y(q), r: 6, fill: "transparent" });
+          dicaEm(c, `<b>${ano}</b> · ${ROT_TRAJ[i % 12]}/${String(+ano + Math.floor((i + 6) / 12)).slice(2)}${t.parcial[i] ? " (parcial)" : ""}<br>${NOME[nome]}: ${n(q)}% da MLT`); });
+        const [lx, ly] = pts[pts.length - 1];
+        fins.push({ t: ano, y: ly, x: lx });
+      });
+      empilharRotulos(fins.map(f => ({ el: S(svg, "text", { x: f.x + 6, y: f.y + 3, class: f.t === "2026" ? "forte ano" : null }, f.t), x: f.x + 6, y: f.y + 3 })), 40, 11);
+    }, 300, "Trajetórias mensais nos El Niños fortes e em 2026");
+  }
+  grupo("abas-traj", trajetorias); trajetorias("SE-sul");
+
+  // 6a. correlação por mês-alvo
+  desenhar($("g-corr"), (svg, W, H) => {
+    const C = FUND.correlacao_set, m = { l: 38, r: 70, t: 12, b: 28 }, e = eixo(-0.4, 0.7, 5), meses = C.S.mes_alvo;
+    const x = i => m.l + i * (W - m.l - m.r) / (meses.length - 1), y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+    gradeY(svg, e, y, m, W, v => n(v, 1));
+    meses.forEach((mm, i) => { if (i % 2 === 0) S(svg, "text", { x: x(i), y: H - 8, "text-anchor": "middle" }, MES[mm - 1]); });
+    const fins = [];
+    SUBS.forEach(k => {
+      const d = C[k];
+      S(svg, "polyline", { points: d.r.map((v, i) => `${x(i)},${y(v)}`).join(" "), fill: "none", stroke: COR[k], "stroke-width": 2 });
+      d.r.forEach((v, i) => { const sig = d.q[i] < 0.1; const c = S(svg, "circle", { cx: x(i), cy: y(v), r: sig ? 4.5 : 3, fill: sig ? COR[k] : "var(--surface)", stroke: COR[k], "stroke-width": 1.5 });
+        dicaEm(c, `<b>${NOME[k]}</b> · ENA de ${MESL[meses[i] - 1]}<br>r = ${nm(v, 2)}${sig ? " (significativo)" : ""}`); });
+      fins.push({ t: NOME[k], y: y(d.r[d.r.length - 1]), cor: COR[k] });
+    });
+    const x0 = x(meses.length - 1) + 8;
+    empilharRotulos(fins.sort((a, b) => a.y - b.y).map(f => ({ el: S(svg, "text", { x: x0, y: f.y + 3, class: "forte", style: `fill:${f.cor}` }, f.t), x: x0, y: f.y + 3 })), 200, 12);
+  }, 280, "Correlação do Niño 3.4 com a ENA por mês-alvo");
+
+  // 6b. ONI no pico e no úmido seguinte
+  desenhar($("g-oni"), (svg, W, H) => {
+    const O = FUND.oni_seguinte, m = { l: 38, r: 10, t: 22, b: 28 };
+    const e = eixo(-2, 2.7, 5), gw = (W - m.l - m.r) / O.length, bw = gw * 0.32, y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+    gradeY(svg, e, y, m, W, v => n(v, 1));
+    S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(-0.5), y2: y(-0.5), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+    S(svg, "text", { x: W - m.r, y: y(-0.5) - 4, "text-anchor": "end" }, "La Niña");
+    O.forEach((o, i) => {
+      const x0 = m.l + i * gw + gw / 2;
+      [[o.pico, "var(--quente-3)", -1], [o.seguinte, "var(--frio-3)", 1]].forEach(([v, cor, lado]) => {
+        const r = S(svg, "rect", { x: x0 + (lado < 0 ? -bw - 1 : 1), y: Math.min(y(v), y(0)), width: bw, height: Math.max(0.5, Math.abs(y(v) - y(0))), fill: cor });
+        dicaEm(r, `<b>El Niño de ${o.ano}</b><br>pico ${nm(o.pico, 2)} · úmido seguinte ${nm(o.seguinte, 2)}`);
+      });
+      S(svg, "text", { x: x0, y: H - 8, "text-anchor": "middle" }, `${String(o.ano).slice(2)}`);
+    });
+    legSvg(svg, [["Pico", "var(--quente-3)"], ["Úmido seguinte", "var(--frio-3)"]], m.l + 6, 4, 80);
+  }, 280, "ONI no pico e no período úmido seguinte");
+
+  // 7. memória
+  desenhar($("g-mem"), (svg, W, H) => {
+    const M = FUND.memoria, pares = ["úmido Y → seca Y+1", "seca Y → úmido Y", "úmido Y → úmido Y+1"], m = { l: 40, r: 12, t: 22, b: 28 };
+    const e = eixo(-0.1, 0.9, 5), gw = (W - m.l - m.r) / pares.length, bw = Math.min(48, gw * 0.17), y = v => m.t + (H - m.t - m.b) * (1 - (v - e.a) / (e.b - e.a));
+    gradeY(svg, e, y, m, W, v => n(v, 1));
+    pares.forEach((p, i) => {
+      const x0 = m.l + i * gw + gw / 2;
+      S(svg, "text", { x: x0, y: H - 8, "text-anchor": "middle", class: "forte" }, p.replace("úmido", "Úmido").replace("seca Y", "Seca Y"));
+      SUBS.forEach((k, j) => {
+        const v = M[p][k], xb = x0 + (j - 2) * (bw + 3) + 1.5;
+        const r = S(svg, "rect", { x: xb, y: Math.min(y(v), y(0)), width: bw, height: Math.max(0.5, Math.abs(y(v) - y(0))), fill: COR[k] });
+        S(svg, "text", { x: xb + bw / 2, y: v >= 0 ? y(v) - 4 : y(v) + 11, "text-anchor": "middle", class: "valor" }, nm(v, 2));
+        dicaEm(r, `<b>${NOME[k]}</b> · ${p}<br>correlação ${nm(v, 2)}`);
+      });
+    });
+    legSvg(svg, SUBS.map(k => [NOME[k], COR[k]]), m.l + 6, 4, 95);
+  }, 240, "Memória entre estações por subsistema");
+
+  // 8. pesos do teste multivariado (mapa de calor divergente: azul mais ENA, laranja menos)
+  desenhar($("g-pesos"), (svg, W, H) => {
+    const P = FUND.pesos_t7, vars = ["N", "N·|N|", "ΔN", "grad_atl", "atl_sul_se", "pdo", "dmi"];
+    const rotV = { "N": "ENSO (N)", "N·|N|": "Intensidade", "ΔN": "Tendência", grad_atl: "Grad. Atlântico", atl_sul_se: "Atl. Sul (SE)", pdo: "PDO", dmi: "Índico (DMI)" };
+    const m = { l: 80, r: 6, t: 30, b: 6 }, cw = (W - m.l - m.r) / vars.length, ch = (H - m.t - m.b) / SUBS.length, lim = 0.035;
+    vars.forEach((v, j) => S(svg, "text", { x: m.l + (j + 0.5) * cw, y: m.t - 10, "text-anchor": "middle", class: "forte" }, cw < 70 ? rotV[v].split(" ")[0] : rotV[v]));
+    SUBS.forEach((k, i) => {
+      S(svg, "text", { x: m.l - 10, y: m.t + (i + 0.5) * ch + 3, "text-anchor": "end", class: "forte" }, NOME[k]);
+      vars.forEach((v, j) => {
+        const val = P[k][v], f = Math.min(1, Math.abs(val) / lim);
+        const r = S(svg, "rect", { x: m.l + j * cw + 1, y: m.t + i * ch + 1, width: cw - 2, height: ch - 2,
+          fill: `color-mix(in srgb, ${val >= 0 ? "var(--azul)" : "var(--laranja)"} ${Math.round(f * 85)}%, var(--vazio))` });
+        S(svg, "text", { x: m.l + (j + 0.5) * cw, y: m.t + (i + 0.5) * ch + 4, "text-anchor": "middle", style: f > 0.55 ? "fill:var(--t-sobre);font-weight:500" : "fill:var(--ink-2)", "pointer-events": "none" }, sn(val, 3));
+        dicaEm(r, `<b>${NOME[k]}</b> · ${rotV[v]}<br>peso médio ${sn(val, 3)}`);
+      });
+    });
+  }, 230, "Peso das variáveis climáticas por subsistema");
+})();
+</script>
+</body>
+</html>

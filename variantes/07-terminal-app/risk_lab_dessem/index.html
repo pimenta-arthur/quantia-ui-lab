@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Risk Lab DESSEM: Acompanhamento · Quant Energia</title>
+<!-- Variante 07 · Terminal (app real) · Risk Lab DESSEM · Acompanhamento
+     Recriação do web/risk_lab_dessem/index.html do app: mesmos blocos, abas, tooltips e legendas, cada bloco num painel da grade de 12 colunas.
+     Dados FICTÍCIOS (dados.js); nada vem do Quant Energia App. -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../app.css">
+<link rel="stylesheet" href="pagina.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>RISK</b> Acompanhamento</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <!-- funcionalidades: a ordem define as teclas 1–5; aria-current na funcionalidade da página -->
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="../index.html"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="../forecast_bandeiras/index.html"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="../risk_lab_dessem/index.html" aria-current="page"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="../pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="../hydro_inflow_similarity/index.html"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <!-- páginas da funcionalidade, como no menu dela no app; aria-current na página atual -->
+  <nav class="t-sub" aria-label="Páginas de Risk Lab DESSEM">
+    <span class="t-sub-nome">Risk Lab DESSEM</span>
+    <a href="index.html" aria-current="page">Acompanhamento</a>
+    <a href="simulador.html">Simulador</a>
+    <a href="metodologia.html">Metodologia</a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero" aria-labelledby="titulo">
+      <span class="rotulo">Risk Lab DESSEM · PLD horário</span>
+      <h1 id="titulo">PLD horário: acompanhamento e desvio sobre o DECOMP</h1>
+      <div class="meta" id="meta"></div>
+      <p class="aviso-q" id="erro" hidden></p>
+    </section>
+    <div class="grade" id="acompanhamento">
+    <section class="painel" data-tam="full" id="p-nivel">
+      <header class="painel-cab"><h2 class="ttl" id="tt-nivel">PLD médio do dia: DESSEM e DECOMP</h2><div class="abas" id="abas-nivel" role="group" aria-label="Período"></div></header>
+      <div class="painel-corpo">
+        <div class="barra-abas"><div class="controles"><div class="lin"><span>Submercado</span><div class="abas" id="abas-sub-nivel" role="group" aria-label="Submercado"></div><span class="leg" id="nota-sub-nivel"></span></div></div>
+        <div class="legenda-mini"><span><i class="l" style="border-color:var(--accent)"></i>DESSEM</span><span><i class="l" style="border-color:var(--ink-3)"></i>DECOMP vigente</span><span><i class="t" style="border-color:var(--ink-3)"></i>Piso do PLD</span></div></div>
+        <div id="g-nivel" aria-label="PLD médio diário do DESSEM e DECOMP vigente"></div>
+        <div class="mini-ttl"><span id="tt-nivel-hora">PLD horário do DESSEM, alinhado aos dias de cima</span></div>
+        <div id="g-nivel-hora" aria-label="PLD horário do DESSEM alinhado ao gráfico diário"></div>
+      </div>
+      <p class="leg">R$/MWh. Em cima, a média das 24 horas de cada dia e o DECOMP (PLD semanal da revisão vigente, com limites); embaixo, o PLD hora a hora no mesmo eixo de dias (no ano e no histórico, faixa do mínimo ao máximo horário de cada dia e a média). <span id="leg-nivel"></span></p>
+    </section>
+    <section class="painel" data-tam="xl" id="p-mes">
+      <header class="painel-cab"><h2 class="ttl" id="tt-mes">Desvio por bloco de horas</h2><div class="abas" id="abas-hist" role="group" aria-label="Período do histórico"></div></header>
+      <div class="painel-corpo">
+        <div class="barra-abas"><div class="controles"><div class="lin"><span>Submercado</span><div class="abas" id="abas-sub-mes" role="group" aria-label="Submercado"></div><span class="leg" id="nota-sub-mes"></span></div></div><div class="legenda-mini" id="leg-mes"></div></div>
+        <div class="mini-ttl"><span>Histórico mensal</span></div>
+        <div id="g-mes" aria-label="Desvio mensal por bloco de horas"></div>
+      </div>
+      <p class="leg">DESSEM − DECOMP vigente, R$/MWh; contribuição de cada bloco à média do mês (à esquerda) ou do dia (à direita), escalas próprias. O mês em curso aparece claro e tracejado: média do realizado até o último deck (*). Mês civil; DECOMP = média das semanas vigentes ponderada pelos dias. Vale 8h–15h, ponta 18h–21h. Sem fev–mar/2023 (decks ausentes).</p>
+    </section>
+    <section class="painel" data-tam="s" id="p-mes-dias">
+      <header class="painel-cab"><h2 class="ttl" id="tt-mes-dias">Mês, por dia</h2><select id="sel-mes-dias" class="sel-mes" aria-label="Mês do gráfico por dia"></select></header>
+      <div class="painel-corpo">
+        <div id="g-mes-dias" aria-label="Desvio diário por bloco de horas no mês"></div>
+      </div>
+      <p class="leg">Mesmos blocos e cores do histórico mensal ao lado, em escala própria.</p>
+    </section>
+    <section class="painel" data-tam="full" id="p-contrib">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl">Por tipo de dia: contribuição e horas abaixo ou acima do DECOMP</h2></summary>
+      <div class="painel-corpo">
+        <div class="barra-abas"><div class="mini-ttl"><b id="tt-contrib">Desvio por faixa horária e tipo de dia</b></div>
+          <div class="abas" id="abas-per-c" role="group" aria-label="Período"></div></div>
+        <div class="grid2">
+          <div><div class="mini-ttl"><span>Contribuição ao desvio médio, R$/MWh</span><b id="tot-c"></b></div><div id="g-contrib" aria-label="Contribuição ao desvio por faixa e tipo de dia"></div></div>
+          <div><div class="mini-ttl"><span>Horas por dia abaixo e acima do DECOMP</span></div><div id="g-cont" aria-label="Horas por dia abaixo e acima do DECOMP"></div></div>
+        </div>
+        <div class="legenda-mini"><span><i style="background:var(--t-util)"></i>Dia útil</span><span><i style="background:var(--t-sab)"></i>Sábado</span><span><i style="background:var(--t-dom)"></i>Domingo/feriado</span><span>À direita: barra cheia = horas abaixo do DECOMP, parte escura = no piso; barra vazada = horas acima do DECOMP</span></div>
+      </div>
+      <p class="leg">Contribuição = desvio médio da célula × peso das suas horas no período; a soma das células dá o desvio médio do período. Feriado = dia de semana sem patamar pesado no deck.</p>
+      </details>
+    </section>
+    <section class="painel" data-tam="full" id="b-perfil-dia">
+      <header class="painel-cab"><h2 class="ttl" id="tt-pdia">Perfil horário do mês, dia a dia</h2><div class="controles"><div class="lin"><span>Mês</span><select id="sel-mes-pdia" class="sel-mes" aria-label="Mês do perfil dia a dia"></select></div></div></header>
+      <div class="painel-corpo">
+        <div class="controles"><div class="lin"><span>Submercado</span><div class="abas" id="abas-sub-pdia" role="group" aria-label="Submercado"></div><span class="leg" id="nota-sub-pdia"></span></div></div>
+        <div class="barra-abas"><span class="leg">Uma linha por dia; clique num dia para destacar, clique de novo para tirar.</span>
+          <div class="abas" id="abas-var-dia" role="group" aria-label="Variável"></div></div>
+        <div class="dias-leg" id="leg-pdia" role="group" aria-label="Dias do mês"></div>
+        <div id="g-pdia" aria-label="Perfil horário de cada dia do mês"></div>
+      </div>
+      <p class="leg" id="leg-pdia-nota"></p>
+    </section>
+    <section class="painel" data-tam="full" id="p-calor">
+      <details class="dobra" id="det-calor">
+      <summary class="painel-cab"><h2 class="ttl" id="tt-calor">Mapa de calor: dia × hora</h2></summary>
+      <div class="painel-corpo">
+        <div class="rolagem"><div id="g-calor" class="calor-box" aria-label="Mapa de calor do mês selecionado, por dia e hora"></div></div>
+      </div>
+      <p class="leg" id="leg-calor"></p>
+      </details>
+    </section>
+    <section class="painel" data-tam="full" id="b-perfil">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl" id="tt-perfil">Perfil horário por mês do ano, todos os anos</h2></summary>
+      <div class="painel-corpo">
+        <div class="controles"><div class="lin"><span>Submercado</span><div class="abas" id="abas-sub-perfil" role="group" aria-label="Submercado"></div><span class="leg" id="nota-sub-perfil"></span></div></div>
+        <div class="barra-abas"><div class="abas" id="abas-visao" role="group" aria-label="Visão dos painéis"></div>
+          <div class="abas" id="abas-var" role="group" aria-label="Variável"></div></div>
+        <span class="leg" id="sub-perfil">Um painel por mês, uma linha por ano, escala comum a todos os painéis.</span>
+        <div class="legenda-mini" id="leg-perfil"></div>
+        <div class="multiplos" id="g-perfil"></div>
+        <p class="aviso-q" id="aviso-perfil"></p>
+      </div>
+      <p class="leg" id="leg-perfil-nota"></p>
+      </details>
+    </section>
+    <section class="painel" data-tam="full" id="p-ind">
+      <header class="painel-cab"><h2 class="ttl" id="tt-ind">Indicadores por ano</h2><div class="abas" id="abas-per-ind" role="group" aria-label="Período dos indicadores"></div></header>
+      <div class="painel-corpo">
+        <div class="controles"><div class="lin"><span>Submercado</span><div class="abas" id="abas-sub-ind" role="group" aria-label="Submercado"></div><span class="leg" id="nota-sub-ind"></span></div></div>
+        <div class="rolagem"><table id="t-ind" class="compacta ind"><thead><tr><th>Ano</th><th class="n">Meses</th><th class="n">Carga líq. vale<small>GW</small></th><th class="n">Carga líq. ponta<small>GW</small></th><th class="n">Rampa 12h→19h<small>GW</small></th><th class="n">Demanda s/ MMGD<small>GW</small></th><th class="n">Renov. c/ MMGD vale<small>GW</small></th><th class="n">PLD médio<small>R$/MWh</small></th><th class="n">PLD ponta 18–21h<small>R$/MWh</small></th><th class="n">PLD vale 8–15h<small>R$/MWh</small></th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <p class="leg">GW médios e PLD médio no período escolhido (ano inteiro ou trimestre). Vale 8h–15h, ponta 18h–21h; rampa = carga líquida às 19h − às 12h. O ano corrente é acumulado até o último deck. Demanda e renovável com MMGD não se comparam antes de 29/04/2023 (a MMGD passou a entrar como usina).</p>
+    </section>
+    <section class="painel" data-tam="full" id="p-hora">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl" id="tt-hora">Horas no piso por hora e tipo de dia</h2></summary>
+      <div class="painel-corpo">
+        <div class="barra-abas"><div class="controles"><div class="lin"><span>Submercado</span><div class="abas" id="abas-sub-hora" role="group" aria-label="Submercado"></div><span class="leg" id="nota-sub-hora"></span></div><div class="lin"><span>Mês</span><div class="abas" id="abas-mes-h" role="group" aria-label="Mês"></div></div></div>
+          <div class="abas" id="abas-medida" role="group" aria-label="Medida"></div></div>
+        <div class="legenda-mini"><span><i class="l" style="border-color:var(--t-util)"></i>Dia útil</span><span><i class="l" style="border-color:var(--t-sab)"></i>Sábado</span><span><i class="l" style="border-color:var(--t-dom)"></i>Domingo/feriado</span></div>
+        <div id="g-hora" aria-label="Percentual das horas no piso por hora do dia"></div>
+        <div class="mini-ttl"><span id="tt-sem-hora">Por semana operativa (revisão do DECOMP) do mês selecionado</span></div>
+        <div class="grid4" id="g-semanas"></div>
+      </div>
+      <p class="leg">% das horas de cada hora do dia em que o PLD ficou no piso (ou abaixo do DECOMP vigente), por tipo de dia. Semana operativa de sábado a sexta; RV = revisão do DECOMP vigente na semana.</p>
+      </details>
+    </section>
+    <section class="painel" data-tam="full" id="mecanismos">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl" id="s-mec">Mecanismos do vale · SE/CO</h2></summary>
+      <div class="painel-corpo">
+        <p class="sub">Por que o vale vai ao piso: quando a hidráulica necessária encosta na mínima, ou quando o SE se acopla ao Norte na cheia de Belo Monte.</p>
+        <div class="grid2">
+          <div class="mini"><div class="mini-ttl"><b>Folga hidráulica no vale do dia útil (SIN)</b><span>GW</span></div>
+            <div class="legenda-mini"><span><i class="l" style="border-color:var(--accent)"></i>Hidráulica necessária</span><span><i class="l" style="border-color:var(--rl-verm)"></i>Hidráulica mínima revelada</span><span><i style="background:color-mix(in srgb, var(--ink-3) 45%, transparent)"></i>Renovável cortada</span></div>
+            <div id="g-folga" aria-label="Hidráulica necessária e mínima revelada"></div>
+            <p class="leg">GW médios, 8h–15h. Necessária = demanda − renovável prevista − térmica mínima. Mínima revelada = hidráulica do DESSEM nos dias com o vale todo no piso (resultado do modelo). Quando as linhas se encostam, o vale vai ao piso e sobra renovável cortada.</p></div>
+          <div class="mini"><div class="mini-ttl"><b>Acoplamento SE–Norte e Belo Monte</b><span>%</span></div>
+            <div class="legenda-mini"><span><i style="background:color-mix(in srgb, var(--accent) 30%, transparent)"></i>% dos dias úteis com SE acoplado ao N no vale</span><span><i class="l" style="border-color:var(--rl-verm)"></i>Valor da água de Belo Monte</span></div>
+            <div id="g-acopl" aria-label="Acoplamento SE-Norte e valor da água de Belo Monte"></div>
+            <p class="leg">Na cheia do Xingu a água de Belo Monte perde valor; se o SE está acoplado ao Norte, o vale do SE vai ao piso (mar/2026). Valor da água a partir de abr/2025 (formato anterior do deck não lido).</p></div>
+        </div>
+      </div>
+      </details>
+    </section>
+    </div>
+    <div class="aviso">
+      <span><strong>Análise estatística, não é PLD oficial.</strong> O PLD horário é publicado pela CCEE com os decks do DESSEM.</span>
+      <span id="fontes"></span>
+      <span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App.</span>
+    </div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="../../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../../migracao-terminal/padrao/terminal.js"></script>
+<script src="../comum.js"></script>
+<script src="dados.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

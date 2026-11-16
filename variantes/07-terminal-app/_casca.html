@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NOME DA PÁGINA · Quant Energia</title>
+<!-- Variante 07 · Terminal (app real) · CASCA DE REFERÊNCIA (não é uma página do menu).
+     Toda página das funcionalidades copia esta casca. Caminhos para uma página dentro de <funcionalidade>/.
+     Trocar: <title>, .t-pg, aria-current na .t-fn e na .t-sub, os links da .t-sub, o .hero e a .grade. -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../app.css">
+<!-- estilos próprios da funcionalidade, se houver: <link rel="stylesheet" href="pagina.css"> -->
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>BAND</b> Projeções</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <!-- funcionalidades: a ordem define as teclas 1–5; aria-current na funcionalidade da página -->
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="../index.html"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="../forecast_bandeiras/index.html" aria-current="page"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="../risk_lab_dessem/index.html"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="../pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="../hydro_inflow_similarity/index.html"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <!-- páginas da funcionalidade, como no menu dela no app; aria-current na página atual -->
+  <nav class="t-sub" aria-label="Páginas de Forecast Bandeiras">
+    <span class="t-sub-nome">Forecast Bandeiras</span>
+    <a href="index.html" aria-current="page">Projeções</a>
+    <a href="relato.html">Relato do DECOMP</a>
+    <a href="metodologia.html">Metodologia</a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Rótulo do topo</span>
+      <h1>Título da página</h1>
+      <div class="meta"><span>Premissas:</span><span>Insumo</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <!-- cada seção (h2) do app vira um ou mais painéis; data-tam s/m=4, l=6, xl=8, full=12; cada linha soma 12 -->
+    <div class="grade">
+      <section class="painel" data-tam="full" id="exemplo">
+        <header class="painel-cab"><h2 class="ttl">Título do bloco</h2></header>
+        <div class="painel-corpo"></div>
+        <p class="leg">Legenda curta.</p>
+      </section>
+    </div>
+    <div class="aviso"><span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App.</span></div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="../../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../../migracao-terminal/padrao/terminal.js"></script>
+<script src="../comum.js"></script>
+<!-- dados fictícios da funcionalidade e script da página: <script src="dados.js"></script> <script>…</script> -->
+</body>
+</html>

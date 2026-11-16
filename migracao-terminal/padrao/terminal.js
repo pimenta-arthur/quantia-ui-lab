@@ -69,6 +69,10 @@
     });
   }
 
+  // tooltip (#dica) criado já ao carregar este script, antes dos scripts da página: dicaEm() procura o
+  // elemento no momento em que o gráfico é desenhado, então ele precisa existir antes
+  if (!document.getElementById("dica") && document.body) { const d = document.createElement("div"); d.className = "dica"; d.id = "dica"; d.hidden = true; document.body.append(d); }
+
   function iniciar() {
     if (!document.getElementById("dica")) { const d = document.createElement("div"); d.className = "dica"; d.id = "dica"; d.hidden = true; document.body.append(d); }
     document.querySelectorAll("[data-tema]").forEach(b => b.addEventListener("click", () => aplicarTema(temaAtual() === "dark" ? "light" : "dark")));

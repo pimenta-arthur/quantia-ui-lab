@@ -23,6 +23,7 @@
     <h2>Migração para o terminal</h2>
     <ul class="pacote">
       <li><a href="migracao-terminal/exemplos/index.html">Catálogo de exemplos (VG-1, BAND-2…)</a><span>Uma página por página do app, cada visualização com código de referência e o formato de dados.</span></li>
+      <li><a href="variantes/07-terminal-app/index.html">App completo no terminal (variante 07)</a><span>Todas as páginas do Quant Energia App de hoje recriadas no padrão v2.0, com dados fictícios. Em construção.</span></li>
       <li><a href="migracao-terminal/padrao/modelo.html">Modelo de página v2.0</a><span>Casca do terminal em branco; regras em migracao-terminal/padrao/GUIA.md.</span></li>
     </ul>
   </section>
@@ -41,6 +42,7 @@
     { pasta: "04-mesa", titulo: "04 · Estação da mesa", desc: "Tela fixa de trabalho: abas no topo, monitor de cotações à direita, fita no rodapé." },
     { pasta: "05-editorial", titulo: "05 · Editorial", desc: "Mais espaço e hierarquia: cada bloco com uma frase de leitura ao lado do gráfico." },
     { pasta: "06-parede", titulo: "06 · Parede da mesa", desc: "Modo TV: letras grandes e páginas que trocam sozinhas a cada 25 s." },
+    { pasta: "07-terminal-app", titulo: "07 · Terminal (app real)", desc: "Todas as páginas do Quant Energia App de hoje (Forecast Bandeiras, Risk Lab DESSEM, Pricing Descolamento, Hydro Inflow) no padrão terminal v2.0, com dados fictícios." },
   ];
   document.getElementById("lista").innerHTML = variantes
     .map(v => `<li><a href="variantes/${v.pasta}/index.html">${v.titulo}</a><span>${v.desc}</span></li>`).join("");

@@ -1,0 +1,30 @@
+/* Variante 07 · Terminal (app real) · app.css
+   Peças comuns às páginas desta variante, por cima do padrão v2.0 (migracao-terminal/padrao): a segunda
+   linha de navegação com as páginas da funcionalidade (.t-sub) e os cartões da página inicial.
+   Cores novas seguem a regra do v2.0: escuro em :root, claro em :root[data-theme="light"]. */
+:root { --t-sub: #0b0d10; --t-sub-ink: #c9c9c9; }
+:root[data-theme="light"] { --t-sub: #f3f1ec; --t-sub-ink: #3d3d3d; }
+
+/* a casca ganha uma linha: topo · funções · páginas da funcionalidade · fita · conteúdo · status */
+.terminal:has(.t-sub) { grid-template-rows: auto auto auto auto 1fr auto; }
+
+/* páginas da funcionalidade atual (Projeções, Relato do DECOMP, Metodologia…) */
+.t-sub { display: flex; align-items: center; gap: 2px; padding: 2px 2px 2px 10px; background: var(--t-sub); border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; font-family: var(--f-data); font-size: 0.74rem; }
+.t-sub .t-sub-nome { color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; margin-right: 10px; white-space: nowrap; }
+.t-sub a { color: var(--t-sub-ink); text-decoration: none; padding: 4px 10px; white-space: nowrap; border-bottom: 2px solid transparent; }
+.t-sub a:hover { color: var(--t-ambar); }
+.t-sub a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--t-ambar); }
+
+/* página inicial: uma linha por funcionalidade */
+.func { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr); gap: 2px; background: var(--rule); }
+.func + .func { margin-top: 2px; }
+.func-id { background: var(--surface); padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.func-id h2 { font-size: 0.9rem; color: var(--ink); }
+.func-id h2 a { color: inherit; text-decoration: none; }
+.func-id h2 a:hover { color: var(--t-ambar); }
+.func-id .cod { font: 600 0.7rem var(--f-data); color: var(--t-sobre); background: var(--t-ambar); padding: 1px 6px; margin-right: 8px; }
+.func-id p { color: var(--ink-2); font-size: 0.88rem; }
+.func-id .paginas { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--f-data); font-size: 0.74rem; }
+.func-num { background: var(--surface); }
+.func-num .kpis { height: 100%; }
+@media (max-width: 860px) { .func { grid-template-columns: 1fr; } }

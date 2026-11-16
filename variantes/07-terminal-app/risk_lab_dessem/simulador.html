@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Risk Lab DESSEM: Simulador · Quant Energia</title>
+<!-- Variante 07 · Terminal (app real) · Risk Lab DESSEM · Simulador
+     Recriação do web/risk_lab_dessem/simulador.html do app: simulador (mesmos campos, limites e padrões) e desempenho, em painéis.
+     Dados FICTÍCIOS (dados.js); nada vem do Quant Energia App. -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../app.css">
+<link rel="stylesheet" href="pagina.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>RISK</b> Simulador</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <!-- funcionalidades: a ordem define as teclas 1–5; aria-current na funcionalidade da página -->
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="../index.html"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="../forecast_bandeiras/index.html"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="../risk_lab_dessem/index.html" aria-current="page"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="../pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="../hydro_inflow_similarity/index.html"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <!-- páginas da funcionalidade, como no menu dela no app; aria-current na página atual -->
+  <nav class="t-sub" aria-label="Páginas de Risk Lab DESSEM">
+    <span class="t-sub-nome">Risk Lab DESSEM</span>
+    <a href="index.html">Acompanhamento</a>
+    <a href="simulador.html" aria-current="page">Simulador</a>
+    <a href="metodologia.html">Metodologia</a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero" aria-labelledby="titulo">
+      <span class="rotulo">Risk Lab DESSEM · simulador do PLD médio do mês</span>
+      <h1 id="titulo">Simulador: PLD médio do mês a partir do DECOMP</h1>
+      <div class="meta" id="meta"></div>
+      <p class="aviso-q" id="erro" hidden></p>
+    </section>
+    <div class="grade">
+    <section class="painel" data-tam="full" id="simulador" aria-label="Leitura do simulador">
+      <div class="painel-corpo topo"><p class="sub" id="veredito"></p></div>
+    </section>
+    <section class="painel" data-tam="xl" id="b-sim">
+      <header class="painel-cab"><h2 class="ttl" id="tt-simmes">Simulação do mês</h2></header>
+      <div class="painel-corpo">
+        <div class="sim-entrada">
+          <label class="campo"><span>Mês</span><select id="sel-mes" aria-label="Mês simulado"></select></label>
+          <div class="campo"><span>DECOMP médio · R$/MWh</span><div class="lin-campo"><input id="inp-decomp" type="number" min="0" max="2000" step="1" aria-label="DECOMP médio do mês, R$/MWh"><button type="button" class="btn-sec" id="btn-decomp">vigente</button></div></div>
+          <div class="campo"><span id="sub-prem">Janela das premissas</span><div class="abas" id="abas-jan" role="group" aria-label="Janela das premissas"></div></div>
+          <button type="button" class="btn-sec reset" id="btn-prem">↺ Premissas padrão</button>
+        </div>
+        <table id="t-prem" class="compacta"><thead><tr><th>Premissa</th><th class="n" id="th-util">Útil</th><th class="n" id="th-sab">Sábado</th><th class="n" id="th-dom">Dom./feriado</th><th class="n col-mes">No mês<small>R$/MWh</small></th><th class="n col-mes">Peso</th></tr></thead><tbody></tbody></table>
+        <div class="sim-sens sgrade">
+          <span class="sens-rot"><span class="rotulo-prem">Sensibilidade</span><small>preço da ponta</small></span>
+          <span class="sens-inp"><input id="inp-sens" type="number" step="1" aria-label="Preço da ponta do dia útil no cenário, R$/MWh"></span>
+          <span class="sens-txt">ponta do dia útil <span class="info" id="info-sens" tabindex="0" aria-label="Como ler a sensibilidade">ⓘ</span> · <small id="sens-extra"></small></span>
+          <span class="sens-rot"><small>% dos dias úteis</small></span>
+          <div class="regua" id="regua-sens"></div>
+        </div>
+        <details class="sim-dias" id="sim-dias">
+          <summary>Ver os dias do mês</summary>
+          <div class="sim-dias-corpo">
+            <div class="barra-dias"><span id="dias-txt"></span><button type="button" class="btn-sec" id="btn-csv">Baixar CSV</button></div>
+            <div class="rolagem"><table id="t-dias" class="compacta"><thead></thead><tbody></tbody></table></div>
+            <p class="leg" id="dias-leg"></p>
+          </div>
+        </details>
+      </div>
+      <p class="leg" id="leg-sim"></p>
+    </section>
+    <section class="painel" data-tam="s" id="p-resumo">
+      <header class="painel-cab"><h2 class="ttl" id="tt-res">Resumo para a mesa</h2></header>
+      <div class="painel-corpo">
+        <aside class="sim-resumo" id="sim-resumo" aria-live="polite"></aside>
+      </div>
+    </section>
+    <section class="painel" data-tam="full" id="p-hp">
+      <header class="painel-cab"><h2 class="ttl" id="tt-hp">Histórico das premissas · janela móvel de 14 dias</h2><div class="abas" id="abas-hp" role="group" aria-label="Período dos gráficos deste bloco"></div></header>
+      <div class="painel-corpo">
+        <div class="barra-abas"><div class="mini-ttl"><b id="tt-pj">Preço da ponta: médias móveis</b><span>R$/MWh</span></div>
+          <div class="abas" id="abas-pj-tipo" role="group" aria-label="Tipo de dia do gráfico da ponta"></div></div>
+        <div class="chips linha" id="chips-pj"></div>
+        <div id="g-pj" aria-label="Preço médio da ponta em janelas móveis"></div>
+        <div class="mini-ttl"><span id="tt-traj-ponta">Preço da ponta em cada dia da janela</span><span>traço = DECOMP</span></div>
+        <div id="g-tr-ponta" aria-label="Preço da ponta e DECOMP em cada dia da janela"></div>
+      </div>
+      <p class="leg" id="leg-pj"></p>
+    </section>
+    <section class="painel" data-tam="l" id="p-hp-piso">
+      <header class="painel-cab"><h2 class="ttl">Horas do vale no piso · de 8</h2></header>
+      <div class="painel-corpo">
+        <div class="legenda-mini"><span><i class="l" style="border-color:var(--t-util)"></i>Dia útil</span><span><i class="l" style="border-color:var(--t-sab)"></i>Sábado</span><span><i class="l" style="border-color:var(--t-dom)"></i>Domingo/feriado</span></div>
+        <div id="g-hp-piso" aria-label="Horas do vale no piso, janela móvel"></div>
+        <div class="mini-ttl"><span>Cada dia da janela</span></div>
+        <div id="g-tr-piso" aria-label="Horas do vale no piso em cada dia da janela"></div>
+      </div>
+      <p class="leg" id="leg-hp"></p>
+    </section>
+    <section class="painel" data-tam="l" id="p-hp-fora">
+      <header class="painel-cab"><h2 class="ttl">Desconto das outras horas · % do espaço</h2></header>
+      <div class="painel-corpo">
+        <div class="legenda-mini"><span><i class="l" style="border-color:var(--t-util)"></i>Dia útil</span><span><i class="l" style="border-color:var(--t-sab)"></i>Sábado</span><span><i class="l" style="border-color:var(--t-dom)"></i>Domingo/feriado</span><span><i class="t" style="border-color:var(--ink-2)"></i>Média de 12 meses (usada pelo simulador no desconto)</span></div>
+        <p class="ref12" id="ref12-fora"></p>
+        <div id="g-hp-fora" aria-label="Desconto das outras horas, janela móvel"></div>
+        <div class="mini-ttl"><span>Cada dia da janela</span></div>
+        <div id="g-tr-fora" aria-label="Desconto das outras horas em cada dia da janela"></div>
+      </div>
+    </section>
+    <section class="painel" data-tam="full" id="p-hm">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl" id="tt-hm">Premissas mês a mês: o que aconteceu</h2></summary>
+      <div class="painel-corpo">
+        <div class="rolagem alta"><table id="t-hm" class="compacta"><thead><tr><th rowspan="2">Mês</th><th rowspan="2" class="n">DECOMP</th><th colspan="3" class="n">Horas do vale no piso</th><th colspan="3" class="n">Outras horas, % do espaço</th><th colspan="3" class="n">Ponta, R$/MWh</th></tr><tr><th class="n">Útil</th><th class="n">Sáb.</th><th class="n">Dom.</th><th class="n">Útil</th><th class="n">Sáb.</th><th class="n">Dom.</th><th class="n">Útil</th><th class="n">Sáb.</th><th class="n">Dom.</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <p class="leg" id="leg-hm"></p>
+      </details>
+    </section>
+    <section class="painel" data-tam="full" id="p-pm">
+      <header class="painel-cab"><h2 class="ttl" id="tt-pm">Preço da ponta por mês e dispersão</h2><div class="abas" id="abas-pm" role="group" aria-label="Tipo de dia"></div></header>
+      <div class="painel-corpo">
+        <div class="mini-ttl"><b>Preço médio da ponta (18h–21h) por mês</b><span>clique num mês para ver a dispersão abaixo</span></div>
+        <div id="g-pm-preco" aria-label="Preço médio mensal da ponta, menor e maior dia, e DECOMP"></div>
+        <div class="legenda-mini"><span><i class="l" style="border-color:var(--accent)"></i>Média do mês</span><span><i style="background:color-mix(in srgb, var(--accent) 22%, transparent)"></i>Menor a maior dia</span><span><i class="t" style="border-color:var(--ink-3)"></i>DECOMP médio</span><span><i style="background:var(--vazio);outline:1px solid var(--accent)"></i>Mês selecionado</span></div>
+        <div class="mini-ttl"><b id="tt-pm-disp">Dispersão das horas de ponta</b><span>cada bolha = faixa de preço; tamanho = número de horas</span></div>
+        <div id="g-pm-disp" aria-label="Dispersão dos preços das horas de ponta no mês selecionado"></div>
+      </div>
+      <p class="leg" id="leg-pm"></p>
+    </section>
+    <section class="painel" data-tam="full" id="desempenho" aria-labelledby="s-desemp">
+      <header class="painel-cab"><h2 class="ttl" id="s-desemp">Desempenho do simulador · SE/CO</h2></header>
+      <div class="painel-corpo">
+        <p class="sub" id="sub-desemp"></p>
+        <div class="tiles" id="tiles-desemp"></div>
+      </div>
+    </section>
+    <section class="painel" data-tam="full" id="p-prem-bt">
+      <header class="painel-cab"><h2 class="ttl">Com quais premissas o erro foi medido</h2></header>
+      <div class="painel-corpo">
+        <ul class="lista premissas-bt">
+          <li><span class="tag">Data</span><span>Rodada da RV0 do mês-alvo (1 mês de antecedência) ou de meses antes (2 a 6 meses).</span></li>
+          <li><span class="tag">Vale e ponta</span><span>Horas do vale no piso e prêmio da ponta: média dos 14 dias antes da data, por tipo de dia — o padrão do simulador.</span></li>
+          <li><span class="tag">Outras horas</span><span>Desconto: média dos 12 meses encerrados antes da data (meses com DECOMP acima do piso).</span></li>
+          <li><span class="tag">DECOMP</span><span>O DECOMP médio realizado do mês. O simulador mede o desvio do PLD sobre o DECOMP; o erro de prever o DECOMP não entra.</span></li>
+          <li><span class="tag">Sem ajuste</span><span>Nenhuma edição manual e sensibilidade de ponta em 0%.</span></li>
+        </ul>
+      </div>
+    </section>
+    <section class="painel" data-tam="xl" id="p-bt">
+      <header class="painel-cab"><h2 class="ttl" id="tt-bt">Mês a mês: o que o simulador disse × o que aconteceu</h2><div class="abas" id="abas-h" role="group" aria-label="Antecedência da previsão"></div></header>
+      <div class="painel-corpo">
+        <div class="legenda-mini"><span><i style="background:var(--b-vale)"></i>Veio desconto</span><span><i style="background:var(--ink-3)"></i>Veio neutro</span><span><i style="background:var(--rl-verm)"></i>Veio prêmio</span><span><i style="width:9px;height:9px;transform:rotate(45deg);background:var(--ink)"></i>O que o simulador previu</span><span><i style="background:var(--vazio);outline:1px solid var(--rule)"></i>Faixa neutra (±5)</span><span>✓ / ✗ direção certa / errada</span></div>
+        <div id="g-bt" aria-label="Desvio previsto e realizado do PLD sobre o DECOMP, mês a mês"></div>
+      </div>
+      <p class="leg" id="leg-bt"></p>
+    </section>
+    <section class="painel" data-tam="s" id="p-mat">
+      <header class="painel-cab"><h2 class="ttl">Quando previu… o que veio</h2></header>
+      <div class="painel-corpo">
+        <div class="mini-ttl"><span id="per-mat"></span></div>
+        <table id="t-mat" class="compacta mat"><thead><tr><th>Previu</th><th class="n">Desconto</th><th class="n">Neutro</th><th class="n">Prêmio</th></tr></thead><tbody></tbody></table>
+      </div>
+      <p class="leg" id="leg-mat"></p>
+    </section>
+    <section class="painel" data-tam="full" id="p-faixa">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl" id="tt-faixa">Como a faixa 10–90% é calculada</h2></summary>
+      <div class="painel-corpo">
+        <div id="g-faixa" aria-label="Erros do backtest usados na faixa"></div>
+      </div>
+      <p class="leg" id="leg-faixa"></p>
+      </details>
+    </section>
+    <section class="painel" data-tam="full" id="p-metr">
+      <header class="painel-cab"><h2 class="ttl">Resultado por antecedência</h2></header>
+      <div class="painel-corpo">
+        <div class="rolagem"><table id="t-metr" class="compacta"><thead><tr><th>Antecedência</th><th class="n">Erro médio<small>R$/MWh</small></th><th class="n">Só DECOMP<small>erro, R$/MWh</small></th><th class="n">Viés<small>+ = previu acima</small></th><th class="n">Direção certa</th><th class="n">Previu desconto → veio desconto</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <p class="leg" id="leg-metr">"Só DECOMP" é o erro de supor PLD = DECOMP: o ganho do simulador é a diferença.</p>
+    </section>
+    <section class="painel" data-tam="full" id="p-hd">
+      <details class="dobra">
+      <summary class="painel-cab"><h2 class="ttl" id="tt-hd">Onde errou: premissas na RV0 × o que aconteceu</h2></summary>
+      <div class="painel-corpo">
+        <div class="barra-abas"><div class="legenda-mini"><span><i class="l" style="border-color:var(--accent)"></i>Realizado no mês</span><span><i class="p" style="background:transparent;border:2px solid var(--rl-verm)"></i>Premissa na RV0 do mês (janela de 14 dias)</span><span><i class="t" style="border-color:var(--ink-3)"></i>DECOMP médio do mês</span></div><div class="abas" id="abas-hd" role="group" aria-label="Tipo de dia"></div></div>
+        <div class="grid3">
+          <div><div class="mini-ttl"><b>Horas do vale no piso</b><span>de 8</span></div><div id="g-hd-piso" aria-label="Horas do vale no piso por mês"></div></div>
+          <div><div class="mini-ttl"><b>Desconto das outras horas</b><span>% do espaço</span></div><div id="g-hd-fora" aria-label="Desconto das outras horas por mês"></div></div>
+          <div><div class="mini-ttl"><b>Preço da ponta</b><span>R$/MWh</span></div><div id="g-hd-ponta" aria-label="Preço da ponta por mês"></div></div>
+        </div>
+        <details class="det-tab"><summary>Ver a tabela</summary><div class="rolagem"><table id="t-hd" class="compacta"><thead><tr><th>Mês</th><th class="n">Dias</th><th class="n">DECOMP</th><th class="n">Horas no piso<br><small>RV0 → real</small></th><th class="n">Outras horas<br><small>RV0 → real</small></th><th class="n">Ponta R$<br><small>RV0 → real</small></th></tr></thead><tbody></tbody></table></div></details>
+      </div>
+      <p class="leg" id="leg-hd"></p>
+      </details>
+    </section>
+    </div>
+    <div class="aviso">
+      <span><strong>Análise estatística, não é PLD oficial.</strong> O PLD horário é publicado pela CCEE com os decks do DESSEM.</span>
+      <span id="fontes"></span>
+      <span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App.</span>
+    </div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="../../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../../migracao-terminal/padrao/terminal.js"></script>
+<script src="../comum.js"></script>
+<script src="dados.js"></script>
+<script src="simulador_conta.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+/* Variante 07 · Terminal (app real) · risk_lab_dessem/pagina.css
+   Estilos próprios do Risk Lab DESSEM, por cima de migracao-terminal/padrao (base.css, painel.css) e de ../app.css.
+   Porta do web/risk_lab_dessem/pagina.css do app no esquema do v2.0: escuro em :root, claro em
+   :root[data-theme="light"] (sem prefers-color-scheme), cantos retos, fontes do terminal. As cores do app foram
+   trocadas por tons que leem bem no fundo preto: vale azul, ponta vermelha, dia útil âmbar. */
+:root {
+  /* blocos de horas */
+  --b-vale: #4f8fe0; --b-ponta: #ff7a6b; --b-demais: #8a8a8a;
+  /* tipos de dia */
+  --t-util: #ffa31a; --t-sab: #c55bb6; --t-dom: #5ccac3;
+  /* anos (do mais velho, apagado, ao corrente, âmbar) */
+  --a2021: #4a5058; --a2022: #757c84; --a2023: #c55bb6; --a2024: #5ccac3; --a2025: #ff7a6b; --a2026: #ffa31a; --a2027: #f2f2f2;
+  /* segunda série (mínima revelada, valor da água, premissa na RV0, prêmio) e referência de 12 meses (amarelo) */
+  --rl-verm: #ff7a6b; --rl-ref: #f2c230;
+  /* faixas de fundo do vale e da ponta nos perfis horários */
+  --sombra-vale: color-mix(in srgb, var(--b-vale) 11%, transparent); --sombra-vale-forte: color-mix(in srgb, var(--b-vale) 18%, transparent);
+  --sombra-ponta: color-mix(in srgb, var(--b-ponta) 11%, transparent); --sombra-ponta-forte: color-mix(in srgb, var(--b-ponta) 20%, transparent);
+  /* campos de entrada */
+  --campo: var(--t-cmd);
+}
+:root[data-theme="light"] {
+  --b-vale: #2a78d6; --b-ponta: #c2362b; --b-demais: #6b6b6b;
+  --t-util: #b35900; --t-sab: #a8329a; --t-dom: #1d8a84;
+  --a2021: #c3c6c9; --a2022: #8f969c; --a2023: #a8329a; --a2024: #1d8a84; --a2025: #c2362b; --a2026: #b35900; --a2027: #111111;
+  --rl-verm: #c2362b; --rl-ref: #9a7400;
+}
+
+/* ---------- textos e controles ---------- */
+.aviso-q { font-family: var(--f-data); font-size: 0.74rem; color: var(--desce); margin: 0; }
+.aviso-q:empty { display: none; }
+.sub { font-size: 0.9rem; color: var(--ink-2); max-width: 110ch; }
+.painel-corpo > .leg, .painel-corpo .leg { padding: 0; }
+.controles { display: grid; gap: 6px; }
+.controles .lin { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.controles .lin > span:first-child { font-family: var(--f-data); font-size: 0.64rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); min-width: 6.5rem; }
+.mini-ttl { font-family: var(--f-data); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 8px; }
+.mini-ttl b { color: var(--t-ambar); font-weight: 500; }
+.legenda-mini i.p { width: 9px; height: 9px; border-radius: 50%; }
+.barra-abas { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; }
+.sel-mes, .campo select { font: 500 0.74rem var(--f-data); color: var(--ink); background: var(--campo); border: 1px solid var(--rule); border-radius: 0; padding: 3px 6px; }
+.sel-mes:focus-visible, .campo select:focus-visible, .painel input:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: 1px; }
+.btn-sec { font: 500 0.74rem var(--f-data); color: var(--t-ambar); background: transparent; border: 1px solid var(--rule); padding: 2px 8px; cursor: pointer; text-transform: uppercase; }
+.btn-sec:hover { border-color: var(--t-ambar); }
+.info { cursor: help; color: var(--ink-3); font-size: 0.85rem; }
+.info:hover, .info:focus-visible { color: var(--t-ambar); }
+.texto-dica { cursor: help; }
+
+/* painel recolhível: a barra de título abre e fecha (no app: details.bloco com a pílula Abrir/Fechar) */
+.painel > details.dobra { display: flex; flex-direction: column; gap: 6px; }
+details.dobra > summary { list-style: none; cursor: pointer; }
+details.dobra > summary::-webkit-details-marker { display: none; }
+details.dobra > summary::after { content: "Abrir ▾"; font: 600 0.64rem var(--f-data); letter-spacing: 0.05em; text-transform: uppercase; color: var(--t-sobre); background: var(--t-ambar); padding: 1px 8px; }
+details.dobra[open] > summary::after { content: "Fechar ▴"; }
+details.dobra > summary:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: -2px; }
+details.dobra > .leg { padding-inline: 10px; }
+/* detalhe recolhido dentro de um painel (D067) */
+.det-bloco { border-top: 1px solid var(--rule); padding-top: 6px; display: grid; gap: 8px; }
+.det-bloco > summary, .det-tab > summary, .sim-dias > summary { font: 500 0.74rem var(--f-data); color: var(--t-ambar); cursor: pointer; width: max-content; max-width: 100%; }
+
+/* grades internas */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 10px 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px 16px; }
+.grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 2px; }
+.mini { gap: 2px; }
+.mini .mini-ttl b { color: var(--t-ambar); }
+
+/* legenda de dias do perfil dia a dia (D068) */
+.dias-leg { display: flex; flex-wrap: wrap; gap: 2px; }
+.dias-leg button { min-width: 2.1rem; padding: 2px 3px; border: 1px solid var(--rule); border-bottom: 3px solid var(--c); background: var(--surface); color: var(--ink-2); font: 500 0.7rem var(--f-data); cursor: pointer; }
+.dias-leg button[aria-pressed="true"] { color: var(--ink); border-color: var(--c); box-shadow: 0 0 0 1px var(--c); }
+.dias-leg button.media { border-bottom-color: var(--ink); min-width: auto; padding-inline: 8px; }
+
+/* tabelas */
+table.compacta th, table.compacta td { padding: 4px 8px; }
+table th small, table td small { display: block; color: var(--ink-3); font-weight: 400; text-transform: none; letter-spacing: 0; }
+td.n, th.n { white-space: nowrap; }
+tr.destaque td { background: var(--accent-soft) !important; }
+/* indicadores por ano: na largura do painel; no celular, rolagem própria (D069) */
+table.ind { table-layout: fixed; min-width: 760px; }
+table.ind th { white-space: normal; line-height: 1.25; vertical-align: bottom; }
+table.ind th:first-child, table.ind td:first-child { width: 7.5rem; }
+table.ind th:nth-child(2), table.ind td:nth-child(2) { width: 4rem; }
+/* matriz previu × veio (D076) */
+table.mat td.n b { font-size: 1rem; }
+table.mat td.ok { background: color-mix(in srgb, var(--accent) 18%, var(--surface)) !important; }
+#t-metr tbody tr[data-h] { cursor: default; }
+.rolagem.alta { max-height: 420px; overflow: auto; }
+.rolagem.alta thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+
+/* ---------- simulador (D090–D095) ---------- */
+.sim-entrada { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 20px; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+.sim-entrada .reset { margin-left: auto; }
+.campo { display: grid; gap: 3px; }
+.campo > span { font-family: var(--f-data); font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); }
+.lin-campo { display: flex; align-items: center; gap: 8px; }
+.lin-campo.centro { justify-content: center; gap: 6px; }
+.painel input[type="number"] { font: 500 0.85rem var(--f-data); font-variant-numeric: tabular-nums; text-align: right; padding: 3px 6px; border: 1px solid var(--rule); border-radius: 0; background: var(--campo); color: var(--ink); }
+#inp-decomp, #inp-sens { width: 5.2rem; }
+.painel input.editado { border-color: var(--t-ambar); box-shadow: 0 0 0 1px var(--t-ambar); }
+
+#t-prem { width: 100%; table-layout: fixed; }
+#t-prem td, #t-prem th { padding: 5px 6px; }
+#t-prem td:first-child, #t-prem th:first-child { width: 9.6rem; }
+#t-prem td.n { white-space: normal; }
+#t-prem td.n, #t-prem th.n { text-align: center; }
+#t-prem td small { white-space: normal; overflow-wrap: anywhere; line-height: 1.35; font-size: 0.66rem; }
+#t-prem td small.un { color: var(--ink-3); }
+#t-prem td small.extra { color: var(--ink-3); margin-top: 2px; }
+#t-prem td.n small { text-align: center; }
+#t-prem input { width: 100%; max-width: 5rem; margin-inline: auto; display: block; }
+#t-prem .lin-campo.centro input { margin-inline: 0; }
+#t-prem .col-mes { width: 5rem; text-align: right; }
+#t-prem small.contrib { color: var(--ink-2); }
+#t-prem small.peso-lbl { display: none; }
+#t-prem .rotulo-prem { cursor: help; border-bottom: 1px dotted var(--ink-3); }
+/* desconto único (D087) num campo só, no eixo da coluna Útil */
+#t-prem td[colspan="3"] { text-align: left; }
+#t-prem td[colspan="3"] .lin-campo.centro { position: relative; width: calc(100% / 3); margin-left: -4px; }
+#t-prem td[colspan="3"] .lin-campo.centro .info { position: absolute; left: calc(50% + 2.5rem + 6px); }
+#t-prem td[colspan="3"] small { text-align: left; padding-left: max(0px, calc((100% / 3 - 5rem) / 2)); }
+
+/* sensibilidade na grade da tabela: campo no eixo da coluna Útil, texto à direita, régua embaixo */
+.sim-sens { padding-top: 8px; border-top: 1px solid var(--rule); }
+.sim-sens small { color: var(--ink-3); font-size: 0.68rem; }
+.sim-sens.sgrade { display: grid; grid-template-columns: 9.6rem repeat(3, minmax(0, 1fr)) 5rem 5rem; align-items: center; gap: 8px 0; }
+.sim-sens.sgrade .sens-rot { padding-left: 6px; display: grid; gap: 1px; }
+.sim-sens.sgrade .sens-rot .rotulo-prem { font-family: var(--f-data); font-size: 0.78rem; }
+.sim-sens.sgrade .sens-inp { display: flex; justify-content: center; padding-inline: 6px; }
+.sim-sens.sgrade #inp-sens { width: 100%; max-width: 5rem; }
+.sim-sens.sgrade .sens-txt { grid-column: 3 / -1; padding-left: 6px; font-family: var(--f-data); font-size: 0.74rem; color: var(--ink-2); }
+.sim-sens.sgrade .regua { grid-column: 2 / -1; padding-inline: 6px; flex-wrap: nowrap; }
+.regua { display: flex; flex-wrap: wrap; gap: 2px; }
+.regua span { flex: 1 1 0; display: grid; gap: 1px; min-width: 58px; padding: 4px 6px; border: 1px solid var(--rule); background: var(--campo); font: 500 0.85rem var(--f-data); font-variant-numeric: tabular-nums; text-align: center; color: var(--ink); }
+.regua span b { font-size: 0.64rem; color: var(--ink-3); font-weight: 500; }
+.regua span[data-q] { cursor: pointer; }
+.regua span[data-q]:hover { border-color: var(--t-ambar); }
+.regua span.sel { border-color: var(--t-ambar); box-shadow: 0 0 0 1px var(--t-ambar); }
+.regua span.sel b { color: var(--t-ambar); }
+
+/* dias do mês (D095) */
+.sim-dias[open] > summary { margin-bottom: 6px; }
+.sim-dias-corpo { display: grid; gap: 6px; }
+.barra-dias { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; font-family: var(--f-data); font-size: 0.74rem; color: var(--ink-2); }
+.sim-dias .rolagem { max-height: 360px; overflow: auto; }
+#t-dias th, #t-dias td { padding: 3px 6px; font-size: 0.74rem; }
+#t-dias thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+#t-dias tr.fds td { color: var(--ink-3); }
+
+/* resumo para a mesa (D091) */
+.sim-resumo { display: grid; gap: 6px; align-content: start; }
+.sim-resumo .res-num { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sim-resumo .res-num b { font: 600 2rem var(--f-data); line-height: 1.1; color: var(--ink); }
+.sim-resumo .res-num span { font-family: var(--f-data); font-size: 0.74rem; color: var(--ink-3); }
+.sim-resumo .res-dir { font: 600 0.95rem var(--f-data); }
+.sim-resumo .res-itens { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.sim-resumo .res-item { display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: 1px 10px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.sim-resumo .res-l { grid-row: span 2; font-family: var(--f-data); font-size: 0.62rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--t-ambar); padding-top: 2px; white-space: nowrap; }
+.sim-resumo .res-v { font-family: var(--f-data); font-weight: 600; font-size: 0.82rem; }
+.sim-resumo .res-v.leve { font-weight: 400; font-size: 0.78rem; color: var(--ink-2); }
+.sim-resumo .res-c { font-size: 0.78rem; color: var(--ink-2); line-height: 1.4; }
+.sim-resumo .res-alertas { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.sim-resumo .res-alertas li { border-left: 2px solid var(--desce); padding-left: 8px; font-size: 0.8rem; color: var(--ink-2); }
+
+/* etiquetas clicáveis com os valores atuais da ponta (D064, D070) */
+.chips { display: flex; flex-wrap: wrap; gap: 2px; }
+.chips button { display: grid; gap: 1px; text-align: left; padding: 4px 8px; border: 1px solid var(--rule); border-left: 3px solid var(--c, var(--ink-3)); background: var(--campo); color: var(--ink); font: 500 0.9rem var(--f-data); font-variant-numeric: tabular-nums; cursor: pointer; }
+.chips button small { font: 500 0.62rem var(--f-data); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); }
+.chips button[aria-pressed="true"] { border-color: var(--t-ambar); box-shadow: 0 0 0 1px var(--t-ambar); }
+.chips.linha { flex-wrap: nowrap; }
+.chips.linha button { flex: 1 1 0; min-width: 0; }
+.chips.linha button small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 760px) { .chips.linha { flex-wrap: wrap; } .chips.linha button { flex: 1 1 45%; } }
+
+/* valor padrão do desconto (média de 12 meses) em destaque sobre o gráfico (D075) */
+.ref12 { margin: 0; padding: 4px 8px; border-left: 3px solid var(--ink-2); background: var(--vazio); font: 500 0.74rem/1.4 var(--f-data); color: var(--ink-2); }
+.ref12 b { color: var(--ink); font-weight: 500; }
+
+/* desempenho: premissas do backtest numa grade de cartões na tela larga */
+.premissas-bt { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 2px; background: var(--rule); }
+.premissas-bt li { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 8px 10px; border: 0; background: var(--surface); font-size: 0.86rem; color: var(--ink-2); }
+.premissas-bt li .tag { color: var(--t-ambar); padding: 0; }
+.tiles .tile .d { line-height: 1.4; }
+
+/* ---------- metodologia ---------- */
+.aviso-versao { margin: 0; font-size: 0.85rem; color: var(--ink-2); border-left: 3px solid var(--t-ambar); padding-left: 10px; flex-basis: 100%; }
+.hero .lead { flex-basis: 100%; font-size: 0.95rem; }
+.hero .indice { flex-basis: 100%; font-family: var(--f-data); font-size: 0.74rem; }
+.texto-corrido .painel-corpo { gap: 10px; }
+.texto-corrido .texto { max-width: 92ch; padding-block: 0; }
+.texto-corrido .passo-det h3 { margin-top: 0; }
+.texto-corrido .lista.texto, .texto-corrido dl.glossario { max-width: none; font-size: 0.9rem; }
+.texto-corrido table { font-size: 0.78rem; }
+
+/* ---------- celular ---------- */
+@media (max-width: 1180px) { #p-resumo { grid-column: 1 / -1; } }
+@media (max-width: 560px) {
+  .sim-entrada { gap: 8px 14px; }
+  .sim-entrada .reset { margin-left: 0; }
+  #t-prem td:first-child, #t-prem th:first-child { width: 6.4rem; }
+  #t-prem td, #t-prem th { padding: 4px 3px; }
+  #t-prem th { white-space: normal; letter-spacing: 0; font-size: 0.6rem; }
+  #t-prem .col-mes { display: none; }
+  #t-prem small.peso-lbl { display: block; color: var(--ink-2); margin-top: 3px; }
+  #t-prem td[colspan="3"] .lin-campo.centro { margin-left: 0; width: calc(100% / 3 - 4px); }
+  #t-prem input, .sim-sens.sgrade #inp-sens { padding: 3px 2px; font-size: 0.78rem; }
+  .sim-sens.sgrade { grid-template-columns: 6.4rem repeat(3, minmax(0, 1fr)); }
+  .sim-sens.sgrade .sens-rot { padding-left: 3px; }
+  .sim-sens.sgrade .sens-inp { padding-inline: 3px; }
+  .sim-sens.sgrade .regua { grid-column: 1 / -1; padding-inline: 3px; flex-wrap: wrap; }
+  .sim-resumo .res-item { grid-template-columns: 1fr; }
+  .sim-resumo .res-l { grid-row: auto; }
+}
+
+/* mapa de calor: largura mínima para as 24 colunas; no celular, rolagem própria */
+.calor-box { min-width: 760px; }
+/* painel sem barra de título (leitura do simulador) */
+.painel-corpo.topo { padding-top: 8px; }

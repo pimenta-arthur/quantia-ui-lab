@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quant Energia · Terminal</title>
+<!-- Variante 07 · Terminal (app real) · página inicial.
+     O app de hoje tem só uma lista de links para as quatro funcionalidades; no terminal, cada funcionalidade
+     vira uma linha com a descrição, as páginas dela e os números principais (FICTÍCIOS). -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>INI</b> Início</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="index.html" aria-current="page"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="forecast_bandeiras/index.html"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="risk_lab_dessem/index.html"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="hydro_inflow_similarity/index.html"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Domingo, 15 de novembro de 2026</span>
+      <h1>Quant Energia</h1>
+      <div class="meta"><span>Quatro funcionalidades da mesa de energia</span><span class="atualizado">Última rodada 15/11/26 06:10</span></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-band">
+      <div class="func-id">
+        <h2 id="f-band"><span class="cod">BAND</span><a href="forecast_bandeiras/index.html">Forecast Bandeiras</a></h2>
+        <p>Projeção da bandeira tarifária de M+1 a M+6.</p>
+        <div class="paginas"><a href="forecast_bandeiras/index.html">Projeções</a><a href="forecast_bandeiras/relato.html">Relato do DECOMP</a><a href="forecast_bandeiras/metodologia.html">Metodologia</a></div>
+      </div>
+      <div class="func-num" id="n-band"></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-risk">
+      <div class="func-id">
+        <h2 id="f-risk"><span class="cod">RISK</span><a href="risk_lab_dessem/index.html">Risk Lab DESSEM</a></h2>
+        <p>PLD horário: acompanhamento do DESSEM sobre o DECOMP.</p>
+        <div class="paginas"><a href="risk_lab_dessem/index.html">Acompanhamento</a><a href="risk_lab_dessem/simulador.html">Simulador</a><a href="risk_lab_dessem/metodologia.html">Metodologia</a></div>
+      </div>
+      <div class="func-num" id="n-risk"></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-nen">
+      <div class="func-id">
+        <h2 id="f-nen"><span class="cod">NEN</span><a href="pricing_descolamento/compra_venda.html">Pricing Descolamento</a></h2>
+        <p>Precificação do descolamento do NE e N: compra e venda.</p>
+        <div class="paginas"><a href="pricing_descolamento/compra_venda.html">Compra e venda NE e N</a><a href="pricing_descolamento/index.html">Descolamento NE e N</a><a href="pricing_descolamento/fundamentos.html">Fundamentos</a><a href="pricing_descolamento/compra_venda_metodologia.html">Metodologia</a></div>
+      </div>
+      <div class="func-num" id="n-nen"></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-hyd">
+      <div class="func-id">
+        <h2 id="f-hyd"><span class="cod">HYD</span><a href="hydro_inflow_similarity/index.html">Hydro Inflow Similarity</a></h2>
+        <p>Projeção da ENA por subsistema e anos similares de ENSO.</p>
+        <div class="paginas"><a href="hydro_inflow_similarity/index.html">Afluências e ENSO</a><a href="hydro_inflow_similarity/clima.html">Indicadores climáticos</a><a href="hydro_inflow_similarity/fundamentos.html">Fundamentos</a><a href="hydro_inflow_similarity/metodologia.html">Metodologia</a></div>
+      </div>
+      <div class="func-num" id="n-hyd"></div>
+    </section>
+
+    <div class="aviso"><span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App.</span></div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../migracao-terminal/padrao/terminal.js"></script>
+<script src="comum.js"></script>
+<script>
+  // números principais de cada funcionalidade (fictícios)
+  const el = id => document.getElementById(id);
+  QC.kpis(el("n-band"), [
+    { r: "Bandeira dez/26 (M+1)", v: "Amarela", d: "45% amarela · 45% vermelha" },
+    { r: "Bandeira jan/27 (M+2)", v: "Amarela", d: "40% amarela · 35% verde" },
+    { r: "Primeira verde provável", v: "fev/27", d: "60% de chance" },
+  ]);
+  QC.kpis(el("n-risk"), [
+    { r: "PLD médio SE/CO hoje", v: rs(171.25), d: `${seta(12.32)} ${srs(12.32)} vs. ontem`, tom: tom(12.32) },
+    { r: "Desvio DESSEM − DECOMP (semana)", v: srs(-18.4, 1), d: "SE/CO, média da semana operativa" },
+    { r: "Horas no piso (NE, hoje)", v: "10 h", d: "solar do meio do dia" },
+  ]);
+  QC.kpis(el("n-nen"), [
+    { r: "Spread NE dez/26 (compra / venda)", v: "−58,2 / −51,8", d: "R$/MWh sobre o SE/CO" },
+    { r: "Spread N dez/26 (compra / venda)", v: "−44,6 / −38,9", d: "R$/MWh sobre o SE/CO" },
+    { r: "Descolamento NE realizado out/26", v: srs(-113.73), d: `${seta(12.81)} ${srs(12.81)} vs. set/26`, tom: tom(12.81) },
+  ]);
+  QC.kpis(el("n-hyd"), [
+    { r: "ENA SE/CO M+1", v: "78% MLT", d: "▼ −3 p.p. vs. rodada anterior", tom: "desce" },
+    { r: "ENA NE M+1", v: "64% MLT", d: "▲ +1 p.p. vs. rodada anterior", tom: "sobe" },
+    { r: "Fase ENSO", v: "La Niña fraca", d: "ONI −0,6; análogos 2000, 2008, 2017" },
+  ]);
+</script>
+</body>
+</html>

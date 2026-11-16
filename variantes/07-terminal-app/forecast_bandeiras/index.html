@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projeção de Bandeiras Tarifárias · Quant Energia</title>
+<!-- Variante 07 · Terminal (app real) · Forecast Bandeiras · Projeções (web/forecast_bandeiras/index.html do app).
+     Mesmas seções, blocos, abas, legendas e tooltips do app, no visual de terminal. Dados FICTÍCIOS (dados.js). -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../app.css">
+<link rel="stylesheet" href="pagina.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>BAND</b> Projeções</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="../index.html"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="../forecast_bandeiras/index.html" aria-current="page"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="../risk_lab_dessem/index.html"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="../pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="../hydro_inflow_similarity/index.html"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <nav class="t-sub" aria-label="Páginas de Forecast Bandeiras">
+    <span class="t-sub-nome">Forecast Bandeiras</span>
+    <a href="index.html" aria-current="page">Projeções</a>
+    <a href="relato.html">Relato do DECOMP</a>
+    <a href="metodologia.html">Metodologia</a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero" aria-labelledby="titulo">
+      <span class="rotulo" id="eyebrow">Projeção da bandeira tarifária</span>
+      <h1 id="titulo">Projeção de Bandeiras Tarifárias</h1>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <div class="grade">
+      <!-- hero do app: painel de probabilidades -->
+      <section class="painel" data-tam="full" id="p-painel">
+        <header class="painel-cab"><h2 class="ttl">Projeção da bandeira tarifária, M+1 a M+6</h2></header>
+        <div class="painel-corpo"><div class="rolagem"><div class="pp-grade" id="painel"></div></div></div>
+        <p class="leg">Quanto mais forte a cor, maior a chance. GSF e PLD gatilho são médias das 15 séries de cada cenário; com GSF acima de 0,96, a bandeira é verde para qualquer preço. Seco e úmido: P10 e P90 dos membros do ECMWF.</p>
+      </section>
+
+      <!-- Seleção de cenários hidrológicos e PLD gatilho -->
+      <section class="painel" data-tam="full" aria-labelledby="s-escolha">
+        <header class="painel-cab"><h2 class="ttl" id="s-escolha">Seleção de cenários hidrológicos e PLD gatilho</h2>
+          <div class="barra-abas">
+            <div class="abas" id="abas-cen" role="group" aria-label="Cenário">
+              <button type="button" id="cen-esp" data-cen="esp">Esperado</button>
+              <button type="button" id="cen-li" data-cen="li">Seco (LI)</button>
+              <button type="button" id="cen-ls" data-cen="ls">Úmido (LS)</button>
+            </div>
+            <div class="abas" id="abas-vis" role="group" aria-label="Visão">
+              <button type="button" id="vis-traj" data-vis="traj">Trajetórias</button>
+              <button type="button" id="vis-gsf" data-vis="gsf">Composição do GSF</button>
+            </div>
+          </div>
+        </header>
+        <div class="painel-corpo">
+          <div class="mini6" id="mini6"></div>
+          <div class="mini6" id="wf6" hidden></div>
+        </div>
+        <div class="leg-bloco" id="leg-traj">
+          <div class="legenda-mini"><span><i style="background:var(--vazio);outline:1px solid var(--rule)"></i>2.000 séries (P10–P90)</span><span><i class="l" id="leg-cen" style="border-color:var(--cen-esp)"></i>15 escolhidas</span><span><i class="t" style="border-color:var(--ink)"></i>ECMWF</span><span><i class="traco" style="background:var(--ink)"></i>Média das 15</span></div>
+          <p class="leg">O NEWAVE simula 2.000 futuros possíveis de chuva. Para cada mês, ficamos com os 15 cuja trajetória de ENA, do deck até o mês, mais se parece com a do ECMWF (média no esperado, P10 dos membros no seco, P90 no úmido). O GSF e o preço do mês vêm desses mesmos 15; embaixo de cada trajetória, os pontos são o GSF e o PLD de cada série e o traço é a média usada na projeção. Escalas iguais nos seis meses. O fundo da fileira do PLD mostra a bandeira que resultaria de cada preço, com o GSF médio do mês fixo; as bordas entre cores são os gatilhos de mudança de bandeira. No GSF, o tracejado marca 0,96, acima do qual a bandeira é verde para qualquer preço.</p>
+        </div>
+        <div class="leg-bloco" id="leg-gsf" hidden>
+          <div class="legenda-mini"><span><i style="background:var(--ink-2)"></i>Geração hidráulica (NEWAVE)</span><span><i style="background:var(--desce)"></i>Deduções</span><span><i style="background:var(--sobe)"></i>PCH no MRE</span><span><i class="l" id="leg-wf" style="border-color:var(--cen-esp);border-top-width:6px"></i>GH_band</span><span><i style="background:var(--ink-3)"></i>GF_band</span><span>Régua do GSF:</span><span><i class="ponto" style="background:var(--cen-ls)"></i>Úmido</span><span><i class="ponto" style="background:var(--cen-esp)"></i>Referência</span><span><i class="ponto" style="background:var(--cen-li)"></i>Seco</span><span><i class="losango" style="background:var(--ink-3)"></i>Mesmo mês do ano anterior (oficial)</span></div>
+          <p class="leg" id="wf-leg">Da geração hidráulica simulada ao GSF, com os fatores da CCEE. Média das 15 séries do cenário escolhido; ANDE, perdas, PCH e garantia física são as mesmas nos três cenários. Na régua, o ponto contornado é o cenário selecionado; abaixo dela, a geração que falta (ou sobra) para o GSF chegar a 0,96, acima do qual a bandeira é verde para qualquer preço. <span id="wf-sens"></span></p>
+        </div>
+      </section>
+
+      <!-- Fundamentos: hidrologia, geração e preço -->
+      <section class="painel" data-tam="full" aria-labelledby="s-insumos">
+        <header class="painel-cab"><h2 class="ttl" id="s-insumos">Fundamentos: hidrologia, geração e preço</h2>
+          <div class="legenda-mini">
+            <span><i class="l" style="border-color:var(--ink)"></i>Oficial (PMO/CCEE)</span>
+            <span><i class="l" style="border-color:var(--accent)"></i>Esperado</span>
+            <span><i style="background:var(--faixa-proj)"></i>Faixa LI–LS</span>
+            <span><i class="t" style="border-color:var(--ink-3)"></i>Referência</span>
+          </div>
+        </header>
+        <p class="leg">A cor depende de dois números: o GSF, quanto as hidrelétricas geram frente à garantia física, e o PLD gatilho, o preço da energia. Ambos seguem a chuva. Linha cheia: oficial (PMO/CCEE); âmbar: cenário esperado; faixa: do cenário seco (LI) ao úmido (LS).</p>
+      </section>
+      <section class="painel" data-tam="m" id="b-ena">
+        <header class="painel-cab"><h2 class="ttl">ENA do SIN</h2></header>
+        <div class="painel-corpo"></div>
+        <p class="leg">Água que chega aos reservatórios, em mil MWmed. Tracejado: média histórica (MLT).</p>
+      </section>
+      <section class="painel" data-tam="m" id="b-gsf">
+        <header class="painel-cab"><h2 class="ttl">GSF</h2></header>
+        <div class="painel-corpo"></div>
+        <p class="leg">Acima de 0,96 (tracejado), a bandeira é verde qualquer que seja o preço.</p>
+      </section>
+      <section class="painel" data-tam="m" id="b-pld">
+        <header class="painel-cab"><h2 class="ttl">PLD gatilho</h2></header>
+        <div class="painel-corpo"></div>
+        <p class="leg">R$/MWh. Tracejado: PLD mínimo do ano.</p>
+      </section>
+
+      <!-- Posicionamento no ábaco regulatório -->
+      <section class="painel" data-tam="full" aria-labelledby="s-abaco" id="b-abaco">
+        <header class="painel-cab"><h2 class="ttl" id="s-abaco">Posicionamento no ábaco regulatório</h2>
+          <div class="legenda-mini"><span><i class="cen-marca">E</i>Esperado</span><span><i class="cen-marca">S</i>Seco (LI)</span><span><i class="cen-marca">U</i>Úmido (LS)</span><span><i class="t" style="border-color:var(--ink-3)"></i>Mesmo mês nos três cenários</span></div>
+        </header>
+        <div class="painel-corpo"></div>
+        <p class="leg">A cor é dada por X = PLD × (1 − GSF). Cada faixa colorida é uma cor. Os marcadores E são os meses projetados (esperado), ligados aos cenários seco (S) e úmido (U) do mesmo mês.</p>
+      </section>
+
+      <!-- Histórico e projeção -->
+      <section class="painel" data-tam="full" aria-labelledby="s-tempo">
+        <header class="painel-cab"><h2 class="ttl" id="s-tempo">Histórico e projeção · <span id="tt-rod">Bandeiras acionadas e evolução das projeções</span></h2>
+          <div class="barra-abas">
+            <div class="abas" id="abas-var" role="group" aria-label="Variável">
+              <button type="button" data-v="cor">Bandeira</button>
+              <button type="button" data-v="gsf">GSF</button>
+              <button type="button" data-v="pld">PLD gatilho</button>
+            </div>
+            <div class="abas" id="abas-rod" role="group" aria-label="Quantidade de rodadas">
+              <button type="button" id="rod-6" data-n="6">Últimas 6 rodadas</button>
+              <button type="button" id="rod-12" data-n="12">Últimas 12</button>
+              <button type="button" id="rod-todas" data-n="99">Todas</button>
+            </div>
+          </div>
+        </header>
+        <div class="painel-corpo"><div class="rolagem"><div class="tempo" id="rodadas"></div></div></div>
+        <p class="leg" id="leg-var" hidden></p>
+        <p class="leg">Cada linha é uma rodada de projeção, publicada sempre que um insumo muda (deck do NEWAVE ou emissão do ECMWF), podendo haver várias no mesmo mês, com a cor do cenário de referência e a probabilidade dela; lendo cada coluna de baixo para cima, vê-se como a projeção do mês mudou. ▲ cor mais cara e ▼ mais barata que na rodada anterior exibida; ✗ cor diferente da oficial. Abaixo da data, o insumo que mudou em relação à rodada publicada anterior (detalhes no tooltip). Rodadas marcadas como Backtest foram reconstruídas só com a informação disponível em cada data; não há decks de set e out/2025 nem de jun a ago/2026. Na faixa desde 2015, os meses projetados têm contorno tracejado.</p>
+      </section>
+      <section class="painel" data-tam="full" id="b-faixa">
+        <header class="painel-cab"><h2 class="ttl">Histórico de bandeiras tarifárias, 2015–2026</h2><div class="legenda-mini" id="leg-cores"></div></header>
+        <div class="painel-corpo"></div>
+      </section>
+
+      <!-- Adicional tarifário na conta de energia -->
+      <section class="painel" data-tam="full" aria-labelledby="s-adic" id="b-adic">
+        <header class="painel-cab"><h2 class="ttl" id="s-adic">Adicional tarifário na conta de energia · <span id="tt-adic">R$ por 100 kWh</span></h2>
+          <div class="abas" id="abas-adic" role="group" aria-label="Período">
+            <button type="button" id="adic-rec" data-per="rec">Últimos 24 meses + projeção</button>
+            <button type="button" id="adic-todo" data-per="todo">Desde 2015</button>
+          </div>
+        </header>
+        <div class="painel-corpo"></div>
+        <p class="leg">Valor cobrado na conta em cada bandeira. Na projeção, a linha tracejada é o adicional da bandeira esperada (cor do cenário de referência) e a faixa vai do adicional no cenário úmido ao do seco, com os valores vigentes.</p>
+      </section>
+
+      <!-- Desempenho histórico do modelo -->
+      <section class="painel" data-tam="full" aria-labelledby="s-desemp">
+        <header class="painel-cab"><h2 class="ttl" id="s-desemp">Desempenho histórico do modelo</h2></header>
+        <div class="painel-corpo"><div class="tiles" id="tiles"></div></div>
+        <p class="leg" id="desemp-sub"></p>
+      </section>
+      <section class="painel" data-tam="l" id="b-acerto">
+        <header class="painel-cab"><h2 class="ttl">Taxa de acerto por horizonte de projeção</h2>
+          <div class="legenda-mini"><span><i style="background:var(--bar-modelo)"></i>Modelo</span><span><i style="background:var(--bar-saz)"></i>Mesmo mês do ano anterior</span><span><i style="background:var(--bar-pers)"></i>Repetir a bandeira atual</span><span><i class="t" style="border-color:var(--bar-oraculo)"></i>Teto (chuva real)</span></div>
+        </header>
+        <div class="painel-corpo"></div>
+      </section>
+      <section class="painel" data-tam="l" id="b-conf">
+        <header class="painel-cab"><h2 class="ttl">Calibração das probabilidades</h2></header>
+        <div class="painel-corpo"></div>
+        <p class="leg">Quando o modelo diz X%, a cor acontece em quantos % dos casos? Na diagonal, perfeito. Tamanho do ponto: número de casos.</p>
+      </section>
+    </div>
+
+    <div class="aviso">
+      <span><strong>Projeção estatística, não é anúncio oficial.</strong> A bandeira de cada mês é definida pela ANEEL por volta do dia 25 do mês anterior.</span>
+      <span id="fontes"></span>
+      <span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App.</span>
+    </div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<div class="dica" id="dica" hidden></div>
+<script src="../../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../../migracao-terminal/padrao/terminal.js"></script>
+<script src="../comum.js"></script>
+<script src="dados.js"></script>
+<script>
+(function () {
+  const D = window.DADOS;
+  if (!D) return;
+  const ORD = ["Verde", "Amarela", "Vermelha 1", "Vermelha 2"];
+  const CLS = { "Verde": "Verde", "Amarela": "Amarela", "Vermelha 1": "V1", "Vermelha 2": "V2", "Escassez hídrica": "Esc" };
+  const COR = { "Verde": "var(--vd)", "Amarela": "var(--am)", "Vermelha 1": "var(--v1)", "Vermelha 2": "var(--v2)", "Escassez hídrica": "var(--esc)" };
+  const AB = { "Verde": "Vd", "Amarela": "Am", "Vermelha 1": "V1", "Vermelha 2": "V2", "Escassez hídrica": "EH" };
+  const dataHora = s => dataBr(s) + (s.length > 10 && s.slice(11, 16) !== "00:00" ? " " + s.slice(11, 16) : "");
+  const $ = id => document.getElementById(id);
+  const corpo = id => document.querySelector(`#${id} .painel-corpo`);
+  /** redesenha um gráfico responsivo do zero (troca de aba muda o conteúdo, não só o tamanho) */
+  function regraf(el, desenhar, alt, altura) { el.replaceChildren(); const c = grafico(el, desenhar, alt); if (altura) c.style.height = altura + "px"; return c; }
+  const P = D.projecoes;
+  const fut = P.filter(p => !p.anunciada);
+  const H = D.historico;
+  const real = Object.fromEntries(H.map(h => [h.mes, h.cor]));
+
+  // ---------- Cabeçalho ----------
+  $("eyebrow").textContent = `Horizonte: ${rotLongo(P[0].alvo)} a ${rotLongo(P[P.length - 1].alvo)}`;
+  $("meta").innerHTML =
+    `<span>Premissas:</span><span>Deck NEWAVE ${rot(D.deck)}${D.rodada ? " (v " + D.rodada.insumos.deck_versao + ")" : ""}</span>` +
+    `<span>ECMWF ${D.rodada ? "emissão " + dataBr(D.rodada.insumos.ecmwf_emissao) : "rodada " + rot(D.rodada_ecmwf)}</span>` +
+    (D.modelo ? `<span title="${D.modelo.decisoes || ""}">Modelo ${D.modelo.versao}</span>` : "") +
+    `<span class="atualizado">${D.rodada ? "Rodada de " + dataHora(D.rodada.publicada_em) : "Atualizado em " + dataBr(D.gerado_em)}</span>`;
+
+  // ---------- Painel de probabilidades ----------
+  (function () {
+    const painel = $("painel");
+    painel.style.gridTemplateColumns = `118px repeat(${P.length}, minmax(76px, 1fr))`;
+    const add = (html, cls, st) => { const d = document.createElement("div"); if (cls) d.className = cls; if (st) d.style.cssText = st; d.innerHTML = html; painel.appendChild(d); return d; };
+    add('<i class="pt" style="background:var(--cen-esp)"></i>Cenário de referência · probabilidade de cada cor', "btit");
+    add("", "rp");
+    P.forEach(p => add(`<b>${rot(p.alvo)}</b><span>M+${p.h}${p.anunciada ? ` · <span class="of">oficial ${AB[p.anunciada]}${p.anunciada === p.cor_esp ? " ✓" : ""}</span>` : ""}</span>`, "mcab"));
+    [...ORD].reverse().forEach(k => {
+      add(`<i class="sw" style="background:${COR[k]}"></i>${k}`, "rp");
+      P.forEach(p => {
+        const v = p.prob[k], forte = v >= 0.5;
+        const c = add(v >= 0.005 ? pct(v) : "·", "mcel",
+          `background:color-mix(in srgb, ${COR[k]} ${Math.round(Math.max(v, 0) * 100)}%, var(--vazio));color:${forte ? (k === "Amarela" ? "var(--on-am)" : "var(--on-flag)") : "var(--ink)"}`);
+        dicaEm(c, `<b>${rotLongo(p.alvo)}</b> · ${k}: ${pct(v)}<br>cenário de referência · GSF ${n(p.gsf_esp, 2)} · PLD ${rs(p.pld_esp, 0)}`);
+      });
+    });
+    add("<small>GSF · PLD (R$/MWh)</small>", "rp");
+    P.forEach(p => {
+      const d = add(`${n(p.gsf_esp, 2)} · ${rs(p.pld_esp, 0)}`, "mval");
+      dicaEm(d, `<b>${rot(p.alvo)}</b> · cenário de referência: ${p.cor_esp}<br>GSF ${n(p.gsf_esp, 2)} · PLD ${rs(p.pld_esp, 0)}`);
+    });
+    add("", "sep");
+    add("Cenários alternativos de chuva · cor projetada", "btit");
+    [["Seco (P10)", "li"], ["Úmido (P90)", "ls"]].forEach(([r, k]) => {
+      add(`<span><i class="pt" style="background:var(--cen-${k});display:inline-block"></i>${r}<br><small>GSF · PLD (R$/MWh)</small></span>`, "rp");
+      P.forEach(p => {
+        const c = p["cor_" + k];
+        const d = add(`<b class="chipc ${CLS[c]}">${AB[c]}</b><span>${n(p["gsf_" + k], 2)} · ${rs(p["pld_" + k], 0)}</span>`, "cfino");
+        dicaEm(d, `${rot(p.alvo)} · ${r}: ${c}<br>GSF ${n(p["gsf_" + k], 2)} · PLD ${rs(p["pld_" + k], 0)}`);
+      });
+    });
+  })();
+
+  // ---------- Seleção de cenários: trajetórias (seis meses, um cenário por vez) ----------
+  const sel = D.selecao, CG = D.calculo_gsf_cenarios;
+  const CORC = { esp: "var(--cen-esp)", li: "var(--cen-li)", ls: "var(--cen-ls)" };
+  let cenSel = "esp";
+  const passoM = (lo, hi, k) => { const s = []; for (let t = Math.ceil(lo / k) * k; t <= hi + 1e-9; t += k) s.push(+t.toFixed(4)); return s; };
+  function cartao(box, titulo) {
+    const card = document.createElement("div"); card.className = "mini";
+    card.innerHTML = `<div class="ttl">${titulo}</div>`; box.appendChild(card); return card;
+  }
+  function desenharMini() {
+    document.querySelectorAll("#abas-cen button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cen === cenSel)));
+    $("leg-cen").style.borderColor = CORC[cenSel];
+    const box = $("mini6"); box.replaceChildren();
+    const cor = CORC[cenSel];
+    const enaTodas = [...sel.faixa.p10, ...sel.faixa.p90, ...P.flatMap(p => sel.alvos[p.alvo][cenSel].ena.flat())].map(v => v / 1000);
+    const elo = Math.min(...enaTodas) * 0.95, ehi = Math.max(...enaTodas) * 1.03;
+    const gsfT = P.flatMap(p => sel.alvos[p.alvo][cenSel].gsf), pldT = P.flatMap(p => sel.alvos[p.alvo][cenSel].pld);
+    const glo = Math.min(...gsfT, 0.96) - 0.02, ghi = Math.max(...gsfT, 0.96) + 0.02, plo = Math.min(...pldT) * 0.9, phi = Math.max(...pldT) * 1.05;
+    P.forEach(p => {
+      const s = sel.alvos[p.alvo][cenSel], k = sel.periodos.indexOf(p.alvo), per = sel.periodos.slice(0, k + 1);
+      const cm = p["cor_" + cenSel];
+      const card = cartao(box, `${rot(p.alvo)}<span>M+${p.h} · <b class="selo-cor ${CLS[cm]}">${cm}</b></span>`);
+      grafico(card, (svg, W) => {
+        svg.setAttribute("aria-label", `Trajetórias de ENA, GSF e PLD das 15 séries para ${rot(p.alvo)}`);
+        const m = { l: 30, r: 6, t: 8 }, hE = 140;
+        const x = i => m.l + i * (W - m.l - m.r) / Math.max(per.length - 1, 1), y = v => m.t + hE * (1 - (v / 1000 - elo) / (ehi - elo));
+        passoM(elo, ehi, 20).forEach(t => { S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(t * 1000), y2: y(t * 1000), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 4, y: y(t * 1000) + 3, "text-anchor": "end" }, n(t)); });
+        const pts = a => a.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+        const p10 = sel.faixa.p10.slice(0, k + 1), p90 = sel.faixa.p90.slice(0, k + 1);
+        const fx = S(svg, "polygon", { points: pts(p90) + " " + p10.map((v, i) => [i, v]).reverse().map(([i, v]) => `${x(i)},${y(v)}`).join(" "), fill: "var(--vazio)", stroke: "var(--rule)" });
+        dicaEm(fx, `<b>${rot(p.alvo)}</b> · 2.000 séries do NEWAVE<br>P10 a P90 no mês: ${n(p10[k] / 1000, 1)} a ${n(p90[k] / 1000, 1)} mil MWmed`);
+        s.ena.forEach((tr, j) => { const l = S(svg, "polyline", { points: pts(tr), fill: "none", stroke: cor, "stroke-width": 1, opacity: 0.45 }); dicaEm(l, `Série ${s.series[j]}<br>GSF ${n(s.gsf[j], 2)} · PLD ${rs(s.pld[j], 0)}`); });
+        const re = sel.referencias[cenSel].slice(0, k + 1);
+        const lr = S(svg, "polyline", { points: pts(re), fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-dasharray": "5 3" });
+        dicaEm(lr, `<b>${rot(p.alvo)}</b> · referência ECMWF: ${n(re[k] / 1000, 1)} mil MWmed`);
+        [0, k].forEach(i => S(svg, "text", { x: x(i), y: m.t + hE + 12, "text-anchor": i ? "end" : "start" }, rot(per[i])));
+        // fileiras de pontos (GSF e PLD de cada série); zonas = [início, fim, cor] no eixo da fileira
+        const X0 = 62, X1 = W - 40;
+        const fila = (y0, rotulo, arr, a, b, fmt, zonas, fmtG, neutro) => {
+          const X = v => X0 + (v - a) / (b - a) * (X1 - X0);
+          S(svg, "text", { x: 0, y: y0 + 3 }, rotulo);
+          zonas.forEach(([z0, z1, c]) => {
+            const u0 = Math.max(a, z0), u1 = Math.min(b, z1);
+            if (u1 > u0) { const r = S(svg, "rect", { x: X(u0), y: y0 - 9, width: X(u1) - X(u0), height: 18, fill: COR[c], opacity: 0.32 }); dicaEm(r, `${rot(p.alvo)} · com GSF ${n(gMed, 2)}: ${c}<br>PLD de ${rs(Math.max(z0, 0), 0)} ${z1 < 1e6 ? "a " + rs(z1, 0) : "em diante"}`); }
+          });
+          [...new Set(zonas.flatMap(([z0, z1]) => [z0, z1]))].filter(v => v > a && v < b).forEach(v =>
+            S(svg, "text", { x: X(v), y: y0 - 12, "text-anchor": "middle", style: "font-size:9px" }, fmtG(v)));
+          const fora = zonas.slice(1).find(([z0]) => z0 >= b && z0 < 1e8);
+          if (fora) S(svg, "text", { x: X1, y: y0 - 12, "text-anchor": "end", style: "font-size:9px" },
+            fora[0] > D.pld_max ? "sem virada até o PLD máximo" : `→ ${AB[fora[2]]} ${fmtG(fora[0])}`);
+          // sobre o fundo colorido, pontos neutros (o padrão não põe marcador colorido sobre cor)
+          arr.forEach((v, j) => { const c = S(svg, "circle", { cx: X(v), cy: y0 + ((j % 3) - 1) * 4, r: 3.2, fill: neutro ? "var(--ink-2)" : cor, opacity: neutro ? 0.8 : 0.6, stroke: neutro ? "var(--surface)" : null, "stroke-width": neutro ? 0.8 : null }); dicaEm(c, `Série ${s.series[j]}: ${fmt(v)}`); });
+          const med = arr.reduce((t, v) => t + v, 0) / arr.length;
+          const tr = S(svg, "line", { x1: X(med), x2: X(med), y1: y0 - 10, y2: y0 + 10, stroke: "var(--ink)", "stroke-width": 2.5 });
+          dicaEm(tr, `${rot(p.alvo)} · média das 15: ${fmt(med)}`);
+          S(svg, "text", { x: W, y: y0 + 3, "text-anchor": "end", class: "forte" }, fmt(med));
+          return X;
+        };
+        const Lx = [D.limites_x.Verde, D.limites_x.Amarela, D.limites_x["Vermelha 1"]];
+        const gMed = Math.round(p["gsf_" + cenSel] * 100) / 100;
+        const bp = Lx.map(l => (gMed >= 1 ? 1e7 : l / (1 - gMed)));  // GSF ≥ 1: nenhum PLD muda a cor
+        const zonasPld = [[-1e9, bp[0], "Verde"], [bp[0], bp[1], "Amarela"], [bp[1], bp[2], "Vermelha 1"], [bp[2], 1e9, "Vermelha 2"]];
+        const xg = fila(186, "GSF", s.gsf, glo, ghi, v => n(v, 2), [], v => n(v, 2), false);
+        S(svg, "line", { x1: xg(0.96), x2: xg(0.96), y1: 186 - 10, y2: 186 + 10, stroke: "var(--ink-3)", "stroke-dasharray": "2 2" });
+        fila(222, "PLD R$", s.pld, plo, phi, v => n(v), zonasPld, v => n(v), true);
+      });
+    });
+  }
+
+  // ---------- Composição do GSF: seis meses, mesmo cenário ----------
+  function desenharWf() {
+    $("leg-wf").style.borderColor = CORC[cenSel];
+    const box = $("wf6"); box.replaceChildren();
+    const vmax = Math.max(...CG[cenSel].flatMap(c => [c.gh_ons, c.gf_band])) * 1.02;
+    const f = D.fatores;
+    P.forEach(p => {
+      const c = CG[cenSel].find(z => z.alvo === p.alvo);
+      const card = cartao(box, `${rot(p.alvo)}<span>M+${p.h}</span>`);
+      grafico(card, (svg, W) => {
+        svg.setAttribute("aria-label", `Composição do GSF de ${rot(p.alvo)}`);
+        const x0 = 104, x1 = W - 52, X = v => x0 + v / vmax * (x1 - x0);
+        const ghcg = c.gh_ons - c.ande - c.perdas;
+        const lin = [
+          ["Geração hidráulica", 0, c.gh_ons, "var(--ink-2)", n(c.gh_ons), "Geração hidráulica do SIN, média das 15 séries do NEWAVE"],
+          ["− ANDE e Itaipu", c.gh_ons - c.ande, c.gh_ons, "var(--desce)", "−" + n(c.ande), "Parcela paraguaia de Itaipu e consumo interno, do deck"],
+          ["− Perdas", ghcg, c.gh_ons - c.ande, "var(--desce)", "−" + n(c.perdas), `Perdas de ${n(f.perda_bruta_conexao, 2)}% e ${n(f.perda_conexao_cg, 2)}% até o centro de gravidade`],
+          ["+ PCH no MRE", ghcg, ghcg + c.pch_mre, "var(--sobe)", "+" + n(c.pch_mre), `${n(f.part_pch_mre, 1)}% das PCH (${n(c.pch)} MWmed) participam do MRE`],
+          ["= GH_band", 0, c.gh_band, CORC[cenSel], n(c.gh_band), "Geração hidráulica que conta para a bandeira"],
+          ["GF_band", 0, c.gf_band, "var(--ink-3)", n(c.gf_band), "Garantia física das usinas do MRE no mês (boletim do mês do deck)"],
+        ];
+        lin.forEach(([r, a, b, corB, txt, dica], i) => {
+          const y = 10 + i * 24;
+          if (i === 4) S(svg, "line", { x1: 0, x2: W, y1: y - 5, y2: y - 5, stroke: "var(--rule)" });
+          S(svg, "text", { x: 0, y: y + 10 }, r);
+          const ret = S(svg, "rect", { x: X(Math.min(a, b)), y, width: Math.max(1.5, Math.abs(X(b) - X(a))), height: 13, fill: corB });
+          S(svg, "text", { x: W, y: y + 10, "text-anchor": "end", class: i === 4 ? "forte" : null }, txt);
+          dicaEm(ret, `${rot(p.alvo)} · ${r.replace(/^[−+=] /, "")}: ${txt} MWmed<br>${dica}`);
+        });
+        // régua do GSF: três cenários + mesmo mês do ano anterior (oficial), mesma escala nos seis meses
+        const g0 = 0.6, g1 = 1.15, R0 = 62, R1 = W - 40, XG = v => R0 + (Math.min(g1, Math.max(g0, v)) - g0) / (g1 - g0) * (R1 - R0), yg = 186;
+        S(svg, "text", { x: 0, y: yg + 3 }, "GSF");
+        S(svg, "line", { x1: R0, x2: R1, y1: yg, y2: yg, stroke: "var(--rule)", "stroke-width": 2 });
+        S(svg, "line", { x1: XG(0.96), x2: XG(0.96), y1: yg - 9, y2: yg + 9, stroke: "var(--ink-3)", "stroke-dasharray": "2 2" });
+        S(svg, "text", { x: XG(0.96), y: yg + 20, "text-anchor": "middle", style: "font-size:9px" }, "0,96");
+        [0.6, 0.7, 0.8, 0.9, 1.1].forEach(v => S(svg, "text", { x: XG(v), y: yg + 20, "text-anchor": "middle", style: "font-size:9px" }, n(v, 1)));
+        [["ls", "úmido"], ["esp", "referência"], ["li", "seco"]].forEach(([k, nome]) => {
+          const g = CG[k].find(z => z.alvo === p.alvo).gsf;
+          const ci = S(svg, "circle", { cx: XG(g), cy: yg, r: k === cenSel ? 6 : 4.5, fill: CORC[k], stroke: k === cenSel ? "var(--ink)" : "var(--surface)", "stroke-width": k === cenSel ? 1.5 : 1.2 });
+          dicaEm(ci, `${rot(p.alvo)} · GSF ${nome} ${n(g, 2)}`);
+        });
+        const anoAnt = `${+p.alvo.slice(0, 4) - 1}${p.alvo.slice(4)}`;
+        const ref = D.insumos.realizado.find(r => r.mes === anoAnt);
+        if (ref) {
+          const xa = XG(ref.gsf);
+          const d = S(svg, "path", { d: `M${xa} ${yg - 6} L${xa + 5} ${yg} L${xa} ${yg + 6} L${xa - 5} ${yg} Z`, fill: "var(--ink-3)", stroke: "var(--surface)", "stroke-width": 1.2 });
+          dicaEm(d, `${rot(anoAnt)} · GSF oficial ${n(ref.gsf, 2)}`);
+        }
+        S(svg, "text", { x: W, y: yg + 4, "text-anchor": "end", class: "forte", style: "font-size:13px" }, n(c.gsf, 2));
+        const folga = c.gh_band - 0.96 * c.gf_band;
+        S(svg, "text", { x: 0, y: 232 }, folga < 0 ? `Faltam ${n(-folga / 1000, 1)} mil MWmed para GSF 0,96` : `${n(folga / 1000, 1)} mil MWmed acima de GSF 0,96`);
+      });
+    });
+  }
+  $("abas-cen").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { cenSel = b.dataset.cen; desenharMini(); desenharWf(); } });
+  function mostrarVisao(v) {
+    const gsf = v === "gsf";
+    $("mini6").hidden = gsf; $("leg-traj").hidden = gsf;
+    $("wf6").hidden = !gsf; $("leg-gsf").hidden = !gsf;
+    document.querySelectorAll("#abas-vis button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.vis === v)));
+  }
+  $("abas-vis").addEventListener("click", e => { const b = e.target.closest("button"); if (b) mostrarVisao(b.dataset.vis); });
+  desenharMini(); desenharWf(); mostrarVisao("traj");
+  {
+    const f = D.fatores, gf = CG.esp[0].gf_band;
+    const sens = 1000 * (1 - f.perda_bruta_conexao / 100) * (1 - f.perda_conexao_cg / 100) / gf;
+    $("wf-sens").textContent = `Cada 1.000 MWmed a mais de geração hidráulica elevam o GSF em cerca de ${n(sens, 3)}.`;
+  }
+
+  // ---------- Fundamentos ----------
+  function insumo(id, campo, o) {
+    const R = D.insumos.realizado, Q = D.insumos.projetado, i0 = R.length - 1;
+    const meses = [...R.map(r => r.mes), ...Q.map(q => q.mes)];
+    const val = v => (o.esc ? v / 1000 : v);
+    const ult = val(R[i0][campo]);
+    const oficial = meses.map((_, i) => (i <= i0 ? val(R[i][campo]) : null));
+    const esperado = meses.map((_, i) => (i < i0 ? null : i === i0 ? ult : val(Q[i - i0 - 1][campo + "_esp"])));
+    const lo = meses.map((_, i) => (i < i0 ? null : i === i0 ? ult : Math.min(val(Q[i - i0 - 1][campo + "_li"]), val(Q[i - i0 - 1][campo + "_ls"]))));
+    const hi = meses.map((_, i) => (i < i0 ? null : i === i0 ? ult : Math.max(val(Q[i - i0 - 1][campo + "_li"]), val(Q[i - i0 - 1][campo + "_ls"]))));
+    const series = [{ nome: "Oficial (PMO/CCEE)", v: oficial, cor: "var(--ink)", larg: 2, semPonto: true }, { nome: "Esperado", v: esperado, cor: "var(--accent)", larg: 2.2 }];
+    if (o.mlt) series.unshift({ nome: "MLT", v: meses.map((_, i) => (i <= i0 ? R[i].mlt : Q[i - i0 - 1].mlt) / 1000), cor: "var(--ink-3)", larg: 1, tracejado: true, semPonto: true });
+    grafico(corpo(id), (svg, W, Hh) => linhas(svg, W, Hh, {
+      n: meses.length, series, faixa: { lo, hi }, refs: o.ref != null ? [{ v: o.ref, rot: o.refRot }] : [], marca: { i: i0, rot: "deck" }, zero: o.zero,
+      rotX: i => (rotuloDeMes(meses[i]) ? rot(meses[i]) : null), titX: i => `${rot(meses[i])} · ${i <= i0 ? "oficial" : "projeção"}`, fmt: o.fmt,
+    }));
+  }
+  insumo("b-ena", "ena", { esc: true, mlt: true, fmt: v => n(v, 1) + " mil MWmed" });
+  insumo("b-gsf", "gsf", { ref: 0.96, refRot: "0,96", fmt: v => n(v, 2) });
+  insumo("b-pld", "pld", { ref: D.pld_min, refRot: "PLD mínimo", zero: true, fmt: v => rs(v, 0) });
+
+  // ---------- Ábaco ----------
+  regraf(corpo("b-abaco"), (svg, W, Hh) => {
+    const m = { l: 56, r: 14, t: 12, b: 34 };
+    const g0 = 0.55, g1 = 1.12, p0 = 0, p1 = Math.min(D.pld_max, 520);
+    const x = g => m.l + (g - g0) / (g1 - g0) * (W - m.l - m.r), y = p => m.t + (1 - (p - p0) / (p1 - p0)) * (Hh - m.t - m.b);
+    const L = [0, D.limites_x.Verde, D.limites_x.Amarela, D.limites_x["Vermelha 1"], 1e9];
+    const curva = lim => { const pts = []; for (let g = g0; g <= g1 + 1e-9; g += 0.005) pts.push([g, g >= 1 ? p1 : Math.min(p1, lim / (1 - g))]); return pts; };
+    for (let k = 3; k >= 0; k--) {
+      const cima = k === 3 ? [[g0, p1], [g1, p1]] : curva(L[k + 1]), baixo = k === 0 ? [[g0, p0], [g1, p0]] : curva(L[k]);
+      const pol = S(svg, "polygon", { points: [...cima, ...baixo.slice().reverse()].map(([g, pl]) => `${x(g)},${y(Math.max(p0, pl))}`).join(" "), fill: COR[ORD[k]], opacity: 0.28 });
+      dicaEm(pol, `<b>${ORD[k]}</b> · X ${k ? "acima de " + n(L[k], 2) : "até " + n(L[1], 2)}${k && k < 3 ? " até " + n(L[k + 1], 2) : ""} R$/MWh`);
+    }
+    marcas(p0, p1, 100).forEach(t => { S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)", opacity: 0.6 }); S(svg, "text", { x: m.l - 6, y: y(t) + 3, "text-anchor": "end" }, rs(t, 0)); });
+    const passoG = (W - m.l - m.r) / ((g1 - g0) / 0.05) < 34 ? 0.1 : 0.05;
+    marcas(0.6, 1.1, passoG).forEach(t => S(svg, "text", { x: x(t), y: Hh - 14, "text-anchor": "middle" }, n(t, 2)));
+    S(svg, "text", { x: W - m.r, y: Hh - 1, "text-anchor": "end" }, "GSF →");
+    [["Verde", 0.97, 360], ["Amarela", 0.84, 300], ["Vermelha 1", 0.72, 300], ["Vermelha 2", 0.62, 470]].forEach(([c, g, pl]) => S(svg, "text", { x: x(g), y: y(Math.min(pl, p1 - 20)), class: "forte", "text-anchor": "middle" }, c));
+    const grupos = [], rotulos = [];
+    P.forEach(p => {
+      const cl = v => Math.max(g0, Math.min(g1, v)), cp = v => Math.min(p1, v);
+      const g = S(svg, "g", {}); grupos.push(g);
+      const pt = k => [x(cl(p["gsf_" + k])), y(cp(p["pld_" + k]))];
+      S(g, "polyline", { points: ["ls", "esp", "li"].map(k => pt(k).join(",")).join(" "), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1.2, "stroke-dasharray": "3 3" });
+      // no ábaco a cor é da faixa (bandeira): os três cenários são marcadores neutros com letra
+      [["ls", "U", "úmido"], ["li", "S", "seco"]].forEach(([k, letra, nome]) => {
+        const [cx, cy] = pt(k);
+        const c = S(g, "g", { class: "cen-marca-svg" });
+        S(c, "circle", { cx, cy, r: 7 }); S(c, "text", { x: cx, y: cy + 3, "text-anchor": "middle" }, letra);
+        dicaEm(c, `${rot(p.alvo)} · ${nome}: ${p["cor_" + k]}<br>GSF ${n(p["gsf_" + k], 2)} · PLD ${rs(p["pld_" + k], 0)}`);
+      });
+      const [ex, ey] = pt("esp");
+      const c = S(g, "g", { class: "cen-marca-svg" });
+      S(c, "circle", { cx: ex, cy: ey, r: 8.5, style: "stroke-width:2.5px" }); S(c, "text", { x: ex, y: ey + 3, "text-anchor": "middle" }, "E");
+      rotulos.push({ el: S(g, "text", { x: ex, y: ey - 13, "text-anchor": "middle", class: "forte" }, rot(p.alvo)), x: ex, y: ey - 13 });
+      dicaEm(c, `${rot(p.alvo)} · esperado ${p.cor_esp}<br>GSF ${n(p.gsf_esp, 2)} · PLD ${rs(p.pld_esp, 0)}<br>seco: GSF ${n(p.gsf_li, 2)}, ${rs(p.pld_li, 0)} (${p.cor_li})<br>úmido: GSF ${n(p.gsf_ls, 2)}, ${rs(p.pld_ls, 0)} (${p.cor_ls})`);
+      g.addEventListener("pointerenter", () => grupos.forEach(o => o.setAttribute("opacity", o === g ? 1 : 0.15)));
+      g.addEventListener("pointerleave", () => grupos.forEach(o => o.removeAttribute("opacity")));
+    });
+    empilharRotulos(rotulos);  // meses quase no mesmo ponto: rótulos empilhados para cima
+  }, null, 340);
+
+  // ---------- Histórico e projeção: rodadas ----------
+  (function () {
+    const RD = D.rodadas, NIV = { "Verde": 0, "Amarela": 1, "Vermelha 1": 2, "Vermelha 2": 3 };
+    const chaveR = r => r.rodada || r.deck;  // publicação (data e hora) ou mês reconstruído
+    const todosDecks = [...new Set(RD.map(chaveR))].sort().reverse();
+    const box = $("rodadas");
+    let nRod = 6, vr = "cor";
+    const VAR = {
+      gsf: { tit: "GSF oficial e evolução das projeções", fmt: v => n(v, 2), erro: v => sn(v, 2), escala: 0.15, limiar: 0.02, nome: "GSF" },
+      pld: { tit: "PLD gatilho oficial e evolução das projeções (R$/MWh)", fmt: v => n(v), erro: v => sn(v, 0), escala: 100, limiar: 10, nome: "PLD gatilho R$" },
+    };
+    const oficialNum = m => { const h = H.find(x => x.mes === m); return h && h.gsf != null ? (vr === "gsf" ? h.gsf : h.pld) : null; };
+    const probDe = r => { const m = r.prob.match(new RegExp(AB[r.esp] + " (\\d+%)")); return m ? m[1] : ""; };
+    const rotAnt = ant => (ant.publicada ? dataHora(chaveR(ant)) : ant.ecmwf ? dataBr(ant.ecmwf) : rot(ant.deck));
+    function desenhar() {
+      document.querySelectorAll("#abas-rod button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.n === nRod)));
+      document.querySelectorAll("#abas-var button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === vr)));
+      const V = VAR[vr];
+      box.classList.toggle("num", !!V);
+      $("tt-rod").textContent = V ? V.tit : "Bandeiras acionadas e evolução das projeções";
+      const leg = $("leg-var");
+      leg.hidden = !V;
+      if (V) leg.textContent = `Valor do cenário de referência; embaixo, o erro (projetado − oficial). Azul: projeção acima do oficial; vermelho: abaixo; quanto mais forte, maior o erro. ▲▼ mudança de pelo menos ${V.fmt(V.limiar)} em relação à rodada anterior exibida. As rodadas publicadas até 09/10/26 guardaram só o cenário de referência, com o PLD em reais inteiros.`;
+      const decks = todosDecks.slice(0, nRod);
+      const dados = RD.filter(r => decks.includes(chaveR(r)));
+      const cols = [...new Set(dados.map(r => r.alvo))].sort();
+      const grade = `118px repeat(${cols.length}, minmax(${cols.length > 14 ? 30 : 58}px, 1fr))`;
+      const curto = cols.length > 14;  // muitas colunas: só a sigla na célula, probabilidade no tooltip
+      box.replaceChildren();
+      const linha = (rotulo, celula, classe = "", dica = "") => {
+        const l = document.createElement("div"); l.className = "lin"; l.style.gridTemplateColumns = grade;
+        l.innerHTML = `<span class="rot ${classe}"${dica ? ` title="${dica}"` : ""}>${rotulo}</span>`; cols.forEach(m => l.appendChild(celula(m))); box.appendChild(l);
+      };
+      const cab = document.createElement("div"); cab.className = "lin"; cab.style.gridTemplateColumns = grade;
+      cab.innerHTML = '<span class="rot titulo-col">Rodada</span>' + cols.map(m => `<span class="cab${m.endsWith("-01") ? " ano" : ""}">${rot(m)}</span>`).join("");
+      box.appendChild(cab);
+      const vazio = () => { const c = document.createElement("div"); c.className = "c"; return c; };
+      linha("Oficial CCEE", m => {
+        if (V) {
+          const v = oficialNum(m);
+          if (v == null) return vazio();
+          const c = document.createElement("div"); c.className = "c ofi"; c.textContent = V.fmt(v);
+          dicaEm(c, `<b>${rot(m)}</b> · oficial: ${V.nome} ${V.fmt(v)}${real[m] ? ` · ${real[m]}` : ""}<br>boletim InfoBandeira (CCEE)`); return c;
+        }
+        if (!real[m]) return vazio();
+        const c = document.createElement("div"); c.className = "c " + CLS[real[m]]; c.textContent = AB[real[m]];
+        const h = H.find(x => x.mes === m);
+        dicaEm(c, `<b>${rot(m)}</b> · oficial: ${real[m]}` + (h && h.gsf != null ? `<br>GSF ${n(h.gsf, 2)} · PLD gatilho ${rs(h.pld, 2)}<br>boletim InfoBandeira (CCEE)` : "")); return c;
+      });
+      decks.forEach((dk, i) => {
+        const daRodada = dados.filter(r => chaveR(r) === dk);
+        const porAlvo = Object.fromEntries(daRodada.map(r => [r.alvo, r]));
+        const pub = daRodada.some(r => r.publicada);
+        const atual = D.rodada ? dk === D.rodada.id : dk === D.deck;
+        const r0 = daRodada[0] || {};
+        const antPub = todosDecks.slice(todosDecks.indexOf(dk) + 1).map(d => RD.find(x => chaveR(x) === d && x.publicada)).find(Boolean);
+        let mudanca = "Backtest";
+        if (pub && !antPub) mudanca = "1ª publicação";
+        else if (pub) {
+          const mu = [];
+          if (r0.deck !== antPub.deck) mu.push(`DECK ${rot(r0.deck)}`);
+          else if (r0.deck_versao !== antPub.deck_versao) mu.push("DECK republicado");
+          if (r0.ecmwf !== antPub.ecmwf) mu.push(mu.length ? "ECMWF" : `ECMWF ${dataBr(r0.ecmwf).slice(0, 5)}`);
+          if (r0.modelo !== antPub.modelo) mu.push(`<span class="novo">Modelo ${r0.modelo}</span>`);
+          mudanca = mu.join(" + ") || "Republicada";
+        }
+        const quando = pub ? `${dataBr(dk)} <span class="hora">${dk.slice(11, 16)}</span>` : (r0.ecmwf ? dataBr(r0.ecmwf) : rot(dk));
+        const completo = pub
+          ? `Rodada publicada em ${dataBr(dk)} às ${dk.slice(11, 16)} · DECK ${rot(r0.deck)} (versão ${r0.deck_versao}) · ECMWF ${dataBr(r0.ecmwf)} · modelo ${r0.modelo} · ${r0.motivo}`
+          : `Rodada reconstruída pelo backtest · DECK ${rot(r0.deck)} · ECMWF ${r0.ecmwf ? dataBr(r0.ecmwf) : "–"}`;
+        const titulo = pub ? `rodada de ${dataBr(dk)} ${dk.slice(11, 16)}` : `backtest de ${r0.ecmwf ? dataBr(r0.ecmwf) : rot(dk)}`;
+        const rotulo = `<span><b>${quando}</b><small>${mudanca}</small></span>`;
+        linha(rotulo, m => {
+          const r = porAlvo[m];
+          if (!r) return vazio();
+          const ant = decks.slice(i + 1).map(d => dados.find(x => chaveR(x) === d && x.alvo === m)).find(Boolean);
+          if (V) return celulaNum(r, m, ant, titulo, atual, curto);
+          const c = document.createElement("div");
+          c.className = "c " + CLS[r.esp] + (r.real && r.real !== r.esp ? " errou" : "") + (atual && !r.real ? " proj" : "");
+          let st = "";
+          if (ant && NIV[ant.esp] !== NIV[r.esp]) st = NIV[r.esp] > NIV[ant.esp] ? "▲" : "▼";
+          c.innerHTML = `<span>${AB[r.esp]}${probDe(r) && !curto ? " " + probDe(r) : ""}${st ? `<span class="seta">${st}</span>` : ""}</span>`;
+          dicaEm(c, `<b>${rot(m)}</b> · ${titulo} (M+${r.h})<br>esperado ${r.esp}${r.prob ? " · " + r.prob : ""}<br>${r.gp}<br>seco ${r.li} · úmido ${r.ls}` +
+            (ant ? `<br>rodada anterior (${rotAnt(ant)}): ${ant.esp}` : "") + (r.real ? `<br>oficial: ${r.real}` : ""));
+          return c;
+        }, atual ? "atual" : pub ? "" : "recon", completo);
+      });
+    }
+    function celulaNum(r, m, ant, titulo, atual, curto) {
+      const V = VAR[vr], v = r[vr + "_esp"], ofi = oficialNum(m);
+      const c = document.createElement("div"); c.className = "c" + (atual && ofi == null ? " proj" : "");
+      if (v == null) return c;
+      const e = ofi != null ? v - ofi : null;
+      if (e != null) c.style.background = fundoErro(e, V.escala);
+      const va = ant && ant[vr + "_esp"];
+      const st = va != null && Math.abs(v - va) >= V.limiar ? (v > va ? "▲" : "▼") : "";
+      c.innerHTML = `<span>${V.fmt(v)}${st ? `<span class="seta">${st}</span>` : ""}${e != null && !curto ? `<small>${V.erro(e)}</small>` : ""}</span>`;
+      const li = r[vr + "_li"], ls = r[vr + "_ls"];
+      dicaEm(c, `<b>${rot(m)}</b> · ${titulo} (M+${r.h})<br>${V.nome} projetado ${V.fmt(v)} · bandeira ${r.esp}` +
+        (li != null ? `<br>seco ${V.fmt(li)} · úmido ${V.fmt(ls)}` : "") +
+        (va != null ? `<br>rodada anterior (${rotAnt(ant)}): ${V.fmt(va)}` : "") +
+        (ofi != null ? `<br>oficial ${V.fmt(ofi)} · erro ${V.erro(e)}` : ""));
+      return c;
+    }
+    $("abas-var").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { vr = b.dataset.v; desenhar(); } });
+    $("abas-rod").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { nRod = +b.dataset.n; desenhar(); } });
+    desenhar();
+  })();
+
+  // ---------- Faixa longa desde 2015 ----------
+  {
+    const todos = [...H.map(h => ({ mes: h.mes, cor: h.cor, proj: false })), ...fut.map(p => ({ mes: p.alvo, cor: p.cor_esp, proj: true }))];
+    regraf(corpo("b-faixa"), (svg, W) => {
+      const cw = W / todos.length;
+      todos.forEach((t, i) => {
+        const r = S(svg, "rect", { x: i * cw, y: 6, width: Math.max(cw - 1, 1), height: 40, fill: COR[t.cor], opacity: t.proj ? 0.55 : 1 });
+        if (t.proj) S(svg, "rect", { x: i * cw + 0.5, y: 6.5, width: Math.max(cw - 2, 1), height: 39, fill: "none", stroke: "var(--ink)", "stroke-dasharray": "2 2", "stroke-width": 1, "pointer-events": "none" });
+        dicaEm(r, `${rot(t.mes)} · ${t.cor}${t.proj ? " (projeção)" : ""}`);
+        const mq = +t.mes.slice(5);
+        if (cw >= 6) S(svg, "text", { x: i * cw + cw / 2, y: 58, "text-anchor": "middle", style: `font-size:${Math.min(9, cw * 0.9).toFixed(1)}px` }, "JFMAMJJASOND"[mq - 1]);
+        if (mq === 1) {
+          S(svg, "line", { x1: i * cw, x2: i * cw, y1: 47, y2: 76, stroke: "var(--ink-3)" });
+          if (cw * 12 >= 30 || +t.mes.slice(0, 4) % 2 === 1) S(svg, "text", { x: i * cw + 3, y: 76, class: "forte" }, cw * 12 >= 30 ? t.mes.slice(0, 4) : t.mes.slice(2, 4));
+        }
+      });
+    }, null, 84);
+    $("leg-cores").innerHTML = ["Verde", "Amarela", "Vermelha 1", "Vermelha 2", "Escassez hídrica"].map(c => `<span><i style="background:${COR[c]}"></i>${c}</span>`).join("") + '<span><i style="background:var(--vazio);outline:1px dashed var(--ink);outline-offset:-1px"></i>Projeção</span>';
+  }
+
+  // ---------- Adicional ----------
+  (function () {
+    const todo = [...H.map(x => ({ mes: x.mes, v: x.adicional / 10 })), ...fut.map(p => ({ mes: p.alvo, v: p.adicional / 10, cor: p.cor_esp, lo: D.adicional_vigente[p.cor_ls] / 10, hi: D.adicional_vigente[p.cor_li] / 10, proj: true }))];
+    function desenhar(per) {
+      document.querySelectorAll("#abas-adic button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.per === per)));
+      $("tt-adic").textContent = per === "rec" ? "R$ por 100 kWh, últimos 24 meses e projeção" : "R$ por 100 kWh, 2015 em diante";
+      regraf(corpo("b-adic"), (svg, w, h) => {
+        const m = { l: 48, r: 12, t: 12, b: 40 };
+        const nReais = todo.filter(s => !s.proj).length;
+        const serie = per === "rec" ? todo.slice(nReais - 24) : todo;
+        const vmax = Math.max(5, ...serie.map(s => s.hi ?? s.v)) * 1.08;
+        const bw = (w - m.l - m.r) / serie.length, hw = bw / 2;
+        const x = i => m.l + (i + 0.5) * bw, y = v => m.t + (h - m.t - m.b) * (1 - v / vmax);
+        const mk = []; for (let v = 0; v <= vmax; v += vmax > 10 ? 5 : 2) mk.push(v);
+        mk.forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 6, y: y(t) + 3, "text-anchor": "end" }, rs(t, 0)); });
+        const i0 = serie.findIndex(s => s.proj), ult = i0 - 1;
+        serie.forEach((s, i) => { if (s.proj) S(svg, "rect", { x: x(i) - hw, y: y(s.hi), width: bw, height: Math.max(1, y(s.lo) - y(s.hi)), fill: "var(--faixa-proj)" }); });
+        const reais = serie.slice(0, i0);
+        S(svg, "path", { d: reais.map((s, i) => (i ? `V${y(s.v)} H${x(i) + hw}` : `M${x(0) - hw},${y(s.v)} H${x(0) + hw}`)).join(" "), fill: "none", stroke: "var(--ink)", "stroke-width": 1.6 });
+        S(svg, "path", { d: `M${x(ult) + hw},${y(serie[ult].v)} ` + serie.slice(i0).map((s, j) => `V${y(s.v)} H${x(i0 + j) + hw}`).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-dasharray": "5 3" });
+        S(svg, "line", { x1: x(ult) + hw, x2: x(ult) + hw, y1: m.t, y2: h - m.b, stroke: "var(--ink-3)", "stroke-dasharray": "2 3" });
+        S(svg, "text", { x: x(ult) + hw - 4, y: m.t + 9, "text-anchor": "end" }, "projeção");
+        serie.forEach((s, i) => {
+          const mq = +s.mes.slice(5);
+          if (per === "rec") {
+            S(svg, "text", { x: x(i), y: h - m.b + 13, "text-anchor": "middle" }, "JFMAMJJASOND"[mq - 1]);
+            if (mq === 1 || i === 0) {
+              S(svg, "line", { x1: x(i) - hw, x2: x(i) - hw, y1: h - m.b, y2: h - m.b + 26, stroke: "var(--ink-3)" });
+              S(svg, "text", { x: x(i) - hw + 3, y: h - 2, class: "forte" }, s.mes.slice(0, 4));
+            }
+          } else if ((mq - 1) % 3 === 0) {
+            S(svg, "line", { x1: x(i) - hw, x2: x(i) - hw, y1: h - m.b, y2: h - m.b + (mq === 1 ? 26 : 6), stroke: mq === 1 ? "var(--ink-3)" : "var(--rule)" });
+            if (bw * 3 >= 16) S(svg, "text", { x: x(i) - hw + 1.5 * bw, y: h - m.b + 13, "text-anchor": "middle", style: "font-size:9px" }, "Q" + ((mq - 1) / 3 + 1));
+            if (mq === 1 && (bw * 12 >= 34 || +s.mes.slice(0, 4) % 2 === 1)) S(svg, "text", { x: x(i) - hw + 3, y: h - 2, class: "forte" }, bw * 12 >= 34 ? s.mes.slice(0, 4) : s.mes.slice(2, 4));
+          }
+          const alvo = S(svg, "rect", { x: x(i) - hw, y: m.t, width: bw, height: h - m.t - m.b, fill: "transparent" });
+          if (s.proj) dicaEm(alvo, `${rot(s.mes)} · projeção<br>bandeira esperada ${s.cor}: ${rs(s.v, 3)} · úmido ${rs(s.lo, 3)} · seco ${rs(s.hi, 3)} por 100 kWh`);
+          else dicaEm(alvo, `${rot(s.mes)} · ${real[s.mes]} · ${rs(s.v, 2)} por 100 kWh`);
+        });
+      }, null, 244);
+    }
+    $("abas-adic").addEventListener("click", e => { const b = e.target.closest("button"); if (b) desenhar(b.dataset.per); });
+    desenhar("rec");
+  })();
+
+  // ---------- Desempenho ----------
+  const De = D.desempenho, ac = De.acerto_por_h;
+  const media = (a, i, j) => a.slice(i, j).reduce((t, v) => t + v, 0) / (j - i);
+  $("desemp-sub").textContent = `Backtest com ${De.n_decks} decks (${rot(De.periodo[0])} a ${rot(De.periodo[1])}) e ${De.n_previsoes} previsões, feitas só com a informação disponível na data de cada deck.`;
+  $("tiles").innerHTML = [
+    [pct(ac.modelo[0]), "de acerto da cor no mês seguinte (M+1)"],
+    [pct(media(ac.modelo, 0, 3)), `de acerto até M+3, contra ${pct(media(ac.persistencia, 0, 3))} de repetir a bandeira atual`],
+    [pct(De.cobertura_li_ls), "das bandeiras reais ficaram entre os cenários úmido e seco"],
+    [pct(media(ac.modelo, 3, 6)), "de acerto de M+4 a M+6: use como cenário"],
+  ].map(([v, d]) => `<div class="tile"><span class="v">${v}</span><span class="d">${d}</span></div>`).join("");
+
+  grafico(corpo("b-acerto"), (svg, w, h) => {
+    const m = { l: 40, r: 6, t: 18, b: 24 };
+    const y = v => m.t + (h - m.t - m.b) * (1 - v), gw = (w - m.l - m.r) / 6;
+    [0, 0.25, 0.5, 0.75, 1].forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 5, y: y(t) + 3, "text-anchor": "end" }, pct(t)); });
+    const S3 = [["modelo", "var(--bar-modelo)", "Modelo"], ["ano_anterior", "var(--bar-saz)", "Mesmo mês do ano anterior"], ["persistencia", "var(--bar-pers)", "Repetir a bandeira atual"]];
+    for (let i = 0; i < 6; i++) {
+      const bw = Math.min(22, (gw - 16) / 3);
+      S3.forEach(([k, cor, nome], j) => {
+        const x0 = m.l + i * gw + (gw - bw * 3 - 4) / 2 + j * (bw + 2), v = ac[k][i];
+        const r = S(svg, "rect", { x: x0, y: y(v), width: bw, height: y(0) - y(v), fill: cor });
+        if (j === 0) S(svg, "text", { x: x0 + bw / 2, y: y(v) - 4, "text-anchor": "middle", class: "forte" }, pct(v));
+        dicaEm(r, `M+${i + 1} · ${nome}: ${pct(v)}`);
+      });
+      S(svg, "line", { x1: m.l + i * gw + 6, x2: m.l + (i + 1) * gw - 6, y1: y(ac.oraculo[i]), y2: y(ac.oraculo[i]), stroke: "var(--bar-oraculo)", "stroke-width": 1.6, "stroke-dasharray": "4 3" });
+      const orA = S(svg, "line", { x1: m.l + i * gw + 6, x2: m.l + (i + 1) * gw - 6, y1: y(ac.oraculo[i]), y2: y(ac.oraculo[i]), stroke: "transparent", "stroke-width": 8 });
+      dicaEm(orA, `M+${i + 1} · Teto (chuva real): ${pct(ac.oraculo[i])}`);
+      S(svg, "text", { x: m.l + i * gw + gw / 2, y: h - 6, "text-anchor": "middle" }, "M+" + (i + 1));
+    }
+  }, "alto");
+
+  grafico(corpo("b-conf"), (svg, w, h) => {
+    const m = { l: 44, r: 12, t: 12, b: 30 };
+    const x = v => m.l + v * (w - m.l - m.r), y = v => m.t + (1 - v) * (h - m.t - m.b);
+    [0, 0.25, 0.5, 0.75, 1].forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 5, y: y(t) + 3, "text-anchor": "end" }, pct(t)); S(svg, "text", { x: x(t), y: h - 14, "text-anchor": "middle" }, pct(t)); });
+    S(svg, "line", { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: "var(--ink-3)", "stroke-dasharray": "4 3" });
+    const nmax = Math.max(...De.confiabilidade.map(c => c.n));
+    De.confiabilidade.forEach(c => {
+      const ci = S(svg, "circle", { cx: x(c.prevista), cy: y(c.observada), r: 4 + 9 * Math.sqrt(c.n / nmax), fill: "var(--accent)", opacity: 0.75, stroke: "var(--surface)", "stroke-width": 1.5 });
+      dicaEm(ci, `Probabilidade dada ≈ ${pct(c.prevista)}<br>aconteceu em ${pct(c.observada)} · ${c.n} casos`);
+    });
+    S(svg, "text", { x: w - m.r, y: h - 1, "text-anchor": "end" }, "probabilidade dada →");
+  }, "alto");
+
+  $("fontes").innerHTML =
+    `Fontes: deck do NEWAVE da CCEE (${rot(D.deck)}), previsão sazonal do ECMWF SEAS5 (${D.rodada ? "emissão " + dataBr(D.rodada.insumos.ecmwf_emissao) : "rodada " + rot(D.rodada_ecmwf)}), histórico de bandeiras da ANEEL, boletins InfoBandeira da CCEE e REH ANEEL 3.306/2024. ` +
+    `Adicionais vigentes: amarela ${rs(D.adicional_vigente.Amarela / 10, 3)}, vermelha 1 ${rs(D.adicional_vigente["Vermelha 1"] / 10, 3)} e vermelha 2 ${rs(D.adicional_vigente["Vermelha 2"] / 10, 3)} por 100 kWh. ` +
+    `Patamares de carga de 2027 aproximados pelos de 2026. Método completo em <a href="metodologia.html">Metodologia</a>.`;
+})();
+</script>
+</body>
+</html>

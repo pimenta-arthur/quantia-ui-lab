@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pricing Descolamento: Compra e venda · Quant Energia</title>
+<!-- Variante 07 · Terminal (app real) · Pricing Descolamento · compra_venda.html: compra e venda do descolamento (NE e N × SE), política Conservador com âncora no realizado (compra_venda_conta.js).
+     Recriação no visual de terminal (padrão v2.0) da página do Quant Energia App, com DADOS FICTÍCIOS (dados.js). -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../app.css">
+<link rel="stylesheet" href="pagina.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>NEN</b> Compra e venda NE e N</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <!-- funcionalidades: a ordem define as teclas 1–5; aria-current na funcionalidade da página -->
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="../index.html"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="../forecast_bandeiras/index.html"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="../risk_lab_dessem/index.html"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="../pricing_descolamento/compra_venda.html" aria-current="page"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="../hydro_inflow_similarity/index.html"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <!-- páginas da funcionalidade, como no menu dela no app; aria-current na página atual -->
+  <nav class="t-sub" aria-label="Páginas de Pricing Descolamento">
+    <span class="t-sub-nome">Pricing Descolamento</span>
+    <a href="compra_venda.html" aria-current="page">Compra e venda NE e N</a>
+    <a href="index.html">Descolamento NE e N</a>
+    <a href="fundamentos.html">Fundamentos</a>
+    <a href="compra_venda_metodologia.html">Metodologia</a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main class="pag-cv">
+    <section class="hero" aria-labelledby="titulo">
+      <span class="rotulo">Versão 2 · política Conservador com âncora no realizado, sem ajuste de erro do modelo</span>
+      <h1 id="titulo">Compra e venda do descolamento do NE e do N</h1>
+      <div class="meta" id="meta"></div>
+      <div class="barra-avisos">
+        <details id="det-aviso">
+          <summary><b>Leia antes de usar</b></summary>
+          <div class="nota nota-v1 painel-av">A compra fica no pior ano climático do modelo (λ = 1). A venda, com a âncora ligada, fica no maior valor entre o melhor ano do modelo e o <b>maior descolamento já realizado naquele mês</b>
+          (em proporção da folga do SE informado), mês a mês. A cotação <strong>não inclui o erro do modelo</strong> nem o risco do SE. No backtest (5 períodos), sem a âncora a venda do NE perdeu em 27% dos períodos; com a âncora, em 0%, mas a regra foi
+          escolhida depois de ver os dados, a amostra é pequena e o histórico vem de poucos anos. Use como ponto de partida para discussão. <a href="compra_venda_metodologia.html">Metodologia, decisões e limites</a>.</div>
+        </details>
+        <details id="det-politica">
+          <summary id="s-ap"><b>Política de cotação</b></summary>
+          <div class="painel-av">
+            <p class="leg" id="ap-desc"></p>
+            <div class="controles">
+              <label><input type="checkbox" id="anc"> Ancorar a venda no maior descolamento já realizado no mês (em proporção da folga)</label>
+              <button type="button" class="btn" id="btn-restaurar" hidden>Voltar ao Conservador</button>
+            </div>
+            <details class="fund" id="det-avancado">
+              <summary>Avançado: parâmetros de cada lado</summary>
+              <div class="hist-in">
+                <div class="rolagem"><table class="par">
+                  <thead><tr><th></th><th>p (%)</th><th>α (%)</th><th>λ (0 a 1)</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>Compra</b></td><td><input type="text" inputmode="decimal" id="pc" aria-label="p da compra, em %"></td><td><input type="text" inputmode="decimal" id="ac" aria-label="alfa da compra, em %"></td><td><input type="text" inputmode="decimal" id="lc" aria-label="lambda da compra"></td></tr>
+                    <tr><td><b>Venda</b></td><td><input type="text" inputmode="decimal" id="pv" aria-label="p da venda, em %"></td><td><input type="text" inputmode="decimal" id="av" aria-label="alfa da venda, em %"></td><td><input type="text" inputmode="decimal" id="lv" aria-label="lambda da venda"></td></tr>
+                  </tbody>
+                </table></div>
+                <p class="leg"><b>p</b> = probabilidade de perda tolerada; <b>α</b> = fatia dos piores anos observada; <b>λ</b> = fração da perda média nessa fatia descontada do preço (λ = 1 leva a compra ao pior ano).
+                  A cotação usa o mais conservador dos dois critérios em cada lado. Só o λ = 1 com a âncora foi testado como política; outros valores são por sua conta. <a href="compra_venda_metodologia.html#risco">Como funcionam</a>.</p>
+              </div>
+            </details>
+          </div>
+        </details>
+      </div>
+      <p class="leg" id="erro" hidden></p>
+    </section>
+    <div class="grade">
+      <section class="painel" data-tam="full" id="curva-se" aria-labelledby="s-curva">
+        <header class="painel-cab"><h2 class="ttl" id="s-curva">Curva do Sudeste <small>R$/MWh</small></h2>
+          <div class="controles">
+            <span>Preencher todos os anos com <input type="text" id="valor-todos" inputmode="decimal" value="" placeholder="R$" aria-label="Valor do SE para todos os anos"> R$/MWh</span>
+            <button type="button" class="btn prim" id="btn-todos">Aplicar</button>
+            <button type="button" class="btn" id="btn-limpar">Limpar curva</button>
+          </div>
+        </header>
+        <div class="painel-corpo">
+          <p class="leg">Informe o PLD médio do SE (R$/MWh) no nível em que tiver preço: ano, semestre, trimestre ou mês. Vale o
+            nível mais específico; os demais períodos do mesmo ano são derivados (em cinza) para fechar a média ponderada
+            por horas. Pode colar uma linha do Excel em qualquer campo.</p>
+          <div class="controles">
+            <span>Dentro do período:</span>
+            <label><input type="radio" name="saz" value="plana" checked> plana</label>
+            <label><input type="radio" name="saz" value="hist"> sazonalidade histórica do SE</label>
+          </div>
+          <div class="rolagem"><table class="curva" id="curva"></table></div>
+          <div class="avisos-curva" id="avisos-curva"></div>
+        </div>
+        <p class="leg" id="leg-curva"></p>
+      </section>
+
+      <section class="painel" data-tam="full" id="cotacao" aria-labelledby="s-compacta">
+        <header class="painel-cab"><h2 class="ttl" id="s-compacta">Cotação por produto · <span id="tt-compacta"></span></h2>
+          <div class="ferr">
+            <div class="abas" id="abas-c-sub" role="group" aria-label="Submercado">
+              <button type="button" data-v="NE" aria-pressed="true">NE</button>
+              <button type="button" data-v="N">N</button>
+            </div>
+            <div class="abas" id="abas-c-modo" role="group" aria-label="Medida">
+              <button type="button" data-v="d" aria-pressed="true">Descolamento</button>
+              <button type="button" data-v="pld">PLD implícito</button>
+            </div>
+            <label class="toggle" title="Mostra a contribuição de cada pedaço para o preço do ano, em vez do produto sozinho"><input type="checkbox" id="c-ref"><span class="trilho"></span><span>Fechar o ano</span></label>
+            <label class="toggle"><input type="checkbox" id="compacta-justo"><span class="trilho"></span><span>Mostrar justo</span></label>
+          </div>
+        </header>
+        <div class="painel-corpo">
+          <div class="rolagem"><table class="curva leitura" id="tab-compacta"></table></div>
+          <details class="fund" id="det-conf"><summary>Conferir o ano</summary>
+            <div class="leg" id="compacta-conf" style="display:grid;gap:2px;margin-top:4px"></div>
+            <p class="leg" style="margin-top:6px">Compra pelo ano = o ano cotado sozinho; pelos semestres / trimestres = média por horas dos produtos cotados sozinhos, mais conservadora porque o pior ano muda de período. O justo e a venda são os mesmos nas três contas; só a compra muda com o produto. Backtest só de trimestres e semestres.</p>
+          </details>
+        </div>
+        <p class="leg">Compra / venda de cada período e, em cinza, o SE. Clique em um valor para ver o descritivo. Por padrão cada célula é o produto sozinho; &ldquo;Fechar o ano&rdquo; mostra a contribuição de cada pedaço para o preço do ano.</p>
+      </section>
+
+      <section class="painel" data-tam="full" id="resumo-produto" aria-labelledby="s-cot">
+        <header class="painel-cab"><h2 class="ttl" id="s-cot">Resumo por produto · <span id="tt-cot">Compra e venda por produto: descolamento e PLD implícito do NE e do N, R$/MWh</span></h2>
+          <div class="ferr">
+            <div class="abas" id="abas-prod" role="group" aria-label="Produto">
+              <button type="button" data-v="mes">Mês</button>
+              <button type="button" data-v="tri">Trimestre</button>
+              <button type="button" data-v="sem">Semestre</button>
+              <button type="button" data-v="ano" aria-pressed="true">Ano</button>
+            </div>
+            <button type="button" class="btn" id="btn-csv">Copiar tabela</button><span class="leg" id="copiado" aria-live="polite"></span>
+          </div>
+        </header>
+        <div class="painel-corpo">
+          <div class="rolagem"><table class="curva leitura" id="tab-cot"></table></div>
+        </div>
+        <p class="leg">Compra: preço a que se aceita comprar o descolamento (recebe o descolamento, paga P). Venda: preço a que se aceita vender (paga o descolamento, recebe P). Justo (opcional): média dos anos climáticos, a mesma da página principal. PLD implícito = SE + descolamento. Clique em um descolamento para ver o descritivo do produto. Segue os toggles &ldquo;Fechar o ano&rdquo; e &ldquo;Mostrar justo&rdquo; da Cotação por produto. * Período parcial: só parte dos meses está no horizonte.
+          Nada aqui considera custos, liquidez nem saída antes do vencimento.</p>
+      </section>
+
+      <section class="painel" data-tam="full" id="por-mes" aria-labelledby="s-gf">
+        <header class="painel-cab"><h2 class="ttl" id="s-gf">Descolamento por mês · <span id="tt-gf">Descolamento do NE por mês, R$/MWh</span></h2>
+          <div class="ferr">
+            <div class="abas" id="abas-gf-sub" role="group" aria-label="Submercado do gráfico">
+              <button type="button" data-v="NE" aria-pressed="true">NE</button>
+              <button type="button" data-v="N">N</button>
+            </div>
+            <div class="abas" id="abas-gf-modo" role="group" aria-label="Medida do gráfico">
+              <button type="button" data-v="d" aria-pressed="true">Descolamento</button>
+              <button type="button" data-v="pld">PLD implícito</button>
+            </div>
+          </div>
+        </header>
+        <div class="painel-corpo">
+          <div class="legenda-mini" id="leg-gf"></div>
+          <div id="g-mes" role="img" aria-label="Descolamento previsto por mês"></div>
+        </div>
+        <p class="leg" id="leg-gf2"></p>
+      </section>
+
+      <section class="painel dobra" data-tam="full" id="fundamentos-deck" aria-labelledby="s-fund">
+        <details class="fund" id="det-fund">
+          <summary class="painel-cab"><h2 class="ttl" id="s-fund">Fundamentos do deck</h2><span class="dobra-ind" aria-hidden="true"></span></summary>
+          <div class="painel-corpo">
+            <p class="leg">Insumos que entram no modelo, por mês (média dos cenários): projeção do deck (linha) e último realizado do
+              mesmo mês do calendário (pontos). Explicam o comportamento do descolamento e não dependem da curva do SE.Não dependem da curva do SE.</p>
+            <div class="legenda-mini"><span><i class="l" style="border-color:var(--accent)"></i>Modelo (projeção do deck)</span><span><i style="background:var(--ink);width:6px;height:6px;border-radius:50%"></i>Último realizado do mesmo mês</span></div>
+            <div class="mini9" id="mult"></div>
+            <div class="barra-abas">
+              <div class="ttl">Fundamentos por produto, GW (trava em % das horas)</div>
+              <div class="ferr">
+                <div class="abas" id="abas-fund" role="group" aria-label="Produto">
+                  <button type="button" data-v="mes">Mês</button>
+                  <button type="button" data-v="tri">Trimestre</button>
+                  <button type="button" data-v="sem">Semestre</button>
+                  <button type="button" data-v="ano" aria-pressed="true">Ano</button>
+                </div>
+                <button type="button" class="btn" id="btn-fund">Copiar tabela</button><span class="leg" id="copiado-fund" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="rolagem"><table>
+              <thead><tr><th>Período</th><th class="n">Renov. NE</th><th class="n">Carga NE</th><th class="n">Carga N</th>
+                <th class="n">Hidr. N</th><th class="n">Hidr. NE</th><th class="n">Sobra NE</th><th class="n">Lim. exp. NE</th>
+                <th class="n">Folga lim.</th><th class="n">Trava NE</th><th class="n">k NE</th></tr></thead>
+              <tbody id="tab-fund"></tbody>
+            </table></div>
+            <p class="leg">Em negrito, o valor que entra no modelo (projeção do deck; hidráulica do N = média dos cenários). Embaixo, em cinza,
+              o último realizado dos mesmos meses do calendário (para 2027 em diante a referência continua sendo o último ano realizado).
+              Sobra NE = renovável − carga do NE; folga lim. = limite de exportação do NE − sobra: quanto menor, mais o NE trava.
+              k = fração de (SE − piso) perdida nas horas em que trava. * Período parcial: só parte dos meses está no horizonte.</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="painel dobra" data-tam="full" id="realizado" aria-labelledby="s-hist">
+        <details class="fund" id="det-hist">
+          <summary class="painel-cab"><h2 class="ttl" id="s-hist">Descolamento realizado (histórico)</h2><span class="dobra-ind" aria-hidden="true"></span></summary>
+          <div class="painel-corpo">
+            <div class="barra-abas">
+              <div class="ttl" id="tt-hist">Descolamento realizado do NE, R$/MWh</div>
+              <div class="ferr">
+                <div class="abas" id="abas-h-sub" role="group" aria-label="Submercado do histórico">
+                  <button type="button" data-v="NE" aria-pressed="true">NE</button>
+                  <button type="button" data-v="N">N</button>
+                </div>
+                <div class="abas" id="abas-h-modo" role="group" aria-label="Medida do histórico">
+                  <button type="button" data-v="d" aria-pressed="true">Descolamento</button>
+                  <button type="button" data-v="pld">PLD implícito</button>
+                </div>
+              </div>
+            </div>
+            <div class="rolagem"><table class="curva leitura" id="hist-real"></table></div>
+            <div class="rolagem"><table class="curva leitura" id="hist-meses"></table></div>
+            <p class="leg">Realizado desde 2021 (PLD da CCEE; física do DESSEM): períodos agregados em cima e meses embaixo, com o SE médio de cada período em cinza. Quanto mais forte o fundo, mais descolado o período (escala: percentil 90 dos meses). Passe o mouse para ver o período contra a média dos mesmos meses nos outros anos. Nos meses, o contorno cinza destaca o <b>ano de referência</b> da venda ancorada: o ano em que aquele mês do calendário consumiu a menor fração da folga (SE − piso), que sustenta a venda pelo histórico. * Ano parcial.</p>
+          </div>
+        </details>
+      </section>
+
+      <!-- swap: fora da página por enquanto (embrionário), como no app; o código segue ativo. Para reativar, tire o atributo hidden da seção. -->
+      <section class="painel dobra" data-tam="full" aria-labelledby="s-swap" hidden>
+        <details class="fund" id="det-swap">
+          <summary class="painel-cab"><h2 class="ttl" id="s-swap">Swap</h2><span class="dobra-ind" aria-hidden="true"></span></summary>
+          <div class="painel-corpo">
+            <div class="ttl">Swap entre duas pernas: recebe uma, paga a outra</div>
+            <div class="rolagem"><table class="par" id="sw-pernas">
+              <thead><tr><th></th><th>Submercado</th><th>Produto</th><th>Período</th><th>SE da perna (R$/MWh)</th><th>Volume (MWm)</th></tr></thead>
+              <tbody>
+                <tr><td><b>Recebe</b></td>
+                  <td><select id="sw-rec-sub" aria-label="Submercado da perna que recebe"><option>SE</option><option selected>NE</option><option>N</option></select></td>
+                  <td><select id="sw-rec-tipo" aria-label="Produto da perna que recebe"><option value="mes">Mês</option><option value="tri">Trimestre</option><option value="sem">Semestre</option><option value="ano" selected>Ano</option></select></td>
+                  <td><select id="sw-rec-per" aria-label="Período da perna que recebe"></select></td>
+                  <td><input type="text" inputmode="decimal" id="sw-rec-se" placeholder="da curva" aria-label="SE da perna que recebe"></td>
+                  <td><input type="text" inputmode="decimal" id="sw-rec-vol" value="1" aria-label="Volume da perna que recebe, em MWm"></td></tr>
+                <tr><td><b>Paga</b></td>
+                  <td><select id="sw-pag-sub" aria-label="Submercado da perna que paga"><option selected>SE</option><option>NE</option><option>N</option></select></td>
+                  <td><select id="sw-pag-tipo" aria-label="Produto da perna que paga"><option value="mes">Mês</option><option value="tri">Trimestre</option><option value="sem">Semestre</option><option value="ano" selected>Ano</option></select></td>
+                  <td><select id="sw-pag-per" aria-label="Período da perna que paga"></select></td>
+                  <td><input type="text" inputmode="decimal" id="sw-pag-se" placeholder="da curva" aria-label="SE da perna que paga"></td>
+                  <td><input type="text" inputmode="decimal" id="sw-pag-vol" value="1" aria-label="Volume da perna que paga, em MWm"></td></tr>
+              </tbody>
+            </table></div>
+            <div id="sw-aviso" class="avisos-curva"></div>
+            <div class="rolagem"><table class="cot" id="sw-res"></table></div>
+            <p class="leg" id="sw-leg"></p>
+          </div>
+        </details>
+      </section>
+
+      <section class="painel dobra" data-tam="full" id="backtest" aria-labelledby="s-bt">
+        <details class="fund" id="det-bt">
+          <summary class="painel-cab"><h2 class="ttl" id="s-bt">Como essa cotação se saiu no passado</h2><span class="dobra-ind" aria-hidden="true"></span></summary>
+          <div class="painel-corpo">
+            <div class="barra-abas">
+              <div class="ttl" id="tt-bt"></div>
+              <div class="abas" id="abas-bt-sub" role="group" aria-label="Submercado do backtest">
+                <button type="button" data-v="NE" aria-pressed="true">NE</button>
+                <button type="button" data-v="N">N</button>
+              </div>
+            </div>
+            <div class="rolagem"><table class="cot" id="tab-bt"></table></div>
+            <p class="leg" id="leg-bt"></p>
+          </div>
+        </details>
+      </section>
+
+      <section class="painel" data-tam="m" aria-labelledby="s-prox">
+        <header class="painel-cab"><h2 class="ttl" id="s-prox">Próximos passos · Descolamento do Sul</h2></header>
+        <div class="painel-corpo"><p class="leg">Física própria do Sul (descola para cima, no horário solar), com o mesmo desenho: entrada pela curva do SE e
+          faixa por cenário climático.</p></div>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h2 class="ttl">Próximos passos · Cálculo do mês corrente</h2></header>
+        <div class="painel-corpo"><p class="leg">Precificar o mês corrente com informação do próprio mês (revisões do DECOMP/DESSEM, realizado parcial).</p></div>
+      </section>
+      <section class="painel" data-tam="m">
+        <header class="painel-cab"><h2 class="ttl">Próximos passos · Swap</h2></header>
+        <div class="painel-corpo"><p class="leg">SE × NE e SE × N já têm o cálculo (cotação do descolamento deslocada pela diferença de SE, com curva e volume por perna); NE × N segue em teste. Ainda embrionário: voltar ao tema para fechar a estrutura do NE × N e validar o swap temporal.</p></div>
+      </section>
+    </div>
+    <div class="aviso"><span>Para discussão. Só variabilidade entre anos climáticos, com a venda ancorada no realizado; sem erro do modelo, custos, liquidez nem saída antes do vencimento; o SE é a curva informada. <a href="compra_venda_metodologia.html">Metodologia de compra e venda</a>.</span></div>
+    <div class="aviso"><span>Laboratório com dados fictícios. Nenhum número desta página vem do Quant Energia App.</span></div>
+  </main>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="../../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../../migracao-terminal/padrao/terminal.js"></script>
+<script src="../comum.js"></script>
+<div class="dica" id="dica" hidden></div>
+<script src="dados.js"></script>
+<script src="descolamento_conta.js"></script>
+<script src="compra_venda_conta.js"></script>
+<script src="compra_venda.js"></script>
+<script>
+  // Laboratório: na primeira visita (sem curva salva), abre com uma curva de exemplo FICTÍCIA de R$ 220/MWh
+  // em todos os anos, para a página mostrar a cotação. No app a página abre vazia, esperando a curva da mesa.
+  try { if (!localStorage.getItem("compra_venda.curva.v1")) { document.getElementById("valor-todos").value = "220"; document.getElementById("btn-todos").click(); } } catch (e) {}
+</script>
+</body>
+</html>
