@@ -39,3 +39,7 @@ cada passo, a sessão confere no navegador (escuro, claro e celular) e para, esp
 Os prompts de cada passo, segmentados por funcionalidade e por página, com uma parada para validar ao fim de cada
 um, estão em **[PROMPTS.md](PROMPTS.md)**. Eles foram feitos para uma sessão aberta no quant-energia-app de qualquer
 máquina, com este laboratório clonado ao lado (`../quantia-ui-lab`).
+
+Depois da migração (app no padrão terminal por páginas, como a 07), a evolução para a mesa em uma tela (a 08) tem o
+seu roteiro em **[PROMPTS-08.md](PROMPTS-08.md)**, no mesmo formato: um passo por vez, uma função por vez, uma tela
+por vez.

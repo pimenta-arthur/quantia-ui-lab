@@ -15,7 +15,8 @@ O laboratório fica ao lado do app (`../quantia-ui-lab`), só para leitura. Se e
 
 **Decisão já tomada:** a migração segue a **variante 07** (as mesmas páginas do app, no padrão terminal v2.0).
 A **variante 08** (o app numa tela só, com telas numeradas e inspetor) fica como próxima evolução, depois da 07
-estabilizada. Nos prompts, a 08 entra só como referência visual, nunca como estrutura.
+estabilizada, com roteiro próprio em [PROMPTS-08.md](PROMPTS-08.md). Nos prompts daqui, a 08 entra só como
+referência visual, nunca como estrutura.
 
 **Como validar cada parada:** com a chave de versão (passo 2) dá para abrir a mesma página em v1 e em v2 e comparar.
 - Os números da página são os mesmos nas duas versões.

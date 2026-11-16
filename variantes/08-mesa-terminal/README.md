@@ -39,3 +39,7 @@ um aplicativo só, que ocupa a tela, em que se chega a qualquer coisa pelo tecla
 Toda informação da 07 está em alguma tela ou no inspetor; os blocos que a 07 deixava recolhidos ficaram abertos ou
 passaram para o inspetor. Fica de fora só o Swap do Pricing, que no app também é oculto (o texto está na MET).
 Os textos de conclusão vêm do app e citam números reais que não batem com os fictícios; isso é avisado nas telas.
+
+## Levar para o app
+Depois que o app estiver no padrão terminal por páginas (a 07, via `migracao-terminal/PROMPTS.md`), a evolução para
+esta mesa segue `migracao-terminal/PROMPTS-08.md`.
