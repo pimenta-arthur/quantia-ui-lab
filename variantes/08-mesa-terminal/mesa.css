@@ -1,0 +1,118 @@
+/* Variante 08 · Mesa (terminal desde o início) · mesa.css
+   Casca de aplicativo de uma tela por cima do padrão v2.0 (migracao-terminal/padrao): funções com sinal,
+   telas numeradas, área de trabalho com rolagem própria, inspetor à direita e status.
+   Cores novas: escuro em :root, claro em :root[data-theme="light"] (regra do v2.0). */
+:root { --m-insp: #050607; --m-sel: #3a2a0c; --m-sinal-bg: #0b0d10; --insp-larg: 340px; --graf-h: 200px; }
+:root[data-theme="light"] { --m-insp: #f6f4ef; --m-sel: #f3dfc0; --m-sinal-bg: #f3f1ec; }
+
+html, body { height: 100%; }
+body { overflow: hidden; }
+.mesa { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) var(--insp-larg);
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "topo topo" "fn fn" "telas telas" "fita fita" "area insp" "status status"; }
+.mesa[data-insp="fechado"] { grid-template-columns: minmax(0, 1fr) 0; }
+.mesa[data-insp="fechado"] .m-insp { display: none; }
+.t-topo { grid-area: topo; position: static; }
+.t-fita { grid-area: fita; }
+.t-status { grid-area: status; }
+
+/* funções, cada uma com o seu sinal (a resposta principal em uma linha) */
+.m-fn { grid-area: fn; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 2px; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.m-fn a { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; align-items: baseline; padding: 5px 10px; background: var(--t-fn); color: var(--t-fn-ink); text-decoration: none; font-family: var(--f-data); min-width: 0; }
+.m-fn a .k { grid-row: span 2; align-self: center; background: var(--t-ambar); color: var(--t-sobre); padding: 0 5px; font-weight: 600; font-size: 0.72rem; }
+.m-fn a .nm { font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-fn a .sn { font-size: 0.7rem; color: color-mix(in srgb, var(--t-fn-ink) 75%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-fn a[aria-current="page"] { background: var(--t-ambar); color: var(--t-sobre); }
+.m-fn a[aria-current="page"] .k { background: var(--t-sobre); color: var(--t-ambar); }
+.m-fn a[aria-current="page"] .sn { color: var(--t-sobre); }
+/* na barra de funções o sinal fica na cor da aba (vermelho/verde sobre âmbar ou azul não se lê); a seta diz a direção */
+.m-fn a .sn.sobe, .m-fn a .sn.desce { color: inherit !important; }
+.m-fn a:hover { outline: 1px solid var(--t-ambar); outline-offset: -1px; }
+
+/* telas da função atual */
+.m-telas { grid-area: telas; display: flex; gap: 2px; padding: 2px 2px 2px 10px; background: var(--t-sub, var(--surface)); border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; font-family: var(--f-data); font-size: 0.74rem; align-items: center; }
+.m-telas .m-func { color: var(--t-ambar); text-transform: uppercase; margin-right: 10px; white-space: nowrap; }
+.m-telas a { display: inline-flex; gap: 6px; color: var(--ink-2); text-decoration: none; padding: 4px 10px; white-space: nowrap; border-bottom: 2px solid transparent; }
+.m-telas a b { color: var(--ink-3); font-weight: 500; }
+.m-telas a:hover { color: var(--t-ambar); }
+.m-telas a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--t-ambar); }
+.m-telas a[aria-current="page"] b { color: var(--t-ambar); }
+
+/* área de trabalho: só ela rola */
+.m-area { grid-area: area; overflow: auto; padding: 2px; display: grid; gap: 2px; align-content: start; grid-auto-rows: max-content; min-width: 0; }
+.m-area:focus { outline: none; }
+
+/* linha de decisão: a resposta da tela, antes das evidências */
+.m-decisao { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 2px; background: var(--rule); border: 1px solid var(--rule); }
+.m-decisao > div { background: var(--m-sinal-bg); padding: 8px 12px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.m-decisao .r { font: 0.66rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; }
+.m-decisao .v { font: 600 1.5rem/1.1 var(--f-data); color: var(--ink); }
+.m-decisao .d { font: 0.7rem var(--f-data); color: var(--ink-2); }
+.m-decisao > div.principal { border-left: 3px solid var(--t-ambar); }
+.m-decisao > div.principal .v { font-size: 1.9rem; }
+
+/* na MESA, quatro sinais lado a lado: fonte menor para caber numa linha */
+.m-decisao-mesa .v { font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* cabeçalho de painel com código, unidade e ajuda */
+.painel-cab .p-cod { font: 600 0.62rem var(--f-data); color: var(--t-sobre); background: var(--t-ambar); padding: 0 4px; margin-right: 8px; vertical-align: 1px; }
+.painel-cab .p-uni { color: var(--ink-3); font-weight: 400; text-transform: none; margin-left: 6px; }
+.painel-cab .p-acoes { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.p-ajuda { font: 600 0.7rem var(--f-data); width: 20px; height: 20px; display: inline-grid; place-items: center; border: 1px solid var(--rule); color: var(--ink-3); background: none; cursor: pointer; text-decoration: none; }
+.p-ajuda:hover { color: var(--t-ambar); border-color: var(--t-ambar); }
+.painel > .p-fonte { padding-inline: 10px; font: 0.64rem var(--f-data); color: var(--ink-3); }
+.painel-cab { flex-wrap: nowrap; }
+.painel-cab .ttl { min-width: 0; }
+@media (max-width: 760px) { .painel-cab { flex-wrap: wrap; } }
+
+/* linhas e células que abrem no inspetor */
+[data-insp-alvo] { cursor: pointer; }
+tr[data-insp-alvo]:hover td { background: var(--accent-soft); }
+.selecionado, tr.selecionado td { background: var(--m-sel) !important; }
+
+/* inspetor */
+.m-insp { grid-area: insp; overflow: auto; background: var(--m-insp); border-left: 1px solid var(--rule); display: flex; flex-direction: column; min-width: 0; }
+.m-insp-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--t-barra); padding: 4px 8px; position: sticky; top: 0; z-index: 1; }
+.m-insp-cab h2 { font: 600 0.72rem var(--f-data); color: var(--t-barra-ink); text-transform: uppercase; }
+.m-insp-cab button { background: none; border: 1px solid var(--rule); color: var(--ink-3); font: 0.68rem var(--f-data); padding: 1px 6px; cursor: pointer; }
+.m-insp-corpo { padding: 10px; display: grid; gap: 10px; align-content: start; font-size: 0.85rem; }
+.m-insp-corpo h3 { font: 600 0.78rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; }
+.m-insp-corpo .graf { --graf-h: 150px; }
+.m-insp-vazio { color: var(--ink-3); font: 0.75rem var(--f-data); }
+
+/* alertas (MESA e inspetor) */
+.alertas { list-style: none; margin: 0; padding: 0; display: grid; }
+.alertas li { display: grid; grid-template-columns: 5.4rem 2.8rem 1fr; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--rule); font: 0.72rem var(--f-data); align-items: baseline; }
+.alertas li:last-child { border-bottom: 0; }
+.alertas .q { color: var(--ink-3); }
+.alertas .f { color: var(--t-ambar); font-weight: 600; }
+.alertas li.nivel-alto .f::after { content: " !"; color: var(--desce); }
+.alertas a { color: var(--ink); text-decoration: none; }
+.alertas a:hover { color: var(--t-ambar); }
+
+/* MESA: resumo de cada função */
+.m-resumo .painel-corpo { gap: 6px; }
+.m-resumo-ir { font: 0.68rem var(--f-data); color: var(--t-ambar); text-decoration: none; }
+
+/* texto de metodologia: índice à esquerda, texto à direita */
+.m-met { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 2px; background: var(--rule); border: 1px solid var(--rule); min-height: 100%; }
+.m-met nav { background: var(--surface); padding: 8px; display: grid; gap: 2px; align-content: start; position: sticky; top: 0; font: 0.74rem var(--f-data); }
+.m-met nav a { color: var(--ink-2); text-decoration: none; padding: 3px 6px; }
+.m-met nav a:hover, .m-met nav a.ativo { color: var(--t-ambar); background: var(--accent-soft); }
+.m-met .m-met-texto { background: var(--surface); padding: 12px 18px 40px; display: grid; gap: 10px; align-content: start; }
+.m-met .m-met-texto > section { display: grid; gap: 8px; max-width: 80ch; scroll-margin-top: 8px; }
+.m-met .m-met-texto h2 { font-size: 0.85rem; margin-top: 12px; }
+.m-met .m-met-texto h3 { color: var(--ink); }
+.m-met .m-met-texto p, .m-met .m-met-texto li { font-family: var(--f-body); font-size: 0.95rem; line-height: 1.55; }
+.m-met :target { outline: 1px dashed var(--t-ambar); outline-offset: 6px; }
+@media (max-width: 860px) { .m-met { grid-template-columns: 1fr; } .m-met nav { position: static; } }
+
+/* celular e tela estreita: a página volta a rolar e o inspetor desce para depois da área */
+@media (max-width: 1000px) {
+  html, body { height: auto; } body { overflow: auto; }
+  .mesa, .mesa[data-insp="fechado"] { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-areas: "topo" "fn" "telas" "fita" "area" "insp" "status"; }
+  .m-area, .m-insp { overflow: visible; }
+  .m-insp { border-left: 0; border-top: 1px solid var(--rule); }
+  .m-fn { grid-template-columns: repeat(5, minmax(150px, 1fr)); overflow-x: auto; scrollbar-width: none; }
+}
+@media (max-width: 760px) { .m-decisao-mesa .v { white-space: normal; } .t-topo { position: static; } .m-decisao .v { font-size: 1.25rem; } .m-decisao > div.principal .v { font-size: 1.5rem; } }

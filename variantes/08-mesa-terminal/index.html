@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mesa · Quant Energia</title>
+<!-- Variante 08 · Mesa (terminal desde o início). Um aplicativo só, de uma tela: funções com sinal, telas
+     numeradas, inspetor à direita. Dados FICTÍCIOS reaproveitados da variante 07. Desenho em README.md. -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../../migracao-terminal/padrao/painel.css">
+<link rel="stylesheet" href="../07-terminal-app/app.css">
+<link rel="stylesheet" href="mesa.css">
+<link rel="stylesheet" href="funcoes/band.css">
+<link rel="stylesheet" href="funcoes/risk.css">
+<link rel="stylesheet" href="funcoes/nen.css">
+<link rel="stylesheet" href="funcoes/hyd.css">
+</head>
+<body>
+<div class="mesa" data-insp="aberto">
+  <header class="t-topo">
+    <a class="t-marca" href="../../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <form class="t-cmd" id="m-cmd" role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND · BAND 3 · NEN COT · RISK SIM · MESA" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" id="m-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg" id="t-pg"></span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="m-fn" id="m-fn" aria-label="Funções"></nav>
+  <nav class="m-telas" id="m-telas" aria-label="Telas da função"></nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main class="m-area" id="m-area" tabindex="-1"></main>
+  <aside class="m-insp" aria-label="Inspetor">
+    <div class="m-insp-cab"><h2 id="insp-titulo">Alertas</h2><span><button type="button" id="insp-limpar" title="Voltar aos alertas">Alertas</button> <button type="button" id="insp-fechar" title="Fechar o inspetor (tecla I)">×</button></span></div>
+    <div class="m-insp-corpo" id="insp-corpo"></div>
+  </aside>
+  <footer class="t-status"><span>Dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–9 telas · ⇧1–5 funções · Esc mesa · / comando · I inspetor · ? método · T tema</span></footer>
+</div>
+<!-- padrão v2.0 -->
+<script src="../../migracao-terminal/padrao/graficos.js"></script>
+<script src="../../migracao-terminal/padrao/componentes.js"></script>
+<script src="../../migracao-terminal/padrao/terminal.js"></script>
+<!-- dados fictícios e contas da variante 07 (reaproveitados, sem cópia) -->
+<script src="../07-terminal-app/forecast_bandeiras/dados.js"></script>
+<script src="../07-terminal-app/forecast_bandeiras/relato_conta.js"></script>
+<script src="../07-terminal-app/risk_lab_dessem/dados.js"></script>
+<script src="../07-terminal-app/risk_lab_dessem/simulador_conta.js"></script>
+<script src="../07-terminal-app/pricing_descolamento/dados.js"></script>
+<script src="../07-terminal-app/pricing_descolamento/descolamento_conta.js"></script>
+<script src="../07-terminal-app/pricing_descolamento/compra_venda_conta.js"></script>
+<script src="../07-terminal-app/hydro_inflow_similarity/dados.js"></script>
+<!-- núcleo da mesa e funções (a ordem das funções define ⇧2–5) -->
+<script src="mesa.js"></script>
+<script src="funcoes/band.js"></script>
+<script src="funcoes/risk.js"></script>
+<script src="funcoes/nen.js"></script>
+<script src="funcoes/hyd.js"></script>
+<script>Mesa.iniciar();</script>
+</body>
+</html>

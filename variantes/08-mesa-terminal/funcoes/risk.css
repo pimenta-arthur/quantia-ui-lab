@@ -1,0 +1,173 @@
+/* Variante 08 · Mesa · funcoes/risk.css — RISK · Risk Lab DESSEM
+   Cores da função (as da página do Risk Lab na 07, com prefixo --risk-): escuro em :root, claro em
+   :root[data-theme="light"], sem prefers-color-scheme. Seletores com prefixo .risk- ou escopados por html[data-func="RISK"]. */
+:root {
+  /* blocos de horas */
+  --risk-vale: #4f8fe0; --risk-ponta: #ff7a6b; --risk-demais: #8a8a8a;
+  /* tipos de dia */
+  --risk-util: #ffa31a; --risk-sab: #c55bb6; --risk-dom: #5ccac3;
+  /* anos (do mais velho, apagado, ao corrente, âmbar) */
+  --risk-a2021: #4a5058; --risk-a2022: #757c84; --risk-a2023: #c55bb6; --risk-a2024: #5ccac3; --risk-a2025: #ff7a6b; --risk-a2026: #ffa31a; --risk-a2027: #f2f2f2;
+  /* segunda série (mínima revelada, valor da água, premissa na RV0, prêmio) e referência de 12 meses */
+  --risk-verm: #ff7a6b; --risk-ref: #f2c230;
+  --risk-sombra-vale: color-mix(in srgb, var(--risk-vale) 11%, transparent);
+  --risk-sombra-ponta: color-mix(in srgb, var(--risk-ponta) 11%, transparent);
+  --risk-campo: var(--t-cmd);
+}
+:root[data-theme="light"] {
+  --risk-vale: #2a78d6; --risk-ponta: #c2362b; --risk-demais: #6b6b6b;
+  --risk-util: #b35900; --risk-sab: #a8329a; --risk-dom: #1d8a84;
+  --risk-a2021: #c3c6c9; --risk-a2022: #8f969c; --risk-a2023: #a8329a; --risk-a2024: #1d8a84; --risk-a2025: #c2362b; --risk-a2026: #b35900; --risk-a2027: #111111;
+  --risk-verm: #c2362b; --risk-ref: #9a7400;
+}
+
+/* ---------- peças comuns ---------- */
+html[data-func="RISK"] .painel-corpo { gap: 6px; }
+html[data-func="RISK"] .m-decisao > div[data-insp-alvo]:hover { outline: 1px solid var(--t-ambar); outline-offset: -1px; }
+.risk-topo { display: grid; }
+.risk-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; background: var(--surface); border: 1px solid var(--rule); padding: 4px 10px; font-family: var(--f-data); }
+.risk-barra-g { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.risk-barra-r { font-size: 0.64rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--t-ambar); }
+.risk-barra-t { font-size: 0.7rem; color: var(--ink-3); }
+.risk-sel { font: 500 0.72rem var(--f-data); color: var(--ink); background: var(--risk-campo); border: 1px solid var(--rule); border-radius: 0; padding: 2px 4px; max-width: 100%; }
+.risk-sel:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: 1px; }
+.risk-btn { font: 500 0.7rem var(--f-data); color: var(--t-ambar); background: transparent; border: 1px solid var(--rule); padding: 2px 8px; cursor: pointer; text-transform: uppercase; white-space: nowrap; justify-self: start; }
+.risk-btn:hover { border-color: var(--t-ambar); }
+.risk-info { cursor: help; color: var(--ink-3); font-size: 0.82rem; }
+.risk-info:hover, .risk-info:focus-visible { color: var(--t-ambar); }
+.risk-mt { font-family: var(--f-data); font-size: 0.66rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 8px; }
+.risk-mt b { color: var(--t-ambar); font-weight: 500; }
+.risk-mt span { color: var(--ink-3); }
+html[data-func="RISK"] .legenda-mini { font-size: 0.66rem; gap: 2px 12px; }
+
+/* alvos dentro dos gráficos (clique abre o inspetor) */
+.risk-alvo { cursor: pointer; }
+.risk-alvo:focus { outline: none; }
+.risk-alvo:focus-visible { fill: color-mix(in srgb, var(--t-ambar) 14%, transparent); }
+.risk-alvo.selecionado { fill: color-mix(in srgb, var(--t-ambar) 16%, transparent); stroke: var(--t-ambar); stroke-width: 1; }
+.risk-ponto { cursor: pointer; }
+.risk-ponto.selecionado { stroke: var(--t-ambar); stroke-width: 2.5; }
+html[data-func="RISK"] .mini[data-insp-alvo]:hover { border-color: var(--t-ambar); }
+html[data-func="RISK"] .mini.selecionado { border-color: var(--t-ambar); }
+
+/* tabelas densas */
+table.risk-densa { font-size: 0.74rem; }
+table.risk-densa th, table.risk-densa td { padding: 3px 6px; }
+table.risk-densa th small, table.risk-densa td small { display: block; color: var(--ink-3); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 0.62rem; }
+table.risk-densa td.n, table.risk-densa th.n { white-space: nowrap; }
+table.risk-densa tr.destaque td { background: var(--accent-soft) !important; font-weight: 600; }
+table.risk-densa tr.risk-fds td { color: var(--ink-3); }
+html[data-func="RISK"] tr[data-insp-alvo] { cursor: pointer; }
+html[data-func="RISK"] td[data-insp-alvo] { cursor: pointer; }
+html[data-func="RISK"] td[data-insp-alvo]:hover { outline: 1px solid var(--t-ambar); outline-offset: -1px; }
+.risk-alta { max-height: 330px; overflow: auto; }
+.risk-alta thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+table.risk-hm th, table.risk-hm td { padding: 2px 5px; }
+table.risk-ind { min-width: 860px; }
+table.risk-ind th { vertical-align: bottom; line-height: 1.2; }
+table.risk-mat td.n b { font-size: 1rem; }
+table.risk-mat td.ok { background: color-mix(in srgb, var(--accent) 18%, var(--surface)) !important; }
+
+/* grades internas */
+.risk-duas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 6px 18px; }
+.risk-tres { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 6px 14px; }
+.risk-sem { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 2px; }
+.risk-mult .mini { cursor: pointer; padding: 4px 6px; }
+.risk-calor { min-width: 600px; }
+
+/* dias do perfil dia a dia */
+.risk-dias { display: flex; flex-wrap: wrap; gap: 2px; }
+.risk-dias button { min-width: 1.9rem; padding: 1px 2px; border: 1px solid var(--rule); border-bottom: 3px solid var(--c); background: var(--surface); color: var(--ink-2); font: 500 0.66rem var(--f-data); cursor: pointer; }
+.risk-dias button[aria-pressed="true"] { color: var(--ink); border-color: var(--c); box-shadow: 0 0 0 1px var(--c); }
+.risk-dias button.media { border-bottom-color: var(--ink); min-width: auto; padding-inline: 8px; }
+
+/* ---------- simulador ---------- */
+.risk-entrada { display: flex; flex-wrap: wrap; align-items: end; gap: 6px 18px; padding: 4px 0 6px; border-bottom: 1px solid var(--rule); }
+.risk-campo { display: grid; gap: 3px; }
+.risk-campo > span { font-family: var(--f-data); font-size: 0.6rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); }
+.risk-lin { display: flex; align-items: center; gap: 6px; }
+.risk-acoes { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+html[data-func="RISK"] .painel input[type="number"] { font: 500 0.82rem var(--f-data); font-variant-numeric: tabular-nums; text-align: right; padding: 2px 6px; border: 1px solid var(--rule); border-radius: 0; background: var(--risk-campo); color: var(--ink); width: 5.2rem; }
+html[data-func="RISK"] .painel input[type="number"]:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: 1px; }
+html[data-func="RISK"] .painel input.editado { border-color: var(--t-ambar); box-shadow: 0 0 0 1px var(--t-ambar); }
+
+table.risk-prem { width: 100%; table-layout: fixed; font-size: 0.76rem; }
+table.risk-prem th, table.risk-prem td { padding: 4px 6px; vertical-align: middle; }
+table.risk-prem th:first-child, table.risk-prem td:first-child { width: 9.4rem; }
+table.risk-prem th.n, table.risk-prem td.n { text-align: center; white-space: normal; }
+table.risk-prem th small, table.risk-prem td small { display: block; color: var(--ink-3); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 0.62rem; line-height: 1.3; overflow-wrap: anywhere; }
+table.risk-prem td small.contrib { color: var(--ink-2); }
+table.risk-prem .col-mes { width: 5.2rem; text-align: right !important; }
+table.risk-prem input { max-width: 5rem; margin-inline: auto; display: block; }
+table.risk-prem td[colspan="3"] .risk-lin { justify-content: flex-start; padding-left: max(0px, calc((100% / 3 - 5rem) / 2)); }
+table.risk-prem td[colspan="3"] .risk-lin input { margin-inline: 0; }
+table.risk-prem td[colspan="3"] small { text-align: left; padding-left: max(0px, calc((100% / 3 - 5rem) / 2)); }
+table.risk-prem tr.destaque td { background: var(--accent-soft) !important; font-weight: 600; }
+.risk-rot-prem { cursor: help; border-bottom: 1px dotted var(--ink-3); font-family: var(--f-data); }
+
+.risk-sens { display: grid; grid-template-columns: 9.4rem 6.4rem minmax(0, 1fr); align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--rule); }
+.risk-sens-l { display: grid; gap: 1px; padding-left: 6px; font-size: 0.76rem; }
+.risk-sens-l small, .risk-sens-i small { color: var(--ink-3); font: 0.62rem var(--f-data); }
+.risk-sens-i { display: grid; gap: 2px; justify-items: center; }
+.risk-regua { display: flex; gap: 2px; min-width: 0; }
+.risk-regua span { flex: 1 1 0; display: grid; gap: 1px; min-width: 0; padding: 3px 4px; border: 1px solid var(--rule); background: var(--risk-campo); font: 500 0.82rem var(--f-data); font-variant-numeric: tabular-nums; text-align: center; color: var(--ink); cursor: pointer; }
+.risk-regua span b { font-size: 0.62rem; color: var(--ink-3); font-weight: 500; }
+.risk-regua span:hover { border-color: var(--t-ambar); }
+.risk-regua span.sel { border-color: var(--t-ambar); box-shadow: 0 0 0 1px var(--t-ambar); }
+.risk-regua span.sel b { color: var(--t-ambar); }
+
+/* resumo para a mesa */
+.risk-res { display: grid; gap: 4px; align-content: start; }
+.risk-res-num { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.risk-res-num b { font: 600 1.8rem/1.1 var(--f-data); color: var(--ink); }
+.risk-res-num span { font: 0.7rem var(--f-data); color: var(--ink-3); }
+.risk-res-dir { font: 600 0.9rem var(--f-data); }
+.risk-res-itens { display: grid; border-top: 1px solid var(--rule); }
+.risk-res-item { display: grid; grid-template-columns: 7.6rem minmax(0, 1fr); gap: 1px 8px; padding: 5px 0; border-bottom: 1px solid var(--rule); }
+.risk-res-l { grid-row: span 2; font: 0.6rem var(--f-data); letter-spacing: 0.03em; text-transform: uppercase; color: var(--t-ambar); padding-top: 2px; }
+.risk-res-v { font: 600 0.78rem var(--f-data); min-width: 0; overflow-wrap: anywhere; }
+.risk-res-v.leve { font-weight: 400; font-size: 0.74rem; color: var(--ink-2); }
+.risk-res-c { font-size: 0.76rem; color: var(--ink-2); line-height: 1.35; }
+.risk-res-alertas { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 4px; }
+.risk-res-alertas li { border-left: 2px solid var(--desce); padding-left: 8px; font-size: 0.78rem; color: var(--ink-2); }
+
+/* etiquetas da ponta */
+.risk-chips { display: flex; gap: 2px; }
+.risk-chips button { flex: 1 1 0; min-width: 0; display: grid; gap: 1px; text-align: left; padding: 3px 8px; border: 1px solid var(--rule); border-left: 3px solid var(--c, var(--ink-3)); background: var(--risk-campo); color: var(--ink); font: 500 0.86rem var(--f-data); font-variant-numeric: tabular-nums; cursor: pointer; }
+.risk-chips button small { font: 500 0.6rem var(--f-data); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.risk-chips button[aria-pressed="true"] { border-color: var(--t-ambar); box-shadow: 0 0 0 1px var(--t-ambar); }
+.risk-ref12 { margin: 0; padding: 3px 8px; border-left: 3px solid var(--ink-2); background: var(--vazio); font: 500 0.7rem/1.4 var(--f-data); color: var(--ink-2); }
+.risk-ref12 b { color: var(--ink); font-weight: 500; }
+
+/* ---------- metodologia ---------- */
+.risk-eq { font: 0.8rem/1.6 var(--f-data); background: var(--vazio); border-left: 3px solid var(--t-ambar); padding: 6px 10px; color: var(--ink); overflow-x: auto; }
+.risk-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.risk-lista li { display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: 10px; font-size: 0.92rem; line-height: 1.45; }
+.risk-lista li b { font: 500 0.72rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; padding-top: 3px; }
+html[data-func="RISK"] .m-met table { font-size: 0.76rem; }
+html[data-func="RISK"] .m-met td { font-family: var(--f-body); }
+
+/* inspetor */
+html[data-func="RISK"] .m-insp-corpo table { font-size: 0.72rem; }
+html[data-func="RISK"] .m-insp-corpo dl.estat { font-size: 0.74rem; gap: 3px 10px; }
+html[data-func="RISK"] .m-insp-corpo dl.estat dd { overflow-wrap: anywhere; }
+
+/* ---------- celular ---------- */
+@media (max-width: 760px) {
+  .risk-acoes { margin-left: 0; }
+  table.risk-prem th:first-child, table.risk-prem td:first-child { width: 6.4rem; }
+  table.risk-prem .col-mes { display: none; }
+  table.risk-prem th, table.risk-prem td { padding: 3px 2px; }
+  html[data-func="RISK"] .painel input[type="number"] { width: 4.4rem; padding: 2px 3px; }
+  .risk-sens { grid-template-columns: 1fr 1fr; }
+  .risk-regua { grid-column: 1 / -1; }
+  .risk-chips { flex-wrap: wrap; } .risk-chips button { flex: 1 1 45%; }
+  .risk-lista li { grid-template-columns: 1fr; gap: 0; }
+  .risk-res-item { grid-template-columns: 1fr; } .risk-res-l { grid-row: auto; }
+}
+.risk-cinza { color: var(--ink-3); font-weight: 400; font-size: 0.9em; }
+.risk-alta.risk-alta-b { max-height: 176px; }
+.risk-chips button { padding: 2px 6px; font-size: 0.8rem; }
+@media (min-width: 1400px) { html[data-func="RISK"] .risk-mult { grid-template-columns: repeat(12, minmax(0, 1fr)); } }
+.risk-mult .mini .ttl { font-size: 0.7rem; }
+.risk-ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; padding-inline: 10px; }

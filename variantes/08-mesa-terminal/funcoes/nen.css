@@ -1,0 +1,162 @@
+/* Variante 08 · Mesa (terminal desde o início) · funcoes/nen.css
+   Estilos da função NEN · Pricing Descolamento. Seletores com prefixo .nen- (ou escopados por html[data-func="NEN"]).
+   Cores novas: escuro em :root, claro em :root[data-theme="light"] (regra do padrão v2.0). Submercados usam --sm-*. */
+:root {
+  --nen-pa: #5ccac3;            /* política "Antes" (v1, λ 0,50) e climatologia nos gráficos */
+  --nen-clim: #5ccac3;
+  --nen-rep: #b9a3f0;           /* alternativa "repetir o ano anterior" */
+  --nen-perda: color-mix(in srgb, #ff7a6b 30%, transparent);
+  --nen-melhor: color-mix(in srgb, #4f8fe0 28%, transparent);
+  --nen-dig: #2a1d08;           /* fundo do valor digitado na curva do SE */
+  --nen-vz: #0b0d10;
+}
+:root[data-theme="light"] {
+  --nen-pa: #1d8a84;
+  --nen-clim: #1d8a84;
+  --nen-rep: #6a4fb5;
+  --nen-perda: color-mix(in srgb, #c2362b 22%, transparent);
+  --nen-melhor: color-mix(in srgb, #2a78d6 20%, transparent);
+  --nen-dig: #f6e6d3;
+  --nen-vz: #f3f1ec;
+}
+
+/* barra de ferramentas dentro do corpo do painel (o cabeçalho fica só com as abas) */
+.nen-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font: 0.7rem var(--f-data); color: var(--ink-2); padding-top: 4px; }
+.nen-barra .leg { margin-left: 2px; }
+.nen-r { color: var(--ink-3); }
+.nen-btn { font: 500 0.7rem var(--f-data); color: var(--ink-2); background: var(--surface); border: 1px solid var(--rule); padding: 2px 8px; cursor: pointer; }
+.nen-btn:hover { color: var(--t-ambar); border-color: var(--t-ambar); }
+.nen-btn.prim { background: var(--t-ambar); border-color: var(--t-ambar); color: var(--t-sobre); }
+.nen-tog { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+.nen-tog input { accent-color: var(--t-ambar); margin: 0; }
+.nen-sel { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.nen-sel span { color: var(--ink-3); }
+.nen-sel select { font: 0.7rem var(--f-data); background: var(--surface); color: var(--ink); border: 1px solid var(--rule); padding: 1px 4px; max-width: 9rem; }
+.nen-estado { font: 600 0.66rem var(--f-data); text-transform: uppercase; letter-spacing: 0.04em; padding: 1px 6px; border: 1px solid var(--rule); color: var(--ink-2); }
+.nen-estado.ex { border-color: var(--t-ambar); color: var(--t-ambar); }
+.nen-in { width: 100%; min-width: 3.2rem; font: 500 0.74rem var(--f-data); text-align: right; background: var(--bg); color: var(--ink); border: 1px solid var(--rule); padding: 2px 4px; font-variant-numeric: tabular-nums; }
+.nen-sel .nen-in { width: 4.6rem; }
+.nen-in::placeholder { color: var(--ink-3); opacity: 1; }
+.nen-in:focus { outline: 1px solid var(--t-ambar); border-color: var(--t-ambar); }
+.nen-in.dig { background: var(--nen-dig); color: var(--t-ambar); border-color: color-mix(in srgb, var(--t-ambar) 50%, var(--rule)); font-weight: 600; }
+.nen-in.alerta { border-color: var(--desce); }
+.nen-in:disabled { background: var(--nen-vz); border-color: transparent; }
+.nen-avisos { display: flex; flex-wrap: wrap; gap: 2px 14px; font: 0.68rem var(--f-data); color: var(--desce); }
+.nen-avisos .leg { color: var(--ink-3); }
+
+/* avisos e notas */
+.nen-aviso { background: var(--accent-soft); border-left: 3px solid var(--t-ambar); padding: 6px 12px; font: 0.74rem/1.45 var(--f-data); color: var(--ink-2); }
+.nen-aviso b { color: var(--t-ambar); }
+.nen-rodape { font: 0.68rem var(--f-data); color: var(--ink-3); background: var(--surface); padding: 6px 10px; }
+.nen-nota { font: 0.7rem/1.45 var(--f-data); color: var(--ink-2); background: var(--accent-soft); padding: 6px 9px; }
+.nen-conc { font-family: var(--f-body); font-size: 0.86rem; line-height: 1.45; color: var(--ink-2); max-width: 110ch; }
+.nen-conc b { color: var(--ink); }
+.nen-vazio { font: 0.74rem var(--f-data); color: var(--ink-3); padding: 10px 0; text-align: center; }
+.nen-ex { color: var(--t-ambar); }
+.nen-pol { display: grid; gap: 6px; padding-top: 6px; }
+
+/* tabelas densas */
+table.nen-t { font-size: 0.72rem; }
+table.nen-t th, table.nen-t td { padding: 3px 6px; white-space: nowrap; }
+table.nen-t thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+table.nen-t tbody th { font: 500 0.72rem var(--f-data); color: var(--ink); text-transform: none; letter-spacing: 0; text-align: left; }
+table.nen-t .nen-sep { border-left: 1px solid var(--rule); }
+table.nen-t td.nen-vz { background: var(--nen-vz) !important; }
+table.nen-t tr.nen-grupo > * { border-top: 2px solid var(--rule); }
+table.nen-t tr.nen-parcial th { color: var(--ink-2); }
+table.nen-t tr[data-insp-alvo]:hover td, table.nen-t tr[data-insp-alvo]:hover th { background: var(--accent-soft); }
+table.nen-t tr.selecionado th { background: var(--m-sel) !important; }
+.nen-fx { display: block; font-size: 0.62rem; color: var(--ink-3); font-weight: 400; }
+.nen-ref { color: var(--ink-3); }
+.nen-tag { font-size: 0.58rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.03em; }
+.nen-rol { max-height: 280px; overflow: auto; }
+.nen-delta { background: color-mix(in srgb, var(--t-ambar) 10%, transparent); }
+.nen-perda { background: var(--nen-perda) !important; color: var(--ink); }
+.nen-melhor { background: var(--nen-melhor) !important; }
+.nen-alto { color: var(--desce); font-weight: 600; }
+.nen-cons { background: color-mix(in srgb, var(--t-ambar) 7%, transparent); }
+tr.nen-recon td, tr.nen-recon th { color: var(--ink-3); }
+.nen-j { color: var(--ink-2); font-style: italic; }
+
+/* cotação por produto (NEN-2): compra em cima, venda embaixo */
+table.nen-cot td.nen-cv { padding: 2px 3px; vertical-align: middle; }
+table.nen-cot td.nen-cv button { display: block; width: 100%; text-align: right; font: 600 0.72rem var(--f-data); color: var(--ink); background: none; border: 0; padding: 1px 3px; cursor: pointer; font-variant-numeric: tabular-nums; }
+table.nen-cot td.nen-cv button + button { color: var(--ink-2); font-weight: 500; }
+table.nen-cot td.nen-cv button:hover { background: var(--accent-soft); color: var(--t-ambar); }
+table.nen-cot td.nen-cv button.selecionado { outline: 1px solid var(--t-ambar); }
+table.nen-cot td.nen-cv i { display: block; text-align: right; font-size: 0.64rem; color: var(--t-ambar); padding-right: 3px; }
+table.nen-cot td.nen-ano { background: color-mix(in srgb, var(--t-ambar) 8%, transparent); }
+table.nen-cot .nen-rot i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; vertical-align: 0; }
+table.nen-cot tr.nen-linse th, table.nen-cot tr.nen-linse td { color: var(--ink-3); font-size: 0.66rem; padding-block: 2px; }
+table.nen-curva td { padding: 2px 2px; }
+table.nen-curva th { padding: 3px 4px; }
+.nen-val { font: 600 0.72rem var(--f-data); color: var(--ink); background: none; border: 0; padding: 0 2px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.nen-val:hover { color: var(--t-ambar); }
+.nen-val.selecionado { outline: 1px solid var(--t-ambar); }
+table.nen-par .nen-in { width: 4.2rem; }
+
+/* inspetor */
+.nen-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; background: var(--rule); }
+.nen-trio > div { background: var(--surface); padding: 5px 7px; display: grid; gap: 1px; min-width: 0; }
+.nen-trio span { font: 0.6rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; }
+.nen-trio b { font: 600 1.05rem/1.1 var(--f-data); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nen-trio small { font: 0.6rem var(--f-data); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nen-trio > div.ativo { box-shadow: inset 0 -2px 0 var(--t-ambar); }
+.nen-ins-l { font: 0.72rem/1.45 var(--f-data); color: var(--ink-2); }
+.nen-ins-l b { color: var(--ink); }
+table.nen-det { font-size: 0.68rem; }
+table.nen-det th, table.nen-det td { padding: 2px 4px; }
+table.nen-det td:first-child { white-space: normal; }
+table.nen-det tr.nen-quebra td { padding: 0; border-bottom: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); }
+.nen-ficha { display: grid; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+.nen-ficha h3 { color: inherit; }
+
+/* pequenos múltiplos, mapas e grades */
+.nen-mult3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
+.nen-mult5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+.nen-mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2px; }
+.nen-mult3 .mini, .nen-mult5 .mini, .nen-mult .mini { padding: 4px 6px; }
+.nen-mult5 .mini .ttl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+table.nen-fund td, table.nen-fund th { line-height: 1.25; }
+.nen-mapas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.nen-mapa { display: grid; gap: 2px; min-width: 0; }
+.nen-mapa .ttl { font: 600 0.72rem var(--f-data); }
+.nen-duas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 10px; align-items: start; }
+.nen-duas > *, .nen-mult5 > *, .nen-mult3 > *, .nen-mapas > * { min-width: 0; }
+.nen-fatos { display: grid; gap: 6px; font-family: var(--f-body); font-size: 0.86rem; color: var(--ink-2); }
+.nen-fatos .rotulo { margin-right: 6px; }
+table.nen-calor td.nen-hc { text-align: right; vertical-align: middle; cursor: pointer; min-width: 42px; }
+table.nen-calor td.nen-hc b { font-weight: 600; }
+.nen-marca { font-style: normal; font-size: 0.6rem; margin-right: 3px; color: var(--ink-2); }
+table.nen-calor td.nen-refv { outline: 1.5px solid var(--ink-2); outline-offset: -2px; }
+table.nen-calor tbody tr:nth-child(even) td.nen-hc, table.nen-calor tbody tr:hover td.nen-hc { background-color: transparent; }
+.nen-fluxo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; background: var(--rule); }
+.nen-fluxo > div { background: var(--surface); padding: 8px 10px; display: grid; gap: 3px; align-content: start; font-size: 0.82rem; }
+.nen-fluxo p { color: var(--ink-2); }
+.nen-fluxo a { font: 0.68rem var(--f-data); }
+
+/* metodologia: índice agrupado e texto */
+/* a trilha automática da área não cresce com o texto da MET (o .m-met ficava com a altura da tela e o índice deixava de grudar) */
+html[data-func="NEN"] .m-area { grid-auto-rows: max-content; }
+html[data-func="NEN"] .m-met nav { max-height: calc(100dvh - 170px); overflow-y: auto; gap: 0; }
+html[data-func="NEN"] .m-met nav a { padding: 2px 6px; }
+.nen-met-grupo { font: 600 0.62rem var(--f-data); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); padding: 10px 6px 3px; border-bottom: 1px solid var(--rule); margin-bottom: 2px; }
+.nen-met-grupo:first-child { padding-top: 2px; }
+html[data-func="NEN"] .m-met .m-met-texto > section > .rotulo { margin-top: 18px; padding-top: 10px; border-top: 2px solid var(--t-ambar); }
+html[data-func="NEN"] .m-met .m-met-texto > section:first-child > .rotulo { margin-top: 0; border-top: 0; padding-top: 0; }
+html[data-func="NEN"] .m-met table.nen-t td { white-space: normal; }
+html[data-func="NEN"] .m-met .lista li { font-family: var(--f-body); }
+.nen-passos { margin: 0; padding-left: 1.3rem; display: grid; gap: 6px; font-family: var(--f-body); font-size: 0.95rem; line-height: 1.5; }
+.nen-tec summary { font: 0.74rem var(--f-data); }
+.nen-tec > div { display: grid; gap: 8px; padding-top: 8px; }
+
+@media (max-width: 1180px) {
+  .nen-mult5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .nen-mapas { grid-template-columns: 1fr; }
+  .nen-duas { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .nen-mult3, .nen-mult5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nen-fluxo { grid-template-columns: 1fr 1fr; }
+  .nen-rol { max-height: 420px; }
+}

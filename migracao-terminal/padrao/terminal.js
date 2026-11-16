@@ -59,11 +59,11 @@
     });
   }
 
-  /** fita de cotações. itens: [{ r: rótulo, v: valor formatado, d: variação (número) }].
+  /** fita de cotações. itens: [{ r: rótulo, v: valor formatado, d: variação (número, opcional) }].
    *  A página (ou o layout comum) chama Terminal.fita(itens) com os dados reais; sem itens, a fita fica escondida. */
   function fita(itens) {
     document.querySelectorAll("[data-fita]").forEach(el => {
-      const html = itens.map(c => `<span class="tk"><span class="tk-r">${c.r}</span><span class="tk-v num">${c.v}</span><span class="tk-d num ${tom(c.d)}">${seta(c.d)} ${sn(c.d, 2)}</span></span>`).join("");
+      const html = itens.map(c => `<span class="tk"><span class="tk-r">${c.r}</span><span class="tk-v num">${c.v}</span>${c.d == null ? "" : `<span class="tk-d num ${tom(c.d)}">${seta(c.d)} ${sn(c.d, 2)}</span>`}</span>`).join("");
       el.innerHTML = `<div class="tk-faixa">${html}${html.replace(/class="tk"/g, 'class="tk" aria-hidden="true"')}</div>`;
       el.hidden = !itens.length;
     });

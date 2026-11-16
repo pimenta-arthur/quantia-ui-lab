@@ -1,0 +1,190 @@
+/* Variante 08 · Mesa (terminal desde o início) · funcoes/hyd.css
+   Estilos da função HYD · Hydro Inflow Similarity. Seletores com prefixo .hyd-; cores novas como tokens --hyd-*:
+   escuro em :root, claro em :root[data-theme="light"] (o tema não segue o sistema). Subsistemas usam --sm-se,
+   --sm-s, --sm-ne, --sm-n do padrão; o âmbar (--accent) fica para o modelo-v1. */
+:root {
+  --hyd-sim: #5ccac3;                          /* anos similares (recomposição) */
+  --hyd-azul: #6fa6e6; --hyd-laranja: #e3a06c;  /* El Niño forte / La Niña forte; ganha / perde; mais / menos ENA */
+  --hyd-sesul: #6fa6e6; --hyd-seresto: #e3a06c; /* blocos do Sudeste */
+  --hyd-2026: var(--ink); --hyd-destaque: #d4bb5f;
+  --hyd-g1: #6fa6e6; --hyd-g2: #e3a06c; --hyd-g3: #5ccac3; --hyd-g4: #d4bb5f; --hyd-g5: #a993d6; --hyd-g-demais: var(--bar-saz);
+  --hyd-frio-3: #6fa6e6; --hyd-frio-2: #4f86c6; --hyd-frio-1: #2f5584; --hyd-neutro: #5a646d;
+  --hyd-quente-1: #8a5631; --hyd-quente-2: #c06d33; --hyd-quente-3: #e48b4a; --hyd-quente-4: #f2b07a;
+  --hyd-m1: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+:root[data-theme="light"] {
+  --hyd-sim: #1d8a84; --hyd-azul: #2a78d6; --hyd-laranja: #a8592a; --hyd-sesul: #2a78d6; --hyd-seresto: #a8592a;
+  --hyd-2026: var(--ink); --hyd-destaque: #7d6a1c;
+  --hyd-g1: #2a78d6; --hyd-g2: #a8592a; --hyd-g3: #1d8a84; --hyd-g4: #7d6a1c; --hyd-g5: #6b4fa0; --hyd-g-demais: var(--bar-saz);
+  --hyd-frio-3: #1c5cab; --hyd-frio-2: #4f86c6; --hyd-frio-1: #9dbfe3; --hyd-neutro: #b8c0c8;
+  --hyd-quente-1: #f2c094; --hyd-quente-2: #e48b4a; --hyd-quente-3: #c4561f; --hyd-quente-4: #8f3410;
+  --hyd-m1: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* cores de texto */
+.hyd-sim, td.hyd-sim { color: var(--hyd-sim); }
+td.hyd-bom { color: var(--hyd-azul); font-weight: 600; }
+td.hyd-ruim { color: var(--hyd-laranja); }
+td.hyd-fraco { color: var(--ink-3); }
+td.hyd-sombra { color: var(--t-ambar); }
+.hyd-cima { color: var(--hyd-azul); white-space: nowrap; } .hyd-baixo { color: var(--hyd-laranja); white-space: nowrap; } .hyd-sem { color: var(--ink-3); white-space: nowrap; }
+svg text.hyd-ano { paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; font-weight: 500; }
+.dica .hyd-sim { color: var(--hyd-sim); }
+.dica .hyd-dica-ir { display: block; margin-top: 3px; font-size: 0.66rem; color: var(--ink-3); }
+
+/* tabelas densas */
+.hyd-tab { font-size: 0.74rem; }
+.hyd-tab th, .hyd-tab td { padding: 3px 7px; white-space: nowrap; }
+.hyd-tab small { color: var(--ink-3); font-size: 0.64rem; }
+.hyd-tab code { font-size: 0.66rem; }
+.hyd-tabmes th:first-child, .hyd-tabmes td:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+.hyd-tabmes tr.hyd-ini td { border-top: 2px solid var(--rule); }
+.hyd-tabmes .hyd-m1, .hyd-tabmes tbody td.hyd-m1 { background: var(--hyd-m1); }
+.hyd-tabmes thead th[data-mm] { cursor: pointer; }
+.hyd-tabmes thead th[data-mm]:hover { color: var(--ink); }
+.hyd-memorial td:first-child { color: var(--t-ambar); width: 2rem; }
+.hyd-memorial td { white-space: normal; }
+.hyd-q { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: 0; }
+
+/* legendas extras */
+.legenda-mini i.hyd-circ { width: 9px; height: 9px; border: 1.5px solid var(--ink); border-radius: 50%; background: transparent; }
+.legenda-mini i.hyd-circ.cheio { background: var(--ink); }
+.legenda-mini i.hyd-tracejado { background: transparent; border: 1.5px dashed var(--ink-3); }
+
+/* pequenos múltiplos (3 colunas; .dois = 2) */
+.hyd-multi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; background: var(--rule); border: 1px solid var(--rule); }
+.hyd-multi.dois { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hyd-mini { background: var(--surface); padding: 4px 6px 2px; display: grid; gap: 2px; min-width: 0; }
+.hyd-mini-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 10px; font: 0.7rem var(--f-data); color: var(--ink-2); min-width: 0; }
+.hyd-mini-cab > b { font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.03em; font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hyd-mini-cab b b, .hyd-mini-cab span b { color: var(--ink); }
+.hyd-marca::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--c); margin-right: 6px; vertical-align: 0; }
+.hyd-mini-sub { font: 0.64rem var(--f-data); color: var(--ink-3); }
+@media (max-width: 1180px) { .hyd-multi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .hyd-multi, .hyd-multi.dois { grid-template-columns: 1fr; } }
+
+/* dois painéis empilhados numa coluna de 4 */
+.hyd-pilha { grid-column: span 4; display: grid; gap: 2px; align-content: start; background: var(--rule); min-width: 0; }
+.hyd-pilha > .painel, .hyd-pilha > .painel[data-tam] { grid-column: 1 / -1; }
+@media (max-width: 1180px) { .hyd-pilha { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); } .hyd-pilha > .painel[data-tam] { grid-column: auto; } }
+@media (max-width: 760px) { .hyd-pilha { grid-template-columns: 1fr; } }
+
+/* barra de controles dentro do painel */
+.hyd-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font: 0.7rem var(--f-data); }
+.hyd-rot { color: var(--ink-3); }
+.hyd-chip { font: 500 0.7rem var(--f-data); color: var(--ink-2); background: var(--vazio); border: 1px solid var(--rule); padding: 2px 8px; cursor: pointer; }
+.hyd-chip:hover { color: var(--t-ambar); border-color: var(--t-ambar); }
+.hyd-chip.ativo { color: var(--t-sobre); background: var(--hyd-destaque); border-color: var(--hyd-destaque); }
+html[data-func="HYD"] .abas button:disabled { opacity: 0.4; cursor: not-allowed; }
+.hyd-chave { display: inline-flex; align-items: center; gap: 6px; font: 500 0.7rem var(--f-data); color: var(--ink-2); cursor: pointer; user-select: none; position: relative; }
+.hyd-chave input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.hyd-chave .trilho { position: relative; width: 26px; height: 14px; background: var(--rule); flex: none; }
+.hyd-chave .trilho::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; background: var(--ink-2); }
+.hyd-chave input:checked + .trilho { background: var(--t-ambar); }
+.hyd-chave input:checked + .trilho::after { transform: translateX(12px); background: var(--t-sobre); }
+.hyd-chave input:focus-visible + .trilho { outline: 2px solid var(--t-ambar); outline-offset: 2px; }
+
+/* camada de El Niño forte */
+.hyd-estados { display: flex; flex-wrap: wrap; gap: 4px; }
+.hyd-estado { display: inline-flex; align-items: center; gap: 6px; font: 0.66rem var(--f-data); letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; background: var(--vazio); color: var(--ink-2); }
+.hyd-estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.hyd-estado.ativo { background: var(--accent-soft); color: var(--t-ambar); }
+
+/* inspetor e textos curtos */
+.hyd-ins-p { font-size: 0.82rem; color: var(--ink-2); margin: 0; }
+.hyd-ins-p b { color: var(--ink); }
+.m-insp-corpo .hyd-tab { font-size: 0.7rem; }
+.m-insp-corpo .hyd-tab th, .m-insp-corpo .hyd-tab td { padding: 2px 5px; }
+html[data-func="HYD"] .m-insp-corpo dl.estat { font-size: 0.72rem; gap: 3px 10px; }
+html[data-func="HYD"] .m-insp-corpo .abas { margin-bottom: 4px; }
+html[data-func="HYD"] .m-insp-corpo h3 { margin-top: 4px; }
+
+/* resumo no painel da MESA */
+.hyd-resumo { display: grid; gap: 4px; }
+.hyd-resumo .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.hyd-resumo .kpi { padding: 6px 8px; }
+.hyd-resumo .kpi-v { font-size: 1.3rem; }
+.hyd-resumo-l { font: 0.72rem var(--f-data); color: var(--ink-2); margin: 0; }
+.hyd-resumo-l b { color: var(--t-ambar); font-weight: 600; margin-right: 4px; }
+@media (max-width: 520px) { .hyd-resumo .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* indicadores climáticos */
+.hyd-indices td { vertical-align: middle; }
+.hyd-indices td { padding-block: 2px; }
+.hyd-indices td.hyd-grp-n { color: var(--t-ambar); font-weight: 600; text-transform: uppercase; font-size: 0.64rem; letter-spacing: 0.04em; }
+.hyd-indices tr.hyd-g1 td { border-top: 2px solid var(--rule); }
+.hyd-indices tr.hyd-atual td:nth-child(2) { box-shadow: inset 3px 0 0 var(--t-ambar); }
+.hyd-cpc th, .hyd-cpc td { padding-inline: 4px; }
+.hyd-indices td.hyd-spk { padding-block: 1px; }
+.hyd-indices .spark { display: block; }
+.hyd-anos span { margin-right: 6px; }
+.hyd-selo { font-size: 0.62rem; padding: 1px 6px; background: var(--vazio); color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.03em; }
+.hyd-selo.cenario { background: var(--accent-soft); color: var(--t-ambar); }
+.hyd-selo.teste { background: color-mix(in srgb, var(--hyd-quente-2) 22%, transparent); color: var(--hyd-quente-3); }
+.hyd-leitura { display: grid; }
+.hyd-leit-item { display: grid; grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1fr); gap: 4px 16px; padding: 5px 0; border-bottom: 1px solid var(--rule); }
+.hyd-leit-item:last-child { border-bottom: 0; }
+.hyd-leit-item p { margin: 0; font-size: 0.78rem; line-height: 1.35; }
+.hyd-leit-item b { font-weight: 600; }
+.hyd-leit-g { font: 600 0.74rem var(--f-data); text-transform: uppercase; color: var(--ink); background: none; border: 0; padding: 0; text-align: left; cursor: pointer; align-self: start; }
+.hyd-leit-g:hover { color: var(--t-ambar); }
+.hyd-implica { color: var(--ink-2); padding-left: 10px; border-left: 3px solid var(--rule); }
+.hyd-implica.forte { border-left-color: var(--t-ambar); color: var(--ink); }
+@media (max-width: 900px) { .hyd-leit-item { grid-template-columns: 1fr; } }
+
+/* tabela histórica de um índice */
+.hyd-leg-tab { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 0.7rem var(--f-data); color: var(--ink-2); margin: 2px 0 4px; }
+.hyd-leg-tab span { display: inline-flex; align-items: center; gap: 5px; }
+.hyd-leg-tab i { width: 14px; height: 12px; border: 1px solid var(--rule); }
+.hyd-caixa-hist { max-height: 290px; overflow: auto; border: 1px solid var(--rule); }
+.hyd-hist { font: 0.7rem var(--f-data); border-collapse: separate; border-spacing: 0; width: 100%; }
+.hyd-hist th, .hyd-hist td { padding: 1px 5px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--surface); background: none; }
+.hyd-hist thead th { position: sticky; top: 0; background: var(--surface); color: var(--t-ambar); z-index: 1; border-bottom: 1px solid var(--rule); }
+.hyd-hist th.ano { width: 4.5rem; position: sticky; left: 0; background: var(--surface); text-align: left; color: var(--ink-2); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+.hyd-hist thead th.ano { z-index: 2; color: var(--t-ambar); }
+.hyd-hist th.ano.sim { color: var(--hyd-sim); font-weight: 600; }
+.hyd-hist tbody tr:nth-child(even) td, .hyd-hist tbody tr:hover td { background: none; }
+.hyd-hist td.q1, .hyd-leg-tab i.q1 { background: color-mix(in srgb, var(--hyd-quente-3) 20%, transparent) !important; }
+.hyd-hist td.q2, .hyd-leg-tab i.q2 { background: color-mix(in srgb, var(--hyd-quente-3) 40%, transparent) !important; }
+.hyd-hist td.q3, .hyd-leg-tab i.q3 { background: color-mix(in srgb, var(--hyd-quente-3) 62%, transparent) !important; }
+.hyd-hist td.q4, .hyd-leg-tab i.q4 { background: color-mix(in srgb, var(--hyd-quente-3) 88%, transparent) !important; color: var(--surface); font-weight: 600; }
+.hyd-hist td.f1, .hyd-leg-tab i.f1 { background: color-mix(in srgb, var(--hyd-frio-3) 22%, transparent) !important; }
+.hyd-hist td.f2, .hyd-leg-tab i.f2 { background: color-mix(in srgb, var(--hyd-frio-3) 45%, transparent) !important; }
+.hyd-hist td.f3, .hyd-leg-tab i.f3 { background: color-mix(in srgb, var(--hyd-frio-3) 80%, transparent) !important; color: var(--surface); font-weight: 600; }
+
+/* fundamentos: capítulos à esquerda, capítulo aberto com gráfico e conclusão lado a lado */
+.hyd-caps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.hyd-caps button { width: 100%; display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 8px; text-align: left; background: var(--vazio); border: 0; border-left: 3px solid transparent; color: var(--ink-2); padding: 5px 8px; cursor: pointer; font: inherit; }
+.hyd-caps button:hover { border-left-color: var(--rule); color: var(--ink); }
+.hyd-caps button[aria-current="true"] { border-left-color: var(--t-ambar); background: var(--accent-soft); color: var(--ink); }
+.hyd-cap-n { font: 600 0.95rem var(--f-data); color: var(--t-ambar); }
+.hyd-caps b { display: block; font: 600 0.74rem var(--f-data); text-transform: uppercase; letter-spacing: 0.02em; color: var(--ink); }
+.hyd-caps small { display: block; font-size: 0.76rem; line-height: 1.3; color: var(--ink-2); }
+.hyd-cap { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 12px; align-items: start; }
+.hyd-cap-g { display: grid; gap: 4px; min-width: 0; }
+.hyd-cap-t { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.hyd-conclusao { font-size: 0.86rem; line-height: 1.45; color: var(--ink); border-left: 3px solid var(--t-ambar); padding: 2px 0 2px 10px; margin: 0; }
+.hyd-conclusao strong { font-weight: 600; color: var(--t-ambar); }
+.hyd-cap-nav { display: grid; gap: 2px; }
+.hyd-cap-nav .hyd-chip { text-align: left; white-space: normal; }
+.hyd-fluxo .passo { padding: 8px 10px; gap: 3px; }
+.hyd-fluxo .passo h3 { font-size: 0.78rem; }
+.hyd-fluxo .passo p { font-size: 0.82rem; }
+@media (max-width: 900px) { .hyd-cap { grid-template-columns: 1fr; } }
+
+/* metodologia */
+.hyd-tecnico > summary { font: 0.76rem var(--f-data); cursor: pointer; color: var(--t-ambar); }
+.hyd-tecnico[open] > summary { margin-bottom: 8px; }
+.hyd-fontes { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; }
+.hyd-fontes li { font-size: 0.88rem; }
+html[data-func="HYD"] .m-met .m-met-texto .rolagem { max-width: 100%; }
+html[data-func="HYD"] .m-met .m-met-texto .hyd-tab td { white-space: normal; }
+.hyd-tabmes th, .hyd-tabmes td { padding: 3px 5px; }
+.hyd-tabmes td small { font-size: 0.64rem; color: var(--ink-3); }
+.hyd-tabmes td small.hyd-sim { color: var(--hyd-sim); }
+.hyd-multi.seis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 1180px) { .hyd-multi.seis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .hyd-multi.seis { grid-template-columns: 1fr; } }
+.hyd-indices td:nth-child(2) { white-space: normal; min-width: 11rem; max-width: 15rem; }
+.hyd-cap-t .hyd-tab th, .hyd-cap-t .hyd-tab td { padding-inline: 4px; }
+html[data-func="HYD"] .m-met .hyd-fluxo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
