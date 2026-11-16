@@ -10,7 +10,9 @@
      fita: () => [{ r: "PLD SE/CO hoje", v: "171,25", d: 12.32 }],   // opcional: itens a mais na fita (d opcional)
      resumo: (el) => { … },                                         // conteúdo do painel da função na MESA
      alertas: () => [{ quando: "2026-11-15T06:10", texto: "…", tela: 1, nivel: "alto"|"normal" }],
-     telas: [ { cod: "MON", nome: "Monitor", montar: (area, ctx) => { … } }, … ]   // a ordem define 1–9
+     telas: [ { cod: "MON", nome: "Monitor", montar: (area, ctx) => { … } }, … ],  // a ordem define ⇧1–9
+     mesa: { ordem: 1, tam: "m" },         // opcional: posição e tamanho do resumo na MESA (padrão: ordem das funções, "m"); false = fora da MESA
+     decisao: false                        // opcional: as telas da função não mostram a linha de cards do topo
    });
    Dentro de montar(area, ctx):
      Mesa.decisao(area, [{ r, v, d, principal: true }, …])        // linha de decisão no topo da tela
@@ -38,6 +40,9 @@ const Mesa = (function () {
   // ---------- peças das telas ----------
   function decisao(area, itens) {
     const d = el("div", "m-decisao");
+    // função registrada com decisao: false não mostra a linha de cards (o elemento volta solto, para quem o redesenha)
+    const f = FUNCS.find(x => x.cod === atual.cod);
+    if (f && f.decisao === false) return d;
     d.innerHTML = itens.map(i => `<div class="${i.principal ? "principal" : ""}"><span class="r">${i.r}</span><span class="v num">${i.v}</span>${i.d != null ? `<span class="d ${i.tom || ""}">${i.d}</span>` : ""}</div>`).join("");
     area.append(d); return d;
   }
@@ -118,19 +123,23 @@ const Mesa = (function () {
   function montarFuncoes() {
     const fn = $("#m-fn");
     const itens = [{ cod: "MESA", nome: "Mesa", sinal: () => ({ v: `${todosAlertas().length} alertas` }) }, ...FUNCS];
-    fn.innerHTML = itens.map((f, i) => { const s = f.sinal ? f.sinal() : { v: "" }; return `<a href="#${f.cod}${f.cod === "MESA" ? "" : "-1"}" data-cod="${f.cod}" title="Tecla ${i}"><span class="k">${i}</span><span class="nm">${f.cod} · ${f.nome}</span><span class="sn ${s.tom || ""}">${s.v}</span></a>`; }).join("");
+    fn.style.setProperty("--n-fn", itens.length);
+    // uma linha compacta, como a barra de funções do padrão: [tecla] CÓDIGO Nome; o sinal fica na dica (e na fita)
+    fn.innerHTML = itens.map((f, i) => { const s = f.sinal ? f.sinal() : { v: "" }; const dica = `Tecla ${i}${s.v ? " · " + s.v : ""}`.replace(/"/g, "&quot;"); return `<a href="#${f.cod}${f.cod === "MESA" ? "" : "-1"}" data-cod="${f.cod}" title="${dica}"><span class="k">${i}</span><b>${f.cod}</b><span class="nm">${f.nome}</span></a>`; }).join("");
   }
   function montarTelas() {
     const t = $("#m-telas");
-    if (atual.cod === "MESA") { t.innerHTML = `<span class="m-func">Mesa</span><a href="#MESA" aria-current="page"><b>0</b>Visão da mesa</a><span class="m-telas-dica">1–4 funções</span>`; return; }
+    if (atual.cod === "MESA") { t.innerHTML = `<span class="m-func">Mesa</span><a href="#MESA" aria-current="page"><b>0</b>Visão da mesa</a><span class="m-telas-dica">0–6 funções</span>`; return; }
     const f = FUNCS.find(x => x.cod === atual.cod);
     t.innerHTML = `<span class="m-func">${f.nome}</span>` + f.telas.map((s, i) => `<a href="#${f.cod}-${i + 1}"${i + 1 === atual.n ? ' aria-current="page"' : ""} title="⇧${i + 1} · ← → para a anterior e a seguinte"><b>${i + 1}</b>${s.cod} ${s.nome}</a>`).join("") + '<span class="m-telas-dica">← → telas · ⇧1–9 direto</span>';
   }
   function telaMesa(area) {
-    decisao(area, FUNCS.map(f => { const s = f.sinal(); return { r: `${f.cod} · ${f.nome}`, v: s.v, d: s.d, tom: s.tom }; })).classList.add("m-decisao-mesa");
+    // sem linha de sinais aqui: o sinal de cada função já está na barra de funções, logo acima
     const g = grade(area);
-    FUNCS.forEach(f => {
-      const p = painel(g, { cod: f.cod, titulo: f.nome, tam: "l", classe: "m-resumo" });
+    // resumos na ordem e no tamanho que cada função pede (mesa: { ordem, tam }); padrão: 3 por linha, na ordem das funções
+    const naMesa = FUNCS.filter(f => f.mesa !== false).map((f, i) => ({ f, ordem: f.mesa && f.mesa.ordem != null ? f.mesa.ordem : 100 + i })).sort((a, b) => a.ordem - b.ordem).map(x => x.f);
+    naMesa.forEach(f => {
+      const p = painel(g, { cod: f.cod, titulo: f.nome, tam: (f.mesa && f.mesa.tam) || "m", classe: "m-resumo" });
       const ir1 = el("a", "m-resumo-ir", "abrir ›"); ir1.href = `#${f.cod}-1`; p.acoes.append(ir1);
       f.resumo(p.corpo);
     });

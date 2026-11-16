@@ -1113,7 +1113,7 @@
   // registro
   // ================================================================================================
   Mesa.registrar({
-    cod: "BAND", nome: "Forecast Bandeiras", desc: "Projeção da bandeira tarifária de M+1 a M+6",
+    cod: "BAND", mesa: { ordem: 4 }, nome: "Forecast Bandeiras", desc: "Projeção da bandeira tarifária de M+1 a M+6",
     sinal, resumo, alertas,
     telas: [
       { cod: "MON", nome: "Monitor", montar: area => { relUI = null; montarMon(area); } },

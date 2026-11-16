@@ -1,0 +1,136 @@
+/* Variante 08 · Mesa (terminal desde o início) · funcoes/res.css
+   Estilos da função RES · Cenários do research. Seletores com prefixo .res- (os nomes .res-l, .res-a, .res-v e
+   .res-e já são do padrão, nos reservatórios, e não são usados aqui).
+   Cores novas: escuro em :root, claro em :root[data-theme="light"] (regra do padrão v2.0). */
+:root {
+  --res-s1: #5ccac3;            /* sensibilidades, na ordem do cadastro */
+  --res-s2: #b9a3f0;
+  --res-s3: #e08bb4;
+  --res-s4: #9fd36a;
+  --res-faixa: #8a8a8a;         /* linhas do superior e do inferior (a faixa usa --faixa-proj) */
+  --res-ref: #d8d8d8;           /* PLD do deck da BAND */
+  --res-in: #0b0d10;            /* fundo da célula editável */
+  --res-mud: #3a2a0c;           /* célula alterada contra a vigente */
+  --res-erro: color-mix(in srgb, #ff7a6b 26%, transparent);
+  --res-aviso: #f2c230;
+  --res-v1: #3a3f45;            /* revisões antigas → recentes (RES-11) */
+  --res-v2: #555c63;
+  --res-v3: #7a828a;
+  --res-v4: #a3abb3;
+}
+:root[data-theme="light"] {
+  --res-s1: #1d8a84;
+  --res-s2: #6a4fb5;
+  --res-s3: #b03a78;
+  --res-s4: #4f8a1c;
+  --res-faixa: #6b6b6b;
+  --res-ref: #3d3d3d;
+  --res-in: #fbfaf7;
+  --res-mud: #f6e2c4;
+  --res-erro: color-mix(in srgb, #c2362b 18%, transparent);
+  --res-aviso: #a77800;
+  --res-v1: #d4d1c9;
+  --res-v2: #b5b1a8;
+  --res-v3: #8e8a82;
+  --res-v4: #66625b;
+}
+
+/* barra de ferramentas e botões */
+.res-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font: 0.7rem var(--f-data); color: var(--ink-2); padding-top: 4px; }
+.res-r { font: 0.7rem var(--f-data); color: var(--ink-3); }
+.res-r b { color: var(--ink-2); }
+.res-btn { font: 500 0.7rem var(--f-data); color: var(--ink-2); background: var(--surface); border: 1px solid var(--rule); padding: 3px 9px; cursor: pointer; }
+.res-btn:hover { color: var(--t-ambar); border-color: var(--t-ambar); }
+.res-btn.prim { background: var(--t-ambar); border-color: var(--t-ambar); color: var(--t-sobre); font-weight: 600; }
+.res-btn.prim:hover { color: var(--t-sobre); filter: brightness(1.08); }
+.res-btn-disc { justify-self: start; align-self: flex-start; margin-bottom: 6px; color: var(--ink-3); }
+.res-oculto { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.res-sel { font: 0.72rem var(--f-data); background: var(--res-in); color: var(--ink); border: 1px solid var(--rule); padding: 2px 4px; max-width: 100%; }
+.res-tag { font: 600 0.58rem var(--f-data); text-transform: uppercase; letter-spacing: 0.04em; color: var(--t-sobre); background: var(--t-ambar); padding: 0 4px; vertical-align: 1px; }
+.res-tag-nav { background: var(--ink-3); }
+.res-sw { display: inline-block; width: 8px; height: 8px; margin-right: 6px; vertical-align: 0; }
+.res-d { font-style: normal; font-size: 0.86em; margin-left: 4px; white-space: nowrap; }
+.res-d.neutro { color: var(--ink-3); }
+.res-link { font: 0.72rem var(--f-data); color: var(--t-ambar); text-decoration: none; }
+.res-link:hover { text-decoration: underline; }
+
+/* RES-1 · tabela editável */
+.res-rol { padding-bottom: 4px; position: relative; }
+table.res-cad { width: auto; min-width: 100%; }
+table.res-cad th, table.res-cad td { padding: 2px 4px; vertical-align: middle; border-bottom-color: color-mix(in srgb, var(--rule) 60%, transparent); }
+table.res-cad tbody tr:hover td { background: none; }
+table.res-cad td:nth-child(2) { width: 30%; }
+.res-in, .res-nome { font: 0.78rem var(--f-data); color: var(--ink); background: var(--res-in); border: 1px solid var(--rule); padding: 3px 5px; border-radius: 0; }
+.res-in { width: 8.2ch; text-align: right; font-variant-numeric: tabular-nums; }
+.res-nome { width: 100%; min-width: 15ch; }
+.res-in:focus, .res-nome:focus, .res-sel:focus, .res-form input:focus, .res-form textarea:focus, .res-prem textarea:focus, .res-colar textarea:focus { outline: 1px solid var(--t-ambar); outline-offset: 0; border-color: var(--t-ambar); }
+.res-in.mud { background: var(--res-mud); border-color: color-mix(in srgb, var(--t-ambar) 70%, transparent); }
+.res-in.aviso { border: 1px dashed var(--res-aviso); }
+.res-in.vazio { border-style: dotted; border-color: var(--ink-3); }
+.res-in.erro { background: var(--res-erro); border: 1px solid var(--desce); }
+.res-x { font: 600 0.8rem var(--f-data); width: 22px; height: 22px; color: var(--ink-3); background: none; border: 1px solid var(--rule); cursor: pointer; }
+.res-x:hover:not(:disabled) { color: var(--desce); border-color: var(--desce); }
+.res-x:disabled { opacity: 0.35; cursor: default; }
+table.res-cad tfoot td { color: var(--ink-3); font-size: 0.72rem; padding: 4px 9px 4px 5px; border-bottom: 0; }
+table.res-cad tfoot tr:first-child td { border-top: 1px solid var(--rule); }
+table.res-cad tfoot td:first-child { color: var(--t-ambar); text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.04em; }
+.res-colar { display: grid; gap: 4px; padding: 6px 0 2px; }
+.res-colar textarea, .res-form textarea, .res-form input, .res-prem textarea { font: 0.74rem var(--f-data); color: var(--ink); background: var(--res-in); border: 1px solid var(--rule); padding: 4px 6px; resize: vertical; width: 100%; border-radius: 0; }
+
+/* RES-2 · validação e salvar */
+.res-avisos { display: grid; gap: 4px; }
+.res-ok { font: 0.74rem var(--f-data); color: var(--sobe); margin: 0; }
+.res-lista-av { list-style: none; margin: 0; padding: 0; display: grid; max-height: 13.5rem; overflow: auto; }
+.res-lista-av li { display: grid; grid-template-columns: 3.6rem 1fr; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--rule); font: 0.7rem/1.35 var(--f-data); color: var(--ink-2); }
+.res-lista-av li[tabindex] { cursor: pointer; }
+.res-lista-av li[tabindex]:hover { color: var(--t-ambar); }
+.res-av-n { text-transform: uppercase; font-size: 0.6rem; letter-spacing: 0.04em; padding-top: 1px; }
+.res-av-erro .res-av-n { color: var(--desce); }
+.res-av-aviso .res-av-n { color: var(--res-aviso); }
+.res-form { display: grid; gap: 6px; padding-top: 4px; border-top: 1px solid var(--rule); }
+.res-form label { display: grid; gap: 3px; font: 0.64rem var(--f-data); text-transform: uppercase; letter-spacing: 0.04em; color: var(--t-ambar); }
+.res-msg { margin: 0; }
+
+/* RES-3 · premissas */
+.res-prems { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 10px; padding-bottom: 8px; }
+.res-prem { display: grid; gap: 3px; min-width: 0; }
+.res-prem-c { font: 0.72rem var(--f-data); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res-tipo { color: var(--ink-3); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 4px; }
+
+/* RES-4 · leque (só as colunas de mês recebem o ponteiro) */
+.res-leque .graf svg .res-tracos { pointer-events: none; }
+.res-leque .graf svg .res-col { fill: transparent; cursor: pointer; }
+.res-leque .graf svg .res-col:hover { fill: color-mix(in srgb, var(--ink) 5%, transparent); }
+.res-leque .graf svg .res-col.selecionado { fill: var(--accent-soft); }
+.res-leque .graf svg .res-col:focus { outline: none; stroke: var(--t-ambar); stroke-width: 1; }
+.res-leque .graf svg text.res-rot-esp { fill: var(--t-ambar); font-weight: 600; }
+
+/* tabelas compactas */
+table.res-tab-mes td, table.res-tab-mes th, table.res-tab-desc td, table.res-tab-desc th, table.res-tab-dif td, table.res-tab-dif th, table.res-tab-insp td, table.res-tab-insp th { padding: 3px 6px; white-space: nowrap; }
+table.res-tab-desc th small { font-size: 0.85em; color: var(--ink-3); }
+table.res-tab-desc td, table.res-tab-desc th { padding: 3px 4px; }
+table.res-tab-dif td:first-child { white-space: normal; min-width: 9rem; }
+tr.res-tr-sel td { background: var(--m-sel) !important; }
+table.res-tab-ver td { font-size: 0.74rem; }
+table.res-tab-ver td:nth-child(4) { white-space: normal; min-width: 14rem; }
+table.res-tab-ver td:first-child { white-space: nowrap; }
+.res-insp-cab { font: 0.72rem var(--f-data); color: var(--ink-2); margin: 0; }
+table.res-tab-insp { font-size: 0.74rem; }
+dl.res-prem-insp { font-size: 0.72rem; }
+
+/* resumo na MESA: tabela compacta (cenários × 6 meses) que cabe em ~420–520 px */
+.res-resumo { display: grid; gap: 6px; padding-block: 6px 4px; }
+.res-rtopo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; font: 0.7rem var(--f-data); color: var(--ink-3); }
+.res-rtopo b { color: var(--ink); }
+.res-abas-mini button { padding: 1px 6px; font-size: 0.64rem; }
+table.res-rt { width: 100%; table-layout: fixed; font-size: 0.74rem; }
+table.res-rt th, table.res-rt td { padding: 4px 2px; white-space: nowrap; overflow: hidden; }
+table.res-rt th { font-size: 0.6rem; letter-spacing: 0.02em; }
+table.res-rt th:first-child, table.res-rt td:first-child { width: 3.9rem; padding-left: 2px; }
+table.res-rt td.n { padding-right: 3px; }
+table.res-rt .res-d { font-size: 0.6rem; margin-left: 2px; }
+table.res-rt th[data-insp-alvo]:hover { color: var(--ink); }
+tr.res-ref-l td { color: var(--ink-3); font-style: normal; }
+tr.res-ref-l td:first-child { font-size: 0.66rem; }
+.res-rlin { font: 0.7rem/1.45 var(--f-data); color: var(--ink-3); margin: 0; }
+.res-rlin b { color: var(--ink-2); font-weight: 600; }

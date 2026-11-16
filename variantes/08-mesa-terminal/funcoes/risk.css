@@ -171,3 +171,5 @@ html[data-func="RISK"] .m-insp-corpo dl.estat dd { overflow-wrap: anywhere; }
 @media (min-width: 1400px) { html[data-func="RISK"] .risk-mult { grid-template-columns: repeat(12, minmax(0, 1fr)); } }
 .risk-mult .mini .ttl { font-size: 0.7rem; }
 .risk-ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; padding-inline: 10px; }
+.risk-ctl-mesa { padding-inline: 0; }
+.risk-ctl-mesa .abas button { padding: 1px 6px; }

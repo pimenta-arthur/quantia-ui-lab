@@ -11,11 +11,11 @@ um aplicativo só, que ocupa a tela, em que se chega a qualquer coisa pelo tecla
 | A resposta aparece no meio da página | Cada função abre com a **linha de decisão**: a resposta que a mesa precisa (bandeira de M+1, PLD do mês simulado, preço de compra e venda, ENA de M+1) |
 | Detalhe em outra página ou em blocos que abrem | **Inspetor** à direita: clicar num mês, produto, dia ou ano mostra o detalhe ali, sem sair da tela |
 | Metodologia como página separada, longa | Tela **MET** de cada função com índice; o **?** no cabeçalho de cada painel leva direto à seção que explica aquele painel |
-| Início com links | Tela **MESA**: o sinal de cada função, os resumos lado a lado e os alertas de todas |
+| Início com links | Tela **MESA**: os blocos de cada função lado a lado e os alertas de todas (o sinal de cada função fica na barra de funções) |
 
 ## Comandos e teclas
 - `/` abre o comando. `BAND`, `RISK`, `NEN`, `HYD`, `MESA`; `BAND 3` ou `BAND REL` vão direto a uma tela.
-- Números trocam de função: `0` MESA, `1` BAND, `2` RISK, `3` NEN, `4` HYD (são fixas e fáceis de decorar).
+- Números trocam de função: `0` MESA, `1` BAND, `2` RISK, `3` NEN, `4` HYD, `5` MKT, `6` RES (são fixas e fáceis de decorar).
 - Telas da função atual: `←` `→` (ou `[` `]`) para a anterior e a seguinte; `Shift`+`1`–`9` vai direto a uma tela.
   As telas mudam de quantidade e de sentido entre as funções (a 3 da BAND é Histórico, a 3 da NEN é Fundamentos),
   por isso ficam com a navegação em sequência. `Esc` volta à MESA.
@@ -35,6 +35,8 @@ um aplicativo só, que ocupa a tela, em que se chega a qualquer coisa pelo tecla
 | RISK · Risk Lab DESSEM | 1 MON Monitor · 2 SIM Simulador · 3 PER Perfis · 4 IND Indicadores · 5 DES Desempenho · 6 MET Metodologia |
 | NEN · Pricing Descolamento | 1 COT Cotação · 2 DES Descolamento · 3 FUN Fundamentos e realizado · 4 FIS Física · 5 BT Backtest da cotação · 6 MOD Desempenho do modelo · 7 MET Metodologia |
 | HYD · Hydro Inflow Similarity | 1 ENA Afluências · 2 TRJ Trajetória e histórico · 3 CLI Indicadores climáticos · 4 FUN Fundamentos · 5 DES Desempenho e rodadas · 6 MET Metodologia |
+| MKT · Mercado (BBCE, simulado) | 1 CAN Candles · 2 CUR Curva · 3 NEG Negócios · 4 MET Fonte e método |
+| RES · Cenários do research (exemplo) | 1 CAD Cadastro · 2 CMP Comparação · 3 VER Versões · 4 MET Como usar |
 
 Toda informação da 07 está em alguma tela ou no inspetor; os blocos que a 07 deixava recolhidos ficaram abertos ou
 passaram para o inspetor. Fica de fora só o Swap do Pricing, que no app também é oculto (o texto está na MET).
@@ -43,3 +45,10 @@ Os textos de conclusão vêm do app e citam números reais que não batem com os
 ## Levar para o app
 Depois que o app estiver no padrão terminal por páginas (a 07, via `migracao-terminal/PROMPTS.md`), a evolução para
 esta mesa segue `migracao-terminal/PROMPTS-08.md`.
+
+## MESA (visão geral)
+Uma tela, sem rolar: na primeira linha, o candle do SE M+1 ao vivo (MKT, 2/3 da largura) e o PLD diário com o máximo
+da ponta (RISK); na segunda, os cenários do research (RES), a probabilidade de bandeira por mês (BAND) e a ENA de M+1
+(HYD); os alertas de todas as funções à direita. O Pricing (NEN) fica fora da MESA (tecla 3). Cada função escolhe o
+seu lugar com `mesa: { ordem, tam }` (ou `mesa: false`). MKT e RES usam dados fictícios: a BBCE e o cadastro do
+research ainda não existem.

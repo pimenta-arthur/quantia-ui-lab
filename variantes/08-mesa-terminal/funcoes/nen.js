@@ -14,7 +14,7 @@
   const faltam = CHAVES.filter(k => !PD[k]).concat(window.ContaDescolamento ? [] : ["ContaDescolamento"], window.CVC ? [] : ["CVC"]);
   if (faltam.length) {
     const msg = `<p class="leg">Dados do Pricing Descolamento indisponíveis (${faltam.join(", ")}). Confira os scripts da variante 07 na index.html.</p>`;
-    Mesa.registrar({ cod: "NEN", nome: "Pricing Descolamento", desc: "Compra e venda do descolamento do NE e do N",
+    Mesa.registrar({ cod: "NEN", mesa: false, decisao: false, nome: "Pricing Descolamento", desc: "Compra e venda do descolamento do NE e do N",
       sinal: () => ({ v: "sem dados", tom: "neutro" }), resumo: el => { el.innerHTML = msg; }, alertas: () => [],
       telas: [{ cod: "COT", nome: "Cotação", montar: a => { a.innerHTML = msg; } }] });
     return;
@@ -1512,5 +1512,5 @@
     return [[`N ${PROX.rot}`, PROX.meses, "N"], [`NE ${ANO.rot}`, ANO.meses, "NE"], [`N ${ANO.rot}`, ANO.meses, "N"]].map(([r, ms, sub]) => { const c = cotar(ms, sub);
       return c ? { r: `${r} compra/venda`, v: `${dn(c.compra)}/${dn(c.venda)}` } : null; }).filter(Boolean);
   }
-  Mesa.registrar({ cod: "NEN", nome: "Pricing Descolamento", desc: "Compra e venda do descolamento do NE e do N contra o SE, por produto", sinal, fita, resumo, alertas, telas: TELAS });
+  Mesa.registrar({ cod: "NEN", mesa: false, decisao: false, nome: "Pricing Descolamento", desc: "Compra e venda do descolamento do NE e do N contra o SE, por produto", sinal, fita, resumo, alertas, telas: TELAS });
 })();

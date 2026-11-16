@@ -1,0 +1,87 @@
+/* Variante 08 · Mesa · funcoes/mkt.css — MKT · Mercado (BBCE, dados simulados)
+   Cores novas como tokens: escuro em :root, claro em :root[data-theme="light"], sem prefers-color-scheme.
+   Seletores com prefixo .mkt- ou escopados por html[data-func="MKT"]. Alta e baixa usam --sobe/--desce do padrão,
+   sempre com seta ou forma (candle vazado ou cheio). */
+:root {
+  --mkt-vol: color-mix(in srgb, #8a8a8a 50%, transparent);
+  --mkt-futuro: color-mix(in srgb, #f2f2f2 4%, transparent);
+  --mkt-sel: color-mix(in srgb, #ffa31a 16%, transparent);
+  --mkt-flash: #3a2a0c;
+  --mkt-grupo: #0d0f12;
+  --mkt-liq: color-mix(in srgb, #ffa31a 60%, transparent);
+  --mkt-liq-pouco: color-mix(in srgb, #8a8a8a 55%, transparent);
+}
+:root[data-theme="light"] {
+  --mkt-vol: color-mix(in srgb, #6b6b6b 40%, transparent);
+  --mkt-futuro: color-mix(in srgb, #111111 5%, transparent);
+  --mkt-sel: color-mix(in srgb, #9a4d00 14%, transparent);
+  --mkt-flash: #f3dfc0;
+  --mkt-grupo: #f3f1ec;
+  --mkt-liq: color-mix(in srgb, #b35900 55%, transparent);
+  --mkt-liq-pouco: color-mix(in srgb, #6b6b6b 45%, transparent);
+}
+
+html[data-func="MKT"] .painel-corpo { gap: 6px; }
+
+/* barra de controles e marca "BBCE · simulado" */
+.mkt-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding-top: 4px; font-family: var(--f-data); }
+.mkt-barra-g { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.mkt-barra-r { font-size: 0.64rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--t-ambar); }
+.mkt-barra .legenda-mini { margin-right: auto; }
+.mkt-ao-vivo { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font: 0.68rem var(--f-data); color: var(--ink-3); white-space: nowrap; }
+.mkt-ao-vivo b { color: var(--ink-2); font-weight: 500; }
+.mkt-pulso { width: 7px; height: 7px; border-radius: 50%; background: var(--t-ambar); animation: mkt-pulso 2s ease-in-out infinite; }
+@keyframes mkt-pulso { 50% { opacity: 0.25; } }
+.mkt-sel { font: 0.72rem var(--f-data); background: var(--t-cmd); color: var(--ink); border: 1px solid var(--rule); padding: 2px 4px; }
+
+/* linha de OHLC do dia, acima do gráfico */
+.mkt-info { font: 0.74rem var(--f-data); color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 2px 6px; }
+.mkt-info > span:first-child { color: var(--t-ambar); text-transform: uppercase; font-size: 0.64rem; letter-spacing: 0.06em; align-self: center; }
+.mkt-info b { color: var(--ink); font-weight: 600; }
+.mkt-alvo { cursor: pointer; }
+.mkt-alvo:hover { fill: color-mix(in srgb, var(--ink) 5%, transparent); }
+
+/* tabelas */
+.mkt-tab { font-size: 0.74rem; }
+.mkt-tab td, .mkt-tab th { padding: 3px 6px; white-space: nowrap; vertical-align: middle; }
+.mkt-h { color: var(--ink-3); font-size: 0.66rem; }
+.mkt-velho { display: block; color: var(--ink-3); font-size: 0.6rem; line-height: 1; }
+.mkt-lista .mkt-spark { width: 70px; padding-block: 1px; }
+.mkt-lista .mkt-spark .spark { width: 64px; height: 20px; }
+.mkt-lista tr.mkt-prod { cursor: pointer; }
+.mkt-lista tr.mkt-prod:hover td { background: var(--accent-soft); }
+.mkt-lista tr.mkt-sel-linha td { background: var(--m-sel); }
+.mkt-lista tr.mkt-sel-linha td:first-child { box-shadow: inset 3px 0 0 var(--t-ambar); }
+.mkt-tab tr.mkt-grupo td { background: var(--mkt-grupo) !important; color: var(--t-ambar); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; padding-block: 2px; }
+.mkt-sub { display: inline-flex; align-items: center; gap: 5px; }
+.mkt-sub::before { content: ""; width: 8px; height: 8px; background: var(--c); }
+
+/* fita de negócios */
+.mkt-fita { max-height: min(560px, calc(100vh - 330px)); min-height: 240px; overflow: auto; }
+.mkt-fita thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.mkt-novo td { animation: mkt-novo 1.6s ease-out; }
+@keyframes mkt-novo { from { background: var(--mkt-flash); } }
+.mkt-cont { margin: 0; }
+
+/* liquidez por produto (barras horizontais em HTML) */
+.mkt-liq { display: grid; gap: 3px; font: 0.74rem var(--f-data); }
+.mkt-liq-l { display: grid; grid-template-columns: 4.6em minmax(0, 1fr) 2.6em; align-items: center; gap: 8px; cursor: pointer; padding: 1px 0; }
+.mkt-liq-l:hover { background: var(--accent-soft); }
+.mkt-liq-r { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.mkt-liq-b { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.mkt-liq-b i { display: block; height: 12px; background: var(--mkt-liq); min-width: 1px; }
+.mkt-liq-l.pouco .mkt-liq-b i { background: var(--mkt-liq-pouco); }
+.mkt-liq-h { text-align: right; color: var(--ink-2); }
+.mkt-liq-cab { cursor: default; color: var(--ink-3); font-size: 0.64rem; border-top: 1px solid var(--rule); padding-top: 4px; }
+.mkt-liq-cab:hover { background: none; }
+.mkt-liq-cab span:last-child { text-align: right; }
+
+/* resumo na MESA: uma linha compacta (sem cartões grandes) acima dos candles */
+.mkt-res { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; padding-top: 6px; font: 0.72rem var(--f-data); color: var(--ink-2); }
+.mkt-res-i { white-space: nowrap; }
+.mkt-res .r { font-size: 0.64rem; color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; }
+.mkt-res b { color: var(--ink); font-weight: 600; }
+.mkt-res b.v { font-size: 1.05rem; }
+
+@media (prefers-reduced-motion: reduce) { .mkt-pulso, .mkt-novo td { animation: none; } }
+@media (max-width: 520px) { .mkt-ao-vivo { margin-left: 0; white-space: normal; } }

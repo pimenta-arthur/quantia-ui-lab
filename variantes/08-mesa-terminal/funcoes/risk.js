@@ -227,7 +227,7 @@
   }
   function sinal() {
     const s = simular();
-    return { v: `${rot(s.c.mes)} PLD R$ ${n(s.r.pld, 0)} · ${sn(s.r.delta, 0)}`, tom: tomDir(s.r.dir), dnum: s.r.delta,
+    return { v: `${rot(s.c.mes)} R$ ${n(s.r.pld, 0)} ${sn(s.r.delta, 0)}`, tom: tomDir(s.r.dir), dnum: s.r.delta,
       d: `${seta(s.r.delta)} ${DIR[s.r.dir].toLowerCase()} · faixa ${n(s.r.lo)}–${n(s.r.hi)} · DECOMP ${n(s.DEC)}${s.editado ? " · editado" : ""}` };
   }
   // a casca monta o sinal uma vez; depois de mexer no simulador, o módulo atualiza a própria etiqueta
@@ -1471,12 +1471,44 @@
       { r: `PLD hoje ${ddmm(u[0])} · SE/CO`, v: n(u[1], 1), d: `${seta(u[1] - u[2])} ${sn(u[1] - u[2], 1)} sobre DECOMP ${n(u[2], 1)}`, tom: tom(u[1] - u[2]) },
       { r: `Desvio ${rot(ultMes)} até ${ddmm(ULT)}`, v: sn(dm.delta, 1), d: `vale ${sn(dm.vale, 0)} · ponta ${sn(dm.ponta, 0)} · demais ${sn(dm.demais, 0)}`, tom: tom(dm.delta) },
     ]);
-    const dias = lin.filter(r => r[0].startsWith(ultMes));
-    const gb = mk("div"); el.append(gb);
-    G(gb, 120, (svg, w, hh) => linhasA(svg, { w, h: hh, ml: 36, mr: 70, xs: dias.map(r => r[0]), y0: 0, nt: 3, centro: true, rotX: d => d.slice(8, 10), rotFim: true,
-      series: [{ nome: "DECOMP", cor: "var(--ink-3)", larg: 1.6, pts: dias.map(r => [r[0], r[2]]), rotFim: "DECOMP " + n(u[2]) }, { nome: "DESSEM", cor: "var(--accent)", pts: dias.map(r => [r[0], r[1]]), rotFim: "DESSEM " + n(u[1]) }],
-      dica: d => { const r = dias.find(x => x[0] === d); return `<b>${dataBr(d)} ${diaSem(d)}</b><br>DESSEM ${n(r[1], 1)} · DECOMP ${n(r[2], 1)}<br>desvio ${sn(r[1] - r[2], 1)}`; }, alvo: d => inspDia("SE", d) }), "PLD médio do dia em novembro, DESSEM e DECOMP");
-    nota(el, `PLD médio do dia em ${rot(ultMes)}, SE/CO, R$/MWh. Clique num dia para o detalhe.`);
+    // PLD diário dos últimos dias: barra = média do dia; linha = máximo horário da ponta (18h–21h); DECOMP em degrau e piso
+    EST.mSub = valido(EST.mSub, SUBS_PRECO, "SE");
+    const ctl = mk("div", "risk-ctl risk-ctl-mesa"), gb = mk("div"), leg = mk("div");
+    ctl.append(mk("span", "risk-barra-r", "PLD diário · R$/MWh"), abas(SUBS_PRECO, EST.mSub, v => { EST.mSub = v; guardar(); desenharDiario(); }, "Submercado do PLD diário"));
+    el.append(ctl, gb, leg);
+    legenda(leg, [["color-mix(in srgb, var(--accent) 55%, transparent)", "Média do dia"], ["var(--risk-ponta)", "Máx. da ponta", "l"], ["var(--ink-2)", "DECOMP", "t"], ["var(--ink-3)", "Piso", "t"]]);
+    function desenharDiario() {
+      limpar(gb);
+      const sub = EST.mSub, todas = (D.dias_nivel || {})[sub] || [];
+      const dias = todas.slice(-30).map(r => { const pf = perfilDia(sub, r[0]), pv = pf ? PONTA_H.map(x => pf.pld[x]).filter(v => v != null) : [];
+        return { d: r[0], med: r[1], dec: r[2], piso: r[3], tipo: r[5], pmax: pv.length ? Math.max(...pv) : null, hmax: pv.length ? PONTA_H[PONTA_H.map(x => pf.pld[x]).indexOf(Math.max(...pv))] : null }; });
+      G(gb, 150, (svg, w, hh) => {
+        const m = { l: 34, r: 6, t: 8, b: 18 }, N = dias.length;
+        if (!N) { S(svg, "text", { x: w / 2, y: hh / 2, "text-anchor": "middle" }, "sem dados"); return; }
+        // um pico isolado da ponta não achata o resto: o eixo vai até ~1,15 × o percentil 85 da ponta; acima disso, ▲ no topo
+        const pm = dias.map(x => x.pmax).filter(v => v != null).sort((a, b) => a - b), q85 = pm.length ? pm[Math.floor((pm.length - 1) * 0.85)] : 0;
+        const teto = Math.max(...dias.flatMap(x => [x.med, x.dec]), q85 * 1.15);
+        const ax = eixo(0, teto, 3), yv = v => m.t + (hh - m.t - m.b) * (1 - (v - ax.a) / (ax.b - ax.a)), y = v => Math.max(m.t, yv(v));
+        const bw = (w - m.l - m.r) / N, x0 = i => m.l + i * bw, xc = i => x0(i) + bw / 2;
+        ax.t.forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 4, y: y(t) + 3, "text-anchor": "end" }, n(t)); });
+        dias.forEach((x, i) => S(svg, "rect", { x: x0(i) + bw * 0.15, y: y(x.med), width: Math.max(1, bw * 0.7), height: Math.max(0.5, y(0) - y(x.med)), fill: "color-mix(in srgb, var(--accent) 55%, transparent)" }));
+        const degrau = k => dias.map((x, i) => `${i ? "L" : "M"}${x0(i)},${y(x[k])}L${x0(i + 1)},${y(x[k])}`).join("");
+        S(svg, "path", { d: degrau("piso"), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "2 3" });
+        S(svg, "path", { d: degrau("dec"), fill: "none", stroke: "var(--ink-2)", "stroke-width": 1.2, "stroke-dasharray": "4 3" });
+        let d = "", pen = false; dias.forEach((x, i) => { if (x.pmax == null) { pen = false; return; } d += `${pen ? "L" : "M"}${xc(i)},${y(x.pmax)}`; pen = true; });
+        if (d) S(svg, "path", { d, fill: "none", stroke: "var(--risk-ponta)", "stroke-width": 1.6, "stroke-linejoin": "round" });
+        dias.forEach((x, i) => { if (x.pmax == null) return; if (x.pmax > ax.b) S(svg, "text", { x: xc(i), y: m.t + 7, "text-anchor": "middle", style: "fill:var(--risk-ponta);font-size:9px" }, "▲");
+          else S(svg, "circle", { cx: xc(i), cy: y(x.pmax), r: Math.min(2.4, bw / 3), fill: "var(--risk-ponta)" }); });
+        let ultX = -1e9;
+        dias.forEach((x, i) => { const novo = i === 0 || x.d.endsWith("-01"), t = novo ? `${x.d.slice(8, 10)}/${x.d.slice(5, 7)}` : x.d.slice(8, 10);
+          if ((novo || i % 5 === 0 || i === N - 1) && xc(i) - ultX > t.length * 6.4 + 4) { S(svg, "text", { x: xc(i), y: hh - 5, "text-anchor": "middle", class: novo ? "forte" : null }, t); ultX = xc(i); } });
+        dias.forEach((x, i) => { const a = S(svg, "rect", { x: x0(i), y: m.t, width: bw, height: hh - m.t - m.b, fill: "transparent", class: "risk-alvo" });
+          dicaEm(a, `<b>${dataBr(x.d)} ${diaSem(x.d)}</b>${x.tipo ? " · " + x.tipo : ""} · ${SUBN[sub]}<br>média do dia ${rs(x.med, 1)}<br>máx. da ponta ${x.pmax == null ? "—" : `${rs(x.pmax, 1)} (${x.hmax}h)`}<br>DECOMP ${n(x.dec, 1)} · média − DECOMP ${sn(x.med - x.dec, 1)}${x.pmax == null ? "" : `<br>máx. ponta − DECOMP ${sn(x.pmax - x.dec, 1)}`}`);
+          alvoR(a, () => inspDia(sub, x.d)); });
+      }, `PLD diário dos últimos ${dias.length} dias, ${SUBN[sub]}: média do dia e máximo da ponta`);
+    }
+    desenharDiario();
+    nota(el, "Últimos 30 dias; ponta 18h–21h; ▲ = máximo acima da escala (valor na dica). Clique num dia para o perfil horário.");
   }
   function alertas() {
     const q = ESTADO.rodada.slice(0, 16), out = [];
@@ -1503,7 +1535,7 @@
 
   Mesa.registrar({
     cod: "RISK", nome: "Risk Lab DESSEM", desc: "PLD horário do DESSEM contra o DECOMP e simulador do PLD médio do mês",
-    sinal, resumo, alertas, fita,
+    sinal, resumo, alertas, fita, mesa: { ordem: 2 },
     telas: [
       { cod: "MON", nome: "Monitor", montar: area => telaMON(area) },
       { cod: "SIM", nome: "Simulador", montar: area => telaSIM(area) },
