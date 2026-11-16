@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pricing NE/N · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Exemplo da migração para o padrão v2.0 (terminal) · Pricing NE/N
+     Referência para mudanças pontuais nas páginas do app: cada visualização tem um código (ex.: NEN-1) e um id
+     igual, para apontar "pricing-ne-n.html#NEN-1". Os dados são FICTÍCIOS (dados-ficticios.js); no app, cada peça recebe
+     os dados reais no formato abaixo.
+
+     CONTRATO DE DADOS
+     NEN-1 números: SE/CO do primeiro produto e variação do dia; spreads NE e N de compra/venda; spread NE−SE/CO realizado no último mês.
+     NEN-2 book: [[produto, SE/CO, NE compra, NE venda, N compra, N venda, variação do dia]] em R$/MWh (spreads sobre o SE/CO).
+     NEN-3 distribuição do spread horário NE−SE/CO: lista de valores horários (ex.: 90 dias) e o spread de hoje.
+     NEN-4 spread mensal por submercado (abas): meses ['AAAA-MM'], spread[] com realizado até o último mês oficial e
+           projeção depois, faixa seco–úmido lo[]/hi[] nos meses projetados e o índice do último mês oficial.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>NEN</b> Pricing NE/N</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html" aria-current="page"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Compra e venda com descolamento de submercado</span>
+      <h1>Pricing do descolamento NE/N</h1>
+      <div class="meta"><span>Premissas:</span><span>Book indicativo de 15/11/26 06:10</span><span>Curva SE/CO da mesa</span><span>Modelo de spread v2</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <div class="grade">
+    <section class="painel sem-cab" data-tam="full" id="NEN-1" aria-label="Números do pricing (NEN-1)">
+      <div class="painel-corpo"></div>
+    </section>
+    <section class="painel" data-tam="xl" id="NEN-2">
+      <header class="painel-cab"><h2 class="ttl">Book indicativo, em R$/MWh <span class="ref">NEN-2</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Spread sobre o SE/CO; compra é o preço que a mesa paga, venda o que cobra.</p>
+    </section>
+    <section class="painel" data-tam="s" id="NEN-3">
+      <header class="painel-cab"><h2 class="ttl">Distribuição do spread horário NE−SE/CO <span class="ref">NEN-3</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Últimos 90 dias; tracejado: spread de hoje.</p>
+    </section>
+    <section class="painel" data-tam="full" id="NEN-4">
+      <header class="painel-cab"><h2 class="ttl">Spread mensal sobre o SE/CO, em R$/MWh <span class="ref">NEN-4</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Oficial até out/26; depois, projeção do modelo com faixa seco–úmido.</p>
+    </section>
+    </div>
+    <div class="aviso"><span>Exemplo com dados fictícios para a migração ao padrão v2.0 (terminal). Nada aqui vem do app real.</span></div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+<script>
+const b0 = D.book[0], dSpread = D.spreadMensal.ne[D.i0] - D.spreadMensal.ne[D.i0 - 1];
+QC.kpis(corpo("NEN-1"), [
+  { r: "SE/CO dez/26", v: rs(b0[1]), d: `${seta(b0[6])} ${srs(b0[6])} no dia`, tom: tom(b0[6]) },
+  { r: "Spread NE dez/26 (compra / venda)", v: `${n(b0[2], 1)} / ${n(b0[3], 1)}`, d: `preço NE ${rs(b0[1] + b0[2])} a ${rs(b0[1] + b0[3])}` },
+  { r: "Spread N dez/26 (compra / venda)", v: `${n(b0[4], 1)} / ${n(b0[5], 1)}`, d: `preço N ${rs(b0[1] + b0[4])} a ${rs(b0[1] + b0[5])}` },
+  { r: "Spread NE−SE/CO realizado em out/26", v: srs(D.spreadMensal.ne[D.i0]), d: `${seta(dSpread)} ${srs(dSpread)} vs. set/26`, tom: tom(dSpread) },
+]);
+QC.tabela(corpo("NEN-2"), [{ t: "Produto" }, { t: "SE/CO", n: 1 }, { t: "NE compra", n: 1 }, { t: "NE venda", n: 1 }, { t: "N compra", n: 1 }, { t: "N venda", n: 1 }, { t: "Preço NE médio", n: 1 }, { t: "Var. dia", n: 1 }],
+  D.book.map(b => [`<b>${b[0]}</b>`, n(b[1], 2), n(b[2], 1), n(b[3], 1), n(b[4], 1), n(b[5], 1), n(b[1] + (b[2] + b[3]) / 2, 2), `<span class="${tom(b[6])}">${seta(b[6])} ${sn(b[6], 1)}</span>`]));
+grafico(corpo("NEN-3"), (svg, W, H) => histograma(svg, W, H, { dados: D.histSpread, de: -260, ate: 60, passo: 10, cor: v => (v < -100 ? "var(--sm-ne)" : "var(--ink-3)"), fmtBin: v => srs(v, 0), marca: { v: D.spread30.ne[29], rot: "hoje" } }));
+QC.abas(cab("NEN-4"), [["ne", "NE"], ["n", "N"]], id => {
+  const c = corpo("NEN-4"); c.replaceChildren();
+  c.insertAdjacentHTML("beforeend", QC.legenda([["var(--ink)", "Realizado", "l"], [cor(id), "Projeção", "l"], ["var(--faixa-proj)", "Faixa seco–úmido"]]));
+  const v = D.spreadMensal[id], real = v.map((t, i) => (i <= D.i0 ? t : null)), proj = v.map((t, i) => (i >= D.i0 ? t : null));
+  const lo = v.map((t, i) => (i >= D.i0 ? t - 6 * (i - D.i0) : null)), hi = v.map((t, i) => (i >= D.i0 ? t + 4 * (i - D.i0) : null));
+  grafico(c, (svg, W, H) => linhas(svg, W, H, { n: D.meses.length, zero: true, faixa: { lo, hi }, series: [{ nome: "Realizado", v: real, cor: "var(--ink)" }, { nome: "Projeção", v: proj, cor: cor(id), larg: 2.4 }], marca: { i: D.i0, rot: "rodada" }, rotX: i => (/-(01|04|07|10)$/.test(D.meses[i]) ? rot(D.meses[i]) : null), titX: i => rot(D.meses[i]), fmt: srs }));
+}, "Submercado");
+</script>
+</body>
+</html>

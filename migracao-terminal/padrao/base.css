@@ -1,0 +1,133 @@
+/* Padrão visual Quant Energia · v2.0 (terminal) · 2026-11 · base.css
+   Fundação de todas as páginas: cores (escuro padrão, claro por escolha), fontes, texto, cartões, tabelas,
+   navegação e componentes de metodologia. Compatível com as classes do v1.3.1: uma página antiga que só troca
+   a pasta padrao/ já sai no visual novo. Regras em GUIA.md. Páginas de painel somam painel.css. */
+
+/* Escuro é o padrão e NÃO segue o sistema (decisão de 15/11/26). O claro só entra com data-theme="light"
+   no <html>, posto pelo botão de tema (terminal.js), que guarda a escolha. */
+:root {
+  --bg: #000000; --surface: #07090b; --ink: #f2f2f2; --ink-2: #c9c9c9; --ink-3: #8a8a8a; --rule: #23272b;
+  --accent: #ffa31a; --accent-soft: #2a1d08; --vazio: #15181b;
+  /* bandeiras (só para bandeira tarifária) */
+  --vd: #2e9e5b; --am: #f2c230; --v1: #e35d4f; --v2: #9e1b1b;
+  --on-flag: #ffffff; --on-am: #15191d;
+  /* barras do v1 (comparação de modelos) */
+  --bar-modelo: #ffa31a; --bar-pers: #48525b; --bar-saz: #6b7680; --bar-oraculo: #f2f2f2;
+  /* submercados, ordem fixa SE/CO, S, NE, N (paleta validada para daltonismo e contraste) */
+  --sm-se: #4f8fe0; --sm-s: #1f9e73; --sm-ne: #e0703a; --sm-n: #c55bb6;
+  /* alta e baixa; erro acima do oficial (azul, não usa o âmbar do destaque) */
+  --sobe: #43c98a; --desce: #ff7a6b; --erro-acima: #4f8fe0;
+  /* mapa de calor: de --calor-0 (baixo) a --calor (alto) */
+  --calor: #ffa31a; --calor-0: #0d0f12;
+  /* peças do terminal */
+  --t-ambar: #ffa31a; --t-barra: #15181c; --t-barra-ink: #ffa31a; --t-fn: #1a2c55; --t-fn-ink: #f2f2f2;
+  --t-cmd: #0d0f12; --t-sobre: #000000;
+  --f-display: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --f-body: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #e9e7e1; --surface: #ffffff; --ink: #111111; --ink-2: #3d3d3d; --ink-3: #6b6b6b; --rule: #c9c6bd;
+  --accent: #b35900; --accent-soft: #f6e6d3; --vazio: #ecebe6;
+  --bar-modelo: #b35900; --bar-pers: #b8c0c8; --bar-saz: #8a949e; --bar-oraculo: #111111;
+  --sm-se: #2a78d6; --sm-s: #159a6c; --sm-ne: #e0662f; --sm-n: #a8329a;
+  --sobe: #13804f; --desce: #c2362b; --erro-acima: #2a78d6;
+  --calor: #b35900; --calor-0: #f7f2e8;
+  --t-ambar: #9a4d00; --t-barra: #dad6cc; --t-barra-ink: #111111; --t-fn: #1f3b73; --t-fn-ink: #ffffff;
+  --t-cmd: #fff8e6; --t-sobre: #ffffff;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; }
+/* sem limite de largura: a página usa a tela inteira (no v1.3.1 era 1080 px) */
+main { max-width: none; margin: 0; display: grid; gap: 2px; padding: 2px; align-content: start; }
+.texto { max-width: 72ch; }
+section { display: grid; gap: 6px; min-width: 0; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: 0.02em; }
+h1 { font-size: 0.95rem; font-weight: 600; text-transform: uppercase; }
+h2 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--t-ambar); }
+h3 { font-size: 0.85rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--t-ambar); }
+.rotulo { font-family: var(--f-data); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--t-ambar); }
+.lead { font-size: 1.05rem; color: var(--ink-2); max-width: 70ch; }
+header { display: grid; gap: 6px; }
+.num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+strong { font-weight: 600; }
+.sobe { color: var(--sobe) !important; } .desce { color: var(--desce) !important; } .neutro { color: var(--ink-2); }
+.sutil { color: var(--ink-3); font-size: 0.85em; }
+
+/* cartões (v1: veredito) */
+.veredito { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2px; }
+.cartao { background: var(--surface); border: 0; padding: 12px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cartao .cifra { font-family: var(--f-data); font-weight: 600; font-size: 1.8rem; line-height: 1; }
+.cartao .cifra small { font-size: 0.85rem; font-weight: 500; color: var(--ink-3); }
+.selo { justify-self: start; font-family: var(--f-data); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; }
+.selo.usar { background: var(--accent-soft); color: var(--accent); }
+.selo.cenario { background: var(--vazio); color: var(--ink-2); }
+
+/* fluxo (v1) */
+.fluxo { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2px; background: var(--rule); }
+.passo { padding: 12px; display: grid; gap: 6px; align-content: start; background: var(--surface); min-width: 0; }
+.passo .n { font-family: var(--f-data); color: var(--t-ambar); font-size: 0.8rem; }
+.passo p { font-size: 0.9rem; color: var(--ink-2); }
+
+/* gráfico solto (v1) */
+.grafico { background: var(--surface); padding: 10px; position: relative; min-width: 0; }
+.legenda { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--f-data); font-size: 0.72rem; color: var(--ink-2); margin-bottom: 6px; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { width: 12px; height: 12px; display: inline-block; }
+.legenda i.linha { height: 0; border-top: 2px dashed var(--bar-oraculo); width: 18px; }
+svg text { font-family: var(--f-data); font-size: 10.5px; fill: var(--ink-3); }
+svg .valor { fill: var(--ink-2); font-size: 10px; }
+details { font-size: 0.9rem; }
+summary { cursor: pointer; color: var(--t-ambar); }
+summary:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid var(--t-ambar); outline-offset: 2px; }
+
+/* tabelas */
+.rolagem { overflow-x: auto; min-width: 0; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-family: var(--f-data); font-size: 0.8rem; background: var(--surface); }
+th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--t-ambar); font-weight: 500; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--ink) 3%, var(--surface)); }
+tbody tr:hover td { background: var(--accent-soft); }
+tr.destaque td { font-weight: 600; }
+
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figure img { width: 100%; border: 1px solid var(--rule); background: #fcfcfb; }
+figcaption { font-size: 0.8rem; color: var(--ink-3); max-width: 80ch; }
+.lista { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+.lista li { display: grid; grid-template-columns: 9.5rem 1fr; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.lista li:last-child { border-bottom: 0; }
+.tag { font-family: var(--f-data); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); padding-top: 3px; }
+@media (max-width: 560px) { .lista li { grid-template-columns: 1fr; gap: 4px; } }
+.formula { font-family: var(--f-data); background: var(--surface); border: 1px solid var(--rule); padding: 12px 14px; font-size: 0.85rem; overflow-x: auto; }
+ol.passos { margin: 0; padding-left: 1.3rem; display: grid; gap: 8px; }
+footer { color: var(--ink-3); font-size: 0.8rem; }
+
+/* navegação do v1 (.nav): continua funcionando; nas páginas novas use a casca do terminal (painel.css) */
+.nav { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; font-family: var(--f-data); font-size: 0.78rem; background: var(--surface); padding: 4px 10px; }
+.nav .marca { font-weight: 600; color: var(--t-sobre); background: var(--t-ambar); padding: 2px 8px; margin-right: auto; text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; }
+.nav a { color: var(--ink-2); text-decoration: none; padding: 3px 8px; }
+.nav a:hover { color: var(--t-ambar); }
+.nav a[aria-current="page"] { background: var(--t-ambar); color: var(--t-sobre); }
+
+/* metodologia (texto corrido): mais confortável que o painel, ainda no visual do terminal */
+.indice { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; }
+.eq { font-family: var(--f-data); background: var(--surface); border-left: 3px solid var(--t-ambar); padding: 10px 14px; font-size: 0.85rem; line-height: 1.7; overflow-x: auto; }
+.eq var { font-style: italic; }
+.nota { font-size: 0.88rem; color: var(--ink-2); background: var(--accent-soft); padding: 10px 14px; }
+.passo-det { display: grid; grid-template-columns: 3rem 1fr; gap: 6px 14px; padding-block: 14px; border-top: 1px solid var(--rule); }
+.passo-det > .n { font-family: var(--f-data); font-weight: 600; font-size: 1.5rem; color: var(--t-ambar); line-height: 1; }
+.passo-det > div { display: grid; gap: 8px; min-width: 0; }
+@media (max-width: 560px) { .passo-det { grid-template-columns: 1fr; } }
+code { font-family: var(--f-data); font-size: 0.88em; background: var(--vazio); padding: 1px 5px; }
+dl.glossario { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+dl.glossario dt { font-family: var(--f-data); font-size: 0.8rem; font-weight: 500; color: var(--t-ambar); padding-top: 2px; }
+dl.glossario dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 560px) { dl.glossario { grid-template-columns: 1fr; } }
+.status { font-family: var(--f-data); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.status.ok { color: var(--sobe); } .status.teste { color: var(--ink-3); }

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PLD horário · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Exemplo da migração para o padrão v2.0 (terminal) · PLD horário
+     Referência para mudanças pontuais nas páginas do app: cada visualização tem um código (ex.: PLD-1) e um id
+     igual, para apontar "pld-horario.html#PLD-1". Os dados são FICTÍCIOS (dados-ficticios.js); no app, cada peça recebe
+     os dados reais no formato abaixo.
+
+     CONTRATO DE DADOS
+     PLD-1 curva do dia por submercado (abas): hoje[24], ontem[24] e média dos últimos 7 dias[24], em R$/MWh; piso.
+     PLD-2 estatísticas do submercado da aba: calculadas de hoje[24] e ontem[24] (média, mínimo, máximo, desvio, horas no piso).
+     PLD-3 mapa de calor: por submercado (abas), 7 dias × 24 horas em R$/MWh e os rótulos dos dias ['dd/mm'].
+     PLD-4 tabela horária: hoje[24] dos quatro submercados; spreads calculados contra o SE/CO.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>PLD</b> PLD horário</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html" aria-current="page"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Domingo, 15 de novembro de 2026</span>
+      <h1>Preço de liquidação das diferenças horário</h1>
+      <div class="meta"><span>Premissas:</span><span>CCEE, publicação de 14/11/26</span><span>Piso R$ 61,07</span><span>Teto horário R$ 751,73</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <div class="grade">
+    <section class="painel" data-tam="xl" id="PLD-1">
+      <header class="painel-cab"><h2 class="ttl">Curva do dia, em R$/MWh <span class="ref">PLD-1</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Hoje em linha cheia; ontem e média de 7 dias em tons neutros. Tracejado: piso.</p>
+    </section>
+    <section class="painel" data-tam="s" id="PLD-2">
+      <header class="painel-cab"><h2 class="ttl">Estatísticas do dia <span class="ref">PLD-2</span></h2></header>
+      <div class="painel-corpo"></div>
+    </section>
+    <section class="painel" data-tam="full" id="PLD-3">
+      <header class="painel-cab"><h2 class="ttl">Mapa de calor da semana, em R$/MWh <span class="ref">PLD-3</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Cada célula é uma hora; mais escura, mais cara. Valores no tooltip.</p>
+    </section>
+    <section class="painel" data-tam="full" id="PLD-4">
+      <header class="painel-cab"><h2 class="ttl">Preços por hora, em R$/MWh <span class="ref">PLD-4</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Em destaque, as horas no piso.</p>
+    </section>
+    </div>
+    <div class="aviso"><span>Exemplo com dados fictícios para a migração ao padrão v2.0 (terminal). Nada aqui vem do app real.</span></div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+<script>
+function estat(id) {
+  const v = D.hoje[id], m = D.media(v), dp = Math.sqrt(D.media(v.map(t => (t - m) ** 2)));
+  corpo("PLD-2").replaceChildren();
+  QC.pares(corpo("PLD-2"), [["Submercado", nomeSub(id)], ["Média", rs(m)], ["Mínimo", `${rs(Math.min(...v))} às ${horaRot(v.indexOf(Math.min(...v)))}`], ["Máximo", `${rs(Math.max(...v))} às ${horaRot(v.indexOf(Math.max(...v)))}`], ["Desvio-padrão", rs(dp)], ["Horas no piso", n(v.filter(t => t <= D.PISO).length)], ["vs. ontem", srs(m - D.media(D.ontem[id]))]]);
+}
+const abasSub = D.SUBS.map(s => [s.id, s.nome]);
+QC.abas(cab("PLD-1"), abasSub, id => {
+  const c = corpo("PLD-1"); c.replaceChildren();
+  c.insertAdjacentHTML("beforeend", QC.legenda([[cor(id), `Hoje (${nomeSub(id)})`, "l"], ["var(--ink-3)", "Ontem", "t"], ["var(--ink-2)", "Média 7 dias", "l"]]));
+  grafico(c, (svg, W, H) => linhas(svg, W, H, { n: 24, series: [{ nome: "Média 7 dias", v: D.media7[id], cor: "var(--ink-2)", larg: 1.4, semPonto: true, opac: 0.7 }, { nome: "Ontem", v: D.ontem[id], cor: "var(--ink-3)", tracejado: true, larg: 1.5, semPonto: true }, { nome: "Hoje", v: D.hoje[id], cor: cor(id), larg: 2.4 }], refs: [{ v: D.PISO, rot: "piso" }], rotX: i => (i % 2 === 0 ? horaRot(i) : null), titX: horaRot, fmt: rs }), "alto");
+  estat(id);
+}, "Submercado");
+QC.abas(cab("PLD-3"), abasSub, id => {
+  corpo("PLD-3").replaceChildren();
+  QC.mapaCalor(corpo("PLD-3"), D.diasSemana, [...Array(24).keys()].map(h => String(h).padStart(2, "0")), D.semana.map(d => d[id]), { media: true, dica: (i, j, v) => `${D.diasSemana[i]} ${horaRot(j)} · ${nomeSub(id)}: ${rs(v)}` });
+}, "Submercado");
+QC.tabela(corpo("PLD-4"), [{ t: "Hora" }, ...D.SUBS.map(s => ({ t: s.nome, n: 1 })), { t: "NE − SE/CO", n: 1 }, { t: "N − SE/CO", n: 1 }],
+  D.hoje.se.map((_, h) => [horaRot(h), ...D.SUBS.map(s => `<span class="${D.hoje[s.id][h] <= D.PISO ? "no-piso" : ""}">${n(D.hoje[s.id][h], 2)}</span>`), sn(D.hoje.ne[h] - D.hoje.se[h], 2), sn(D.hoje.n[h] - D.hoje.se[h], 2)]), "densa");
+</script>
+</body>
+</html>

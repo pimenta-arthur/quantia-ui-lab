@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forecast PLD · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Exemplo da migração para o padrão v2.0 (terminal) · Forecast PLD
+     Referência para mudanças pontuais nas páginas do app: cada visualização tem um código (ex.: FCST-1) e um id
+     igual, para apontar "forecast.html#FCST-1". Os dados são FICTÍCIOS (dados-ficticios.js); no app, cada peça recebe
+     os dados reais no formato abaixo.
+
+     CONTRATO DE DADOS
+     FCST-1 PLD médio mensal por submercado (abas): meses ['AAAA-MM'], valores[] (oficial até o índice do deck, esperado depois)
+            e faixa seco–úmido lo[]/hi[] nos meses projetados; piso.
+     FCST-2 acerto por horizonte: [[ 'M+1', acerto (fração), MAPE (fração) ]].
+     FCST-3 pequenos múltiplos: para cada mês projetado, o esperado dos 4 submercados (mesma escala) e a faixa.
+     FCST-4 previsto M+1 × oficial: [{ mes 'AAAA-MM', previsto, oficial }]; erro relativo em fundo divergente (fundoErro).
+     FCST-5 premissas da rodada: pares rótulo/texto.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>FCST</b> Forecast PLD</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html" aria-current="page"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Horizonte: novembro de 2026 a abril de 2027</span>
+      <h1>Projeção do PLD médio mensal</h1>
+      <div class="meta"><span>Premissas:</span><span>Deck NEWAVE nov/26 (v 7c1e2a90)</span><span>ECMWF 00z 15/11/26</span><span>Modelo Forecast v4</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <div class="grade">
+    <section class="painel" data-tam="xl" id="FCST-1">
+      <header class="painel-cab"><h2 class="ttl">PLD médio mensal, em R$/MWh <span class="ref">FCST-1</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Oficial em linha neutra; esperado na cor do submercado; faixa entre os cenários seco e úmido.</p>
+    </section>
+    <section class="painel" data-tam="s" id="FCST-2">
+      <header class="painel-cab"><h2 class="ttl">Acerto por horizonte <span class="ref">FCST-2</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Fora da amostra, 36 rodadas. Acerto: oficial dentro da faixa.</p>
+    </section>
+    <section class="painel" data-tam="full" id="FCST-3">
+      <header class="painel-cab"><h2 class="ttl">Esperado por submercado em cada mês, mesma escala <span class="ref">FCST-3</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Pequenos múltiplos: barras na mesma escala para comparar meses e submercados.</p>
+    </section>
+    <section class="painel" data-tam="l" id="FCST-4">
+      <header class="painel-cab"><h2 class="ttl">Previsto M+1 contra oficial, SE/CO <span class="ref">FCST-4</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Erro em fundo divergente: azul acima do oficial, vermelho abaixo.</p>
+    </section>
+    <section class="painel" data-tam="l" id="FCST-5">
+      <header class="painel-cab"><h2 class="ttl">Premissas da rodada <span class="ref">FCST-5</span></h2></header>
+      <div class="painel-corpo"></div>
+    </section>
+    </div>
+    <div class="aviso"><span>Exemplo com dados fictícios para a migração ao padrão v2.0 (terminal). Nada aqui vem do app real.</span></div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+<script>
+QC.abas(cab("FCST-1"), D.SUBS.map(s => [s.id, s.nome]), id => {
+  const c = corpo("FCST-1"); c.replaceChildren();
+  c.insertAdjacentHTML("beforeend", QC.legenda([["var(--ink)", "Oficial", "l"], [cor(id), "Esperado", "l"], ["var(--faixa-proj)", "Faixa seco–úmido"], ["var(--ink-3)", "Piso", "t"]]));
+  const v = D.mensal[id];
+  grafico(c, (svg, W, H) => linhas(svg, W, H, { n: D.meses.length, faixa: D.faixa[id], refs: [{ v: D.PISO, rot: "piso" }], series: [{ nome: "Oficial", v: v.map((t, i) => (i <= D.i0 ? t : null)), cor: "var(--ink)" }, { nome: "Esperado", v: v.map((t, i) => (i >= D.i0 ? t : null)), cor: cor(id), larg: 2.4 }], marca: { i: D.i0, rot: "deck" }, rotX: i => (rotuloDeMes(D.meses[i]) ? rot(D.meses[i]) : null), titX: i => rot(D.meses[i]), fmt: rs }), "alto");
+}, "Submercado");
+QC.tabela(corpo("FCST-2"), [{ t: "Horiz." }, { t: "Acerto", n: 1 }, { t: "MAPE", n: 1 }], D.acerto.map(a => [a[0], pct(a[1]), pct(a[2])]));
+const box = document.createElement("div"); box.className = "multiplos"; corpo("FCST-3").append(box);
+const vmax = Math.max(...D.SUBS.map(s => Math.max(...D.mensal[s.id].slice(D.i0 + 1)))) * 1.1;
+D.meses.slice(D.i0 + 1).forEach((mm, k) => {
+  const d = document.createElement("div"); d.className = "mini"; d.innerHTML = `<div class="ttl">${rot(mm)}<span>M+${k + 1}</span></div>`; box.append(d);
+  grafico(d, (svg, W, H) => {
+    const bw = W / 4;
+    D.SUBS.forEach((s, j) => {
+      const v = D.mensal[s.id][D.i0 + 1 + k], hh = (H - 30) * v / vmax;
+      const r = S(svg, "rect", { x: j * bw + 6, y: H - 16 - hh, width: bw - 12, height: hh, fill: cor(s.id) });
+      S(svg, "text", { x: j * bw + bw / 2, y: H - 3, "text-anchor": "middle" }, s.nome);
+      S(svg, "text", { x: j * bw + bw / 2, y: H - 20 - hh, "text-anchor": "middle", class: "valor" }, n(v));
+      dicaEm(r, `<b>${rot(mm)} · ${s.nome}</b><span class="dica-l">Esperado ${rs(v)}</span><span class="dica-l">Faixa ${rs(D.faixa[s.id].lo[D.i0 + 1 + k])} a ${rs(D.faixa[s.id].hi[D.i0 + 1 + k])}</span>`);
+    });
+  }, "baixo");
+});
+QC.tabela(corpo("FCST-4"), [{ t: "Mês" }, { t: "Previsto", n: 1 }, { t: "Oficial", n: 1 }, { t: "Erro", n: 1 }], D.errosRodadas.map(r => { const e = (r.prev - r.ofi) / r.ofi; return [rot(r.mes), n(r.prev, 2), n(r.ofi, 2), `<span class="erro" style="background:${fundoErro(e, 0.15)}">${sn(e * 100, 1)}%</span>`]; }));
+QC.pares(corpo("FCST-5"), [["Deck", "NEWAVE nov/26, revisão 0 (v 7c1e2a90)"], ["Clima", "ECMWF 00z de 15/11/26, 51 membros"], ["Carga", "Revisão quadrimestral set/26, +2,1% a.a."], ["Cenários", "2.000 séries sintéticas; seco = P10, úmido = P90"], ["Rodada", "15/11/26 06:10, 41 min de processamento"]], "premissas");
+</script>
+</body>
+</html>

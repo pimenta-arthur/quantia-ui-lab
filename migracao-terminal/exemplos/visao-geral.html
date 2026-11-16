@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visão geral · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Exemplo da migração para o padrão v2.0 (terminal) · Visão geral
+     Referência para mudanças pontuais nas páginas do app: cada visualização tem um código (ex.: VG-1) e um id
+     igual, para apontar "visao-geral.html#VG-1". Os dados são FICTÍCIOS (dados-ficticios.js); no app, cada peça recebe
+     os dados reais no formato abaixo.
+
+     CONTRATO DE DADOS
+     VG-1 números do dia: por submercado, PLD médio de hoje e de ontem (R$/MWh); spread NE−SE/CO; horas do NE no piso;
+          bandeira do próximo mês com as probabilidades (ver BAND-1).
+     VG-2 PLD horário de hoje: { se:[24], s:[24], ne:[24], n:[24] } em R$/MWh e o piso regulatório.
+     VG-3 descolamento diário: datas ['dd/mm' × 30] e spreads { ne:[30], n:[30] } em R$/MWh (média do dia − SE/CO).
+     VG-4 reservatórios: [{ nome, ear, varSem, ena }] (frações; varSem = variação semanal da EAR).
+     VG-5 eventos: [{ quando ISO, tipo: rodada|alerta|insumo|bandeira|risco, texto }], mais recente primeiro.
+     VG-6 bandeira projetada: o mesmo formato de BAND-1.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>VG</b> Visão geral</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html" aria-current="page"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Domingo, 15 de novembro de 2026</span>
+      <h1>Visão geral do mercado de energia</h1>
+      <div class="meta"><span>Premissas:</span><span>PLD horário CCEE</span><span>Deck NEWAVE nov/26</span><span>ECMWF 00z 15/11/26</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <div class="grade">
+    <section class="painel sem-cab" data-tam="full" id="VG-1" aria-label="Números do dia (VG-1)">
+      <div class="painel-corpo"></div>
+    </section>
+    <section class="painel" data-tam="l" id="VG-2">
+      <header class="painel-cab"><h2 class="ttl">PLD horário de hoje por submercado, em R$/MWh <span class="ref">VG-2</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Média horária de 15/11/26. Tracejado: piso regulatório.</p>
+    </section>
+    <section class="painel" data-tam="l" id="VG-3">
+      <header class="painel-cab"><h2 class="ttl">Descolamento diário em relação ao SE/CO, em R$/MWh <span class="ref">VG-3</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Média diária de cada submercado menos a do SE/CO, últimos 30 dias.</p>
+    </section>
+    <section class="painel" data-tam="m" id="VG-6">
+      <header class="painel-cab"><h2 class="ttl">Bandeira tarifária projetada <span class="ref">VG-6</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Probabilidade de cada bandeira na rodada de 15/11/26; nov/26 já é oficial.</p>
+    </section>
+    <section class="painel" data-tam="m" id="VG-4">
+      <header class="painel-cab"><h2 class="ttl">Reservatórios e afluências <span class="ref">VG-4</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">EAR em % da máxima; ENA em % da MLT.</p>
+    </section>
+    <section class="painel" data-tam="m" id="VG-5">
+      <header class="painel-cab"><h2 class="ttl">Rodadas e alertas recentes <span class="ref">VG-5</span></h2></header>
+      <div class="painel-corpo"></div>
+    </section>
+    </div>
+    <div class="aviso"><span>Exemplo com dados fictícios para a migração ao padrão v2.0 (terminal). Nada aqui vem do app real.</span></div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+<script>
+const varDia = id => mediaDia(id) - D.media(D.ontem[id]);
+QC.kpis(corpo("VG-1"), [
+  ...D.SUBS.map(s => ({ r: `PLD médio ${s.nome}`, v: rs(mediaDia(s.id)), d: `${seta(varDia(s.id))} ${srs(varDia(s.id))} vs. ontem`, tom: tom(varDia(s.id)) })),
+  { r: "Spread NE−SE hoje", v: srs(mediaDia("ne") - mediaDia("se")), d: `${D.hoje.ne.filter(v => v <= D.PISO).length} h no piso no NE` },
+  { r: "Bandeira dez/26", v: "Amarela", d: `${pct(D.probBand[1][1])} amarela · ${pct(D.probBand[1][2] + D.probBand[1][3])} vermelha` },
+]);
+corpo("VG-2").insertAdjacentHTML("beforeend", QC.legenda(D.SUBS.map(s => [cor(s.id), s.nome, "l"])));
+grafico(corpo("VG-2"), (svg, W, H) => linhas(svg, W, H, { n: 24, series: D.SUBS.map(s => ({ nome: s.nome, v: D.hoje[s.id], cor: cor(s.id) })), refs: [{ v: D.PISO, rot: "piso" }], rotX: i => (i % 3 === 0 ? horaRot(i) : null), titX: i => `${horaRot(i)} de 15/11`, fmt: rs }));
+corpo("VG-3").insertAdjacentHTML("beforeend", QC.legenda([[cor("ne"), "NE − SE/CO", "l"], [cor("n"), "N − SE/CO", "l"]]));
+grafico(corpo("VG-3"), (svg, W, H) => linhas(svg, W, H, { n: 30, zero: true, series: [{ nome: "NE − SE/CO", v: D.spread30.ne, cor: cor("ne") }, { nome: "N − SE/CO", v: D.spread30.n, cor: cor("n") }], rotX: i => (i % 5 === 4 ? D.dias30[i] : null), titX: i => D.dias30[i], fmt: srs }));
+QC.probBandeiras(corpo("VG-6"), D.mesesBand, D.probBand, { oficiais: 1 });
+QC.reservatorios(corpo("VG-4"), D.reserv.map(r => ({ nome: nomeSub(r.id), ear: r.ear, varSem: r.varSem, ena: r.ena, cor: cor(r.id) })));
+QC.eventos(corpo("VG-5"), D.eventos.map(([quando, tipo, texto]) => ({ quando, tipo, texto })));
+</script>
+</body>
+</html>

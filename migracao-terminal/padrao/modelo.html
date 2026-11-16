@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Título da Página · Quant Energia</title>
+<!-- Padrão visual Quant Energia · v2.0 (terminal) · 2026-11 · modelo.html
+     Casca de uma página nova: comando, teclas de função, fita de cotações, topo, grade de painéis e status.
+     Copiar, trocar textos e rotas e preencher os painéis. Exemplos completos de cada visualização em
+     ../exemplos/ (códigos VG-1, BAND-2…). Regras em GUIA.md. -->
+<!-- tema antes dos estilos, para não piscar: escuro é o padrão; claro só se a pessoa escolheu -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="painel.css">
+<style>
+  /* estilos só desta página ficam aqui, depois de base.css e painel.css */
+</style>
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="/">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>COD</b> Nome da página</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <!-- barra de funções: a ordem define as teclas 1–9; data-cod é o código do comando; href é a rota real.
+       Marcar a página atual com aria-current="page" (se não marcar, terminal.js compara o caminho). -->
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="/"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="/pld"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="/bandeiras"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="/pricing"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="/forecast"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="/risco"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="/metodologia"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <!-- fita de cotações: preenchida por Terminal.fita(itens) com dados reais (ver o fim do arquivo) -->
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Horizonte ou data</span>
+      <h1>Título institucional da página</h1>
+      <div class="meta"><span>Premissas:</span><span>Insumo 1</span><span>Insumo 2</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <!-- grade de 12 colunas: data-tam s/m (4), l (6), xl (8), full (12); cada linha deve somar 12 -->
+    <div class="grade">
+      <section class="painel sem-cab" data-tam="full" id="numeros" aria-label="Números">
+        <div class="painel-corpo"></div>
+      </section>
+      <section class="painel" data-tam="xl" id="principal">
+        <header class="painel-cab"><h2 class="ttl">Resultado principal, em unidade</h2></header>
+        <div class="painel-corpo"></div>
+        <p class="leg">O que é cada marca e de onde vem o dado.</p>
+      </section>
+      <section class="painel" data-tam="s" id="lateral">
+        <header class="painel-cab"><h2 class="ttl">Detalhe</h2></header>
+        <div class="painel-corpo"></div>
+      </section>
+    </div>
+    <div class="aviso"><span>Avisos e premissas finais, curtos. Método completo em <a href="/metodologia">Metodologia</a>.</span></div>
+  </main>
+  <footer class="t-status"><span>Fonte dos dados</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="graficos.js"></script>
+<script src="componentes.js"></script>
+<script src="terminal.js"></script>
+<script>
+  // Valores de exemplo, só para o modelo abrir preenchido: trocar pelos dados reais da página.
+  Terminal.fita([{ r: "PLD SE/CO", v: "171,25", d: 12.32 }, { r: "NE−SE/CO", v: "−41,68", d: 32.91 }]);
+  QC.kpis(document.querySelector("#numeros .painel-corpo"), [
+    { r: "Número 1", v: rs(171.25), d: `${seta(12.32)} ${srs(12.32)} vs. ontem`, tom: tom(12.32) },
+    { r: "Número 2", v: "0,76", d: "detalhe curto" },
+  ]);
+  const serie = [150, 140, 132, 128, 131, 145, 170, 210, 260, 300, 280, 220];
+  grafico(document.querySelector("#principal .painel-corpo"), (svg, W, H) =>
+    linhas(svg, W, H, { n: serie.length, series: [{ nome: "Série", v: serie, cor: "var(--sm-se)" }], rotX: i => (i % 2 === 0 ? `${i}h` : null), fmt: rs }));
+  QC.pares(document.querySelector("#lateral .painel-corpo"), [["Média", rs(188.83)], ["Máximo", rs(300)]]);
+</script>
+</body>
+</html>

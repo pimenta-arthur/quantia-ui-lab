@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Risk Lab · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Exemplo da migração para o padrão v2.0 (terminal) · Risk Lab
+     Referência para mudanças pontuais nas páginas do app: cada visualização tem um código (ex.: RISK-1) e um id
+     igual, para apontar "risk-lab.html#RISK-1". Os dados são FICTÍCIOS (dados-ficticios.js); no app, cada peça recebe
+     os dados reais no formato abaixo.
+
+     CONTRATO DE DADOS
+     RISK-1 números: VaR 95% 1 dia e variação; CVaR; exposição líquida do próximo mês; marcação a mercado e variação.
+     RISK-2 exposição: meses ['AAAA-MM'] e por submercado { se:[], ne:[], n:[] } em MWm (+ comprado, − vendido).
+     RISK-3 limites: [{ r, v (usado), max (limite), u (unidade), casas }].
+     RISK-4 estresse: [[cenário, resultado em R$ mi, choque em texto]].
+     RISK-5 distribuição do resultado em 1 dia: lista de resultados simulados (R$ mi) e o VaR.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>RISK</b> Risk Lab</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html" aria-current="page"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Carteira consolidada em 15/11/26</span>
+      <h1>Risco da carteira de energia</h1>
+      <div class="meta"><span>Premissas:</span><span>Posições de 14/11/26 23:59</span><span>Curvas da mesa 15/11/26</span><span>Simulação histórica + 2.000 cenários</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <div class="grade">
+    <section class="painel sem-cab" data-tam="full" id="RISK-1" aria-label="Números do risco (RISK-1)">
+      <div class="painel-corpo"></div>
+    </section>
+    <section class="painel" data-tam="xl" id="RISK-2">
+      <header class="painel-cab"><h2 class="ttl">Exposição por mês e submercado, em MWm <span class="ref">RISK-2</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Acima de zero, comprado; abaixo, vendido. Próximos 12 meses.</p>
+    </section>
+    <section class="painel" data-tam="s" id="RISK-3">
+      <header class="painel-cab"><h2 class="ttl">Uso dos limites <span class="ref">RISK-3</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Atenção a partir de 70%; crítico a partir de 85%.</p>
+    </section>
+    <section class="painel" data-tam="l" id="RISK-4">
+      <header class="painel-cab"><h2 class="ttl">Cenários de estresse <span class="ref">RISK-4</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Resultado sobre a marcação a mercado de hoje.</p>
+    </section>
+    <section class="painel" data-tam="l" id="RISK-5">
+      <header class="painel-cab"><h2 class="ttl">Distribuição do resultado em 1 dia, em R$ mi <span class="ref">RISK-5</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">3.000 cenários. Tracejado: VaR 95%.</p>
+    </section>
+    </div>
+    <div class="aviso"><span>Exemplo com dados fictícios para a migração ao padrão v2.0 (terminal). Nada aqui vem do app real.</span></div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+<script>
+QC.kpis(corpo("RISK-1"), [
+  { r: "VaR 95% (1 dia)", v: "R$ 1,84 mi", d: "▲ +R$ 0,12 mi vs. ontem", tom: "desce" },
+  { r: "CVaR 95%", v: "R$ 2,61 mi", d: "média das perdas além do VaR" },
+  { r: "Exposição líquida dez/26", v: "+6,9 MWm", d: "comprado no SE/CO, vendido no NE" },
+  { r: "Marcação a mercado", v: "+R$ 3,27 mi", d: "▲ +R$ 0,41 mi no dia", tom: "sobe" },
+]);
+corpo("RISK-2").insertAdjacentHTML("beforeend", QC.legenda([[cor("se"), "SE/CO"], [cor("ne"), "NE"], [cor("n"), "N"]]));
+grafico(corpo("RISK-2"), (svg, W, H) => barras(svg, W, H, { cats: D.mesesRisco.map(rot), series: ["se", "ne", "n"].map(id => ({ nome: nomeSub(id), v: D.expo[id], cor: cor(id) })), fmt: v => sn(v, 1) + " MWm" }), "alto");
+QC.medidores(corpo("RISK-3"), D.limites.map(([r, v, max, u]) => ({ r, v, max, u, casas: u === "MWm" || u === "meses" ? 1 : 2 })));
+QC.tabela(corpo("RISK-4"), [{ t: "Cenário" }, { t: "Choque" }, { t: "Resultado", n: 1 }], D.stress.map(s => [s[0], `<span class="sutil">${s[2]}</span>`, `<span class="${tom(s[1])}">${seta(s[1])} ${srs(s[1])} mi</span>`]));
+grafico(corpo("RISK-5"), (svg, W, H) => histograma(svg, W, H, { dados: D.pnl, de: -5, ate: 4, passo: 0.25, cor: v => (v < -1.84 ? "var(--desce)" : "var(--accent)"), fmtBin: v => n(v, 2), marca: { v: -1.84, rot: "VaR 95%" } }));
+</script>
+</body>
+</html>

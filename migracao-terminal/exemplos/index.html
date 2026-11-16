@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catálogo de exemplos · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Índice das visualizações de referência da migração para o terminal. Cada código abre o painel na página. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+<style>
+  .catalogo td:first-child a { font-weight: 600; text-decoration: none; }
+  .catalogo td:nth-child(2) { white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>REF</b> Catálogo de exemplos</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Padrão v2.0 (terminal)</span>
+      <h1>Catálogo de visualizações de referência</h1>
+      <div class="meta"><span>Para mudanças pontuais nas páginas do app: cite o código (ex.: BAND-2) e a página.</span></div>
+    </section>
+    <div class="grade">
+      <section class="painel" data-tam="full" id="REF">
+        <header class="painel-cab"><h2 class="ttl">Códigos de referência</h2></header>
+        <div class="painel-corpo">
+          <div class="rolagem">
+            <table class="catalogo">
+              <thead><tr><th>Código</th><th>Peça</th><th>O que mostra</th></tr></thead>
+              <tbody>
+                <tr><td><a href="visao-geral.html#VG-1">VG-1</a></td><td>QC.kpis</td><td>Números do dia: PLD médio por submercado, spread, bandeira do próximo mês</td></tr>
+                <tr><td><a href="visao-geral.html#VG-2">VG-2</a></td><td>linhas</td><td>PLD horário de hoje, quatro submercados, piso tracejado</td></tr>
+                <tr><td><a href="visao-geral.html#VG-3">VG-3</a></td><td>linhas</td><td>Descolamento diário NE e N contra o SE/CO, 30 dias, linha do zero</td></tr>
+                <tr><td><a href="visao-geral.html#VG-4">VG-4</a></td><td>QC.reservatorios</td><td>EAR por subsistema em barra, variação semanal e ENA</td></tr>
+                <tr><td><a href="visao-geral.html#VG-5">VG-5</a></td><td>QC.eventos</td><td>Rodadas e alertas recentes, com tipo</td></tr>
+                <tr><td><a href="visao-geral.html#VG-6">VG-6</a></td><td>QC.probBandeiras</td><td>Bandeira projetada, versão compacta da BAND-1</td></tr>
+                <tr><td><a href="pld-horario.html#PLD-1">PLD-1</a></td><td>linhas + QC.abas</td><td>Curva do dia por submercado: hoje, ontem e média de 7 dias</td></tr>
+                <tr><td><a href="pld-horario.html#PLD-2">PLD-2</a></td><td>QC.pares</td><td>Estatísticas do dia do submercado escolhido</td></tr>
+                <tr><td><a href="pld-horario.html#PLD-3">PLD-3</a></td><td>QC.mapaCalor</td><td>Mapa de calor 7 dias × 24 horas, com média por dia</td></tr>
+                <tr><td><a href="pld-horario.html#PLD-4">PLD-4</a></td><td>QC.tabela</td><td>Preços por hora dos quatro submercados, horas no piso em destaque</td></tr>
+                <tr><td><a href="bandeiras.html#BAND-1">BAND-1</a></td><td>QC.probBandeiras</td><td>Probabilidade de cada bandeira por mês, em barra empilhada, com a mais provável</td></tr>
+                <tr><td><a href="bandeiras.html#BAND-2">BAND-2</a></td><td>QC.tabelaBandeiras</td><td>Bandeira mais provável por rodada × mês, ▲▼ quando muda, projeção tracejada</td></tr>
+                <tr><td><a href="bandeiras.html#BAND-3">BAND-3</a></td><td>linhas</td><td>GSF esperado por mês com a referência de 0,85</td></tr>
+                <tr><td><a href="bandeiras.html#BAND-4">BAND-4</a></td><td>QC.kpis</td><td>Bandeira vigente, mais provável, primeira verde, GSF</td></tr>
+                <tr><td><a href="pricing-ne-n.html#NEN-1">NEN-1</a></td><td>QC.kpis</td><td>SE/CO e spreads de compra e venda do primeiro produto</td></tr>
+                <tr><td><a href="pricing-ne-n.html#NEN-2">NEN-2</a></td><td>QC.tabela</td><td>Book indicativo por produto, com variação do dia</td></tr>
+                <tr><td><a href="pricing-ne-n.html#NEN-3">NEN-3</a></td><td>histograma</td><td>Distribuição do spread horário NE−SE/CO, com o valor de hoje</td></tr>
+                <tr><td><a href="pricing-ne-n.html#NEN-4">NEN-4</a></td><td>linhas + QC.abas</td><td>Spread mensal realizado e projetado, com faixa seco–úmido</td></tr>
+                <tr><td><a href="forecast.html#FCST-1">FCST-1</a></td><td>linhas + QC.abas</td><td>PLD médio mensal: oficial, esperado e faixa, por submercado</td></tr>
+                <tr><td><a href="forecast.html#FCST-2">FCST-2</a></td><td>QC.tabela</td><td>Acerto e MAPE por horizonte</td></tr>
+                <tr><td><a href="forecast.html#FCST-3">FCST-3</a></td><td>grafico + S</td><td>Pequenos múltiplos M+1 a M+6, mesma escala</td></tr>
+                <tr><td><a href="forecast.html#FCST-4">FCST-4</a></td><td>QC.tabela + fundoErro</td><td>Previsto M+1 contra oficial, erro em fundo divergente</td></tr>
+                <tr><td><a href="forecast.html#FCST-5">FCST-5</a></td><td>QC.pares</td><td>Premissas da rodada</td></tr>
+                <tr><td><a href="risk-lab.html#RISK-1">RISK-1</a></td><td>QC.kpis</td><td>VaR, CVaR, exposição líquida, marcação a mercado</td></tr>
+                <tr><td><a href="risk-lab.html#RISK-2">RISK-2</a></td><td>barras</td><td>Exposição por mês e submercado, comprado e vendido</td></tr>
+                <tr><td><a href="risk-lab.html#RISK-3">RISK-3</a></td><td>QC.medidores</td><td>Uso dos limites com atenção e crítico</td></tr>
+                <tr><td><a href="risk-lab.html#RISK-4">RISK-4</a></td><td>QC.tabela</td><td>Cenários de estresse e resultado</td></tr>
+                <tr><td><a href="risk-lab.html#RISK-5">RISK-5</a></td><td>histograma</td><td>Distribuição do resultado em 1 dia, com o VaR</td></tr>
+                <tr><td><a href="metodologia.html#METO-1">METO-1</a></td><td>texto corrido</td><td>Metodologia em painel de largura cheia, texto a ~72 caracteres</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="leg">Peças: funções de ../padrao/componentes.js (QC.*) e ../padrao/graficos.js (linhas, barras, histograma, grafico).</p>
+      </section>
+    </div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+</body>
+</html>

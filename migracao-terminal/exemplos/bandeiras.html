@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bandeiras tarifárias · Quant Energia</title>
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<!-- Exemplo da migração para o padrão v2.0 (terminal) · Bandeiras tarifárias
+     Referência para mudanças pontuais nas páginas do app: cada visualização tem um código (ex.: BAND-1) e um id
+     igual, para apontar "bandeiras.html#BAND-1". Os dados são FICTÍCIOS (dados-ficticios.js); no app, cada peça recebe
+     os dados reais no formato abaixo.
+
+     CONTRATO DE DADOS
+     BAND-1 probabilidade por mês: meses ['AAAA-MM'] e probs [[verde, amarela, vermelha P1, vermelha P2]] (frações que somam 1);
+            quantos meses iniciais já são oficiais (aparecem com 'oficial').
+     BAND-2 bandeira mais provável por rodada: rodadas [['AAAA-MM-DD', ['vd'|'am'|'v1'|'v2' por mês]]] em ordem cronológica;
+            a tabela marca ▲▼ quando a bandeira do mês muda em relação à rodada anterior e tracejado nos meses projetados.
+     BAND-3 GSF esperado por mês [número] e a referência de 0,85.
+     BAND-4 números: bandeira vigente e custo (R$ por 100 kWh), mais provável no próximo mês, primeira verde provável, GSF.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../padrao/base.css">
+<link rel="stylesheet" href="../padrao/painel.css">
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="index.html">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="PLD, NEN, BAND, RISK… ou 1–7" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>BAND</b> Bandeiras tarifárias</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funções">
+    <a data-cod="VG" href="visao-geral.html"><span class="k">1</span><b>VG</b><span>Visão geral</span></a>
+    <a data-cod="PLD" href="pld-horario.html"><span class="k">2</span><b>PLD</b><span>PLD horário</span></a>
+    <a data-cod="BAND" href="bandeiras.html" aria-current="page"><span class="k">3</span><b>BAND</b><span>Bandeiras tarifárias</span></a>
+    <a data-cod="NEN" href="pricing-ne-n.html"><span class="k">4</span><b>NEN</b><span>Pricing NE/N</span></a>
+    <a data-cod="FCST" href="forecast.html"><span class="k">5</span><b>FCST</b><span>Forecast PLD</span></a>
+    <a data-cod="RISK" href="risk-lab.html"><span class="k">6</span><b>RISK</b><span>Risk Lab</span></a>
+    <a data-cod="METO" href="metodologia.html"><span class="k">7</span><b>METO</b><span>Metodologia</span></a>
+  </nav>
+  <div class="t-fita" data-fita aria-label="Cotações"></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Horizonte: novembro de 2026 a abril de 2027</span>
+      <h1>Projeção das bandeiras tarifárias</h1>
+      <div class="meta"><span>Premissas:</span><span>Deck NEWAVE nov/26</span><span>ECMWF emissão 15/11/26</span><span>Modelo de bandeiras v3</span><span class="atualizado">Rodada de 15/11/26 06:10</span></div>
+    </section>
+    <div class="grade">
+    <section class="painel sem-cab" data-tam="full" id="BAND-4" aria-label="Números das bandeiras (BAND-4)">
+      <div class="painel-corpo"></div>
+    </section>
+    <section class="painel" data-tam="l" id="BAND-1">
+      <header class="painel-cab"><h2 class="ttl">Probabilidade de cada bandeira por mês <span class="ref">BAND-1</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Rodada de 15/11/26, sobre 2.000 cenários de afluência. Nov/26 já é oficial.</p>
+    </section>
+    <section class="painel" data-tam="l" id="BAND-3">
+      <header class="painel-cab"><h2 class="ttl">GSF esperado, fator de ajuste do MRE <span class="ref">BAND-3</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Valor esperado da rodada; abaixo de 0,85 a bandeira tende a ficar acima da amarela.</p>
+    </section>
+    <section class="painel" data-tam="full" id="BAND-2">
+      <header class="painel-cab"><h2 class="ttl">Bandeira mais provável em cada rodada <span class="ref">BAND-2</span></h2></header>
+      <div class="painel-corpo"></div>
+      <p class="leg">Cada linha é uma rodada semanal; ▲▼ quando a bandeira do mês muda em relação à rodada anterior; tracejado: mês projetado.</p>
+    </section>
+    </div>
+    <div class="aviso"><span>Exemplo com dados fictícios para a migração ao padrão v2.0 (terminal). Nada aqui vem do app real.</span></div>
+  </main>
+  <footer class="t-status"><span>Exemplo · dados fictícios</span><span>Rodada 15/11/26 06:10</span><span class="t-atalhos">1–7 páginas · / comando · T tema</span></footer>
+</div>
+<script src="../padrao/graficos.js"></script>
+<script src="../padrao/componentes.js"></script>
+<script src="../padrao/terminal.js"></script>
+<script src="dados-ficticios.js"></script>
+<script src="comum.js"></script>
+<script>
+const p1 = D.probBand[1];
+QC.kpis(corpo("BAND-4"), [
+  { r: "Vigente (nov/26)", v: "Amarela", d: `${rs(D.BANDEIRAS.am.custo, 3)} a cada 100 kWh` },
+  { r: "Mais provável em dez/26", v: "Amarela", d: `${pct(p1[1])}; vermelha soma ${pct(p1[2] + p1[3])}` },
+  { r: "Primeira verde provável", v: "fev/27", d: `${pct(D.probBand[3][0])} de chance` },
+  { r: "GSF esperado dez/26", v: n(D.gsf[1], 2), d: "▲ +0,05 vs. rodada anterior", tom: "sobe" },
+]);
+QC.probBandeiras(corpo("BAND-1"), D.mesesBand, D.probBand, { oficiais: 1, maisProvavel: true });
+grafico(corpo("BAND-3"), (svg, W, H) => linhas(svg, W, H, { n: 6, series: [{ nome: "GSF esperado", v: D.gsf, cor: "var(--accent)", larg: 2.4 }], refs: [{ v: 0.85, rot: "0,85" }], rotX: i => rot(D.mesesBand[i]), fmt: v => n(v, 2) }));
+QC.tabelaBandeiras(corpo("BAND-2"), D.mesesBand, D.rodadasBand, { oficiais: 1 });
+</script>
+</body>
+</html>
