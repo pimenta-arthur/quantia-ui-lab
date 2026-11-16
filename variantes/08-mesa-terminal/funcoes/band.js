@@ -1102,18 +1102,18 @@
     return { v: `${rot(p.alvo)} ${p.cor_esp} ${pct(p.prob[p.cor_esp])}`, d: `${AB[s2]} ${pct(p.prob[s2])} · seco ${AB[p.cor_li]} · úmido ${AB[p.cor_ls]}`, tom: "neutro" };
   }
   function resumo(el) {
-    const p = PROX, verdeSeco = fut.find(q => q.cor_li === "Verde");
+    const p = PROX, s2 = segundo(p.prob), primVerde = fut.find(q => q.cor_esp === "Verde");
     QC.kpis(el, [
-      { r: `Próxima · ${rot(p.alvo)}`, v: `${AB[p.cor_esp]} ${pct(p.prob[p.cor_esp])}`, d: `seco ${p.cor_li} · úmido ${p.cor_ls}` },
+      { r: `Próxima · ${rot(p.alvo)}`, v: `${AB[p.cor_esp]} ${pct(p.prob[p.cor_esp])}`, d: `${s2} ${pct(p.prob[s2])}` },
       { r: `GSF · PLD ${rot(p.alvo)}`, v: `${n(p.gsf_esp, 2)} · ${n(p.pld_esp, 0)}`, d: `vira ${(gatilhos(p.gsf_esp, p.pld_esp).acima || {}).cor || "—"} com PLD > ${rs((gatilhos(p.gsf_esp, p.pld_esp).acima || {}).pld, 0)}` },
-      { r: "Verde também no seco", v: verdeSeco ? rot(verdeSeco.alvo) : "—", d: `rodada ${rotRod(RATUAL)}` },
+      { r: "Primeira verde provável", v: primVerde ? rot(primVerde.alvo) : "—", d: primVerde ? `${pct(primVerde.prob.Verde)} · rodada ${rotRod(RATUAL)}` : `rodada ${rotRod(RATUAL)}` },
     ]);
-    const box = h("div", "rolagem"), t = h("table", "band-mat band-mat-mini"); box.append(t); el.append(box);
-    t.innerHTML = `<thead><tr><th></th>${P.map(p => `<th class="band-mcab" data-alvo="${p.alvo}"><b>${rot(p.alvo)}</b>${p.anunciada ? "<span>oficial</span>" : ""}</th>`).join("")}</tr></thead><tbody>` +
-      `<tr><th scope="row">Esperada</th>${P.map(p => `<td>${chip(p.anunciada || p.cor_esp, AB[p.anunciada || p.cor_esp])} ${p.anunciada ? "" : pct(p.prob[p.cor_esp])}</td>`).join("")}</tr>` +
-      [["li", "Seco"], ["ls", "Úmido"]].map(([c, r]) => `<tr><th scope="row">${r}</th>${P.map(p => `<td>${chip(p["cor_" + c], AB[p["cor_" + c]])}</td>`).join("")}</tr>`).join("") + "</tbody>";
-    t.querySelectorAll("th.band-mcab").forEach(th => { const p = P.find(x => x.alvo === th.dataset.alvo); Mesa.alvo(th, `${rot(p.alvo)} · M+${p.h}`, inspMes(p)); });
-    t.querySelectorAll("tbody td").forEach((td, i) => { const p = P[i % P.length]; dicaEm(td, `<b>${rot(p.alvo)}</b> · ${td.parentElement.firstElementChild.textContent}: ${td.querySelector(".band-chip").title}<br><i>clique no mês para o detalhe</i>`); });
+    // probabilidade de cada cor no cenário esperado, mês a mês (QC.probBandeiras, a BAND-1 do catálogo de exemplos);
+    // sem seco e úmido: o modelo vai passar a ter só o cenário esperado. Mês já anunciado entra como 100% da cor oficial.
+    const ORD = ["Verde", "Amarela", "Vermelha 1", "Vermelha 2"];
+    const probs = P.map(p => p.anunciada ? ORD.map(c => (c === p.anunciada ? 1 : 0)) : ORD.map(c => p.prob[c] || 0));
+    const box = QC.probBandeiras(el, P.map(p => p.alvo), probs, { oficiais: P.filter(p => p.anunciada).length, maisProvavel: true });
+    box.querySelectorAll(".prob-l").forEach((linha, i) => { const p = P[i]; Mesa.alvo(linha, `${rot(p.alvo)} · M+${p.h}`, inspMes(p)); });
   }
   function alertas() {
     const L = [], p = PROX, s2 = segundo(p.prob), gt = gatilhos(p.gsf_esp, p.pld_esp);

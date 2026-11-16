@@ -15,7 +15,10 @@ um aplicativo só, que ocupa a tela, em que se chega a qualquer coisa pelo tecla
 
 ## Comandos e teclas
 - `/` abre o comando. `BAND`, `RISK`, `NEN`, `HYD`, `MESA`; `BAND 3` ou `BAND REL` vão direto a uma tela.
-- `1`–`9`: telas da função atual. `Shift`+`1`–`5`: funções (MESA, BAND, RISK, NEN, HYD). `Esc`: volta à MESA.
+- Números trocam de função: `0` MESA, `1` BAND, `2` RISK, `3` NEN, `4` HYD (são fixas e fáceis de decorar).
+- Telas da função atual: `←` `→` (ou `[` `]`) para a anterior e a seguinte; `Shift`+`1`–`9` vai direto a uma tela.
+  As telas mudam de quantidade e de sentido entre as funções (a 3 da BAND é Histórico, a 3 da NEN é Fundamentos),
+  por isso ficam com a navegação em sequência. `Esc` volta à MESA.
 - `I` mostra ou esconde o inspetor; `?` abre a metodologia da função; `T` troca o tema.
 
 ## Estrutura

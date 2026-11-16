@@ -118,13 +118,13 @@ const Mesa = (function () {
   function montarFuncoes() {
     const fn = $("#m-fn");
     const itens = [{ cod: "MESA", nome: "Mesa", sinal: () => ({ v: `${todosAlertas().length} alertas` }) }, ...FUNCS];
-    fn.innerHTML = itens.map((f, i) => { const s = f.sinal ? f.sinal() : { v: "" }; return `<a href="#${f.cod}${f.cod === "MESA" ? "" : "-1"}" data-cod="${f.cod}"><span class="k">⇧${i + 1}</span><span class="nm">${f.cod} · ${f.nome}</span><span class="sn ${s.tom || ""}">${s.v}</span></a>`; }).join("");
+    fn.innerHTML = itens.map((f, i) => { const s = f.sinal ? f.sinal() : { v: "" }; return `<a href="#${f.cod}${f.cod === "MESA" ? "" : "-1"}" data-cod="${f.cod}" title="Tecla ${i}"><span class="k">${i}</span><span class="nm">${f.cod} · ${f.nome}</span><span class="sn ${s.tom || ""}">${s.v}</span></a>`; }).join("");
   }
   function montarTelas() {
     const t = $("#m-telas");
-    if (atual.cod === "MESA") { t.innerHTML = `<span class="m-func">Mesa</span><a href="#MESA" aria-current="page"><b>0</b>Visão da mesa</a>`; return; }
+    if (atual.cod === "MESA") { t.innerHTML = `<span class="m-func">Mesa</span><a href="#MESA" aria-current="page"><b>0</b>Visão da mesa</a><span class="m-telas-dica">1–4 funções</span>`; return; }
     const f = FUNCS.find(x => x.cod === atual.cod);
-    t.innerHTML = `<span class="m-func">${f.nome}</span>` + f.telas.map((s, i) => `<a href="#${f.cod}-${i + 1}"${i + 1 === atual.n ? ' aria-current="page"' : ""}><b>${i + 1}</b>${s.cod} ${s.nome}</a>`).join("");
+    t.innerHTML = `<span class="m-func">${f.nome}</span>` + f.telas.map((s, i) => `<a href="#${f.cod}-${i + 1}"${i + 1 === atual.n ? ' aria-current="page"' : ""} title="⇧${i + 1} · ← → para a anterior e a seguinte"><b>${i + 1}</b>${s.cod} ${s.nome}</a>`).join("") + '<span class="m-telas-dica">← → telas · ⇧1–9 direto</span>';
   }
   function telaMesa(area) {
     decisao(area, FUNCS.map(f => { const s = f.sinal(); return { r: `${f.cod} · ${f.nome}`, v: s.v, d: s.d, tom: s.tom }; })).classList.add("m-decisao-mesa");
@@ -183,13 +183,17 @@ const Mesa = (function () {
   }
   function iniciarTeclas() {
     document.addEventListener("keydown", ev => {
-      if (ev.target.closest("input, textarea, select, [contenteditable]") || ev.ctrlKey || ev.metaKey || ev.altKey) {
+      if ((ev.target.closest && ev.target.closest("input, textarea, select, [contenteditable]")) || ev.ctrlKey || ev.metaKey || ev.altKey) {
         if (ev.key === "Escape" && ev.target.id === "cmd") ev.target.blur();
         return;
       }
-      const dig = /^Digit([0-9])$/.exec(ev.code);
-      if (dig && ev.shiftKey) { const i = +dig[1]; const cods = ["MESA", ...FUNCS.map(f => f.cod)]; if (cods[i - 1]) { ir(cods[i - 1], 1); ev.preventDefault(); } return; }
-      if (dig && !ev.shiftKey) { const i = +dig[1]; if (i === 0) ir("MESA"); else if (atual.cod !== "MESA") { const f = FUNCS.find(x => x.cod === atual.cod); if (i <= f.telas.length) ir(f.cod, i); } ev.preventDefault(); return; }
+      // números: funções (0 MESA, 1 BAND, 2 RISK…); ⇧ + número: tela da função atual; ← → ou [ ]: tela anterior e seguinte
+      const dig = /^(?:Digit|Numpad)([0-9])$/.exec(ev.code);
+      const f = FUNCS.find(x => x.cod === atual.cod);
+      if (dig && !ev.shiftKey) { const i = +dig[1]; if (i === 0) ir("MESA"); else if (FUNCS[i - 1]) ir(FUNCS[i - 1].cod, 1); ev.preventDefault(); return; }
+      if (dig && ev.shiftKey) { const i = +dig[1]; if (f && i >= 1 && i <= f.telas.length) ir(f.cod, i); ev.preventDefault(); return; }
+      if (f && (ev.key === "ArrowRight" || ev.key === "]")) { ir(f.cod, atual.n % f.telas.length + 1); ev.preventDefault(); return; }
+      if (f && (ev.key === "ArrowLeft" || ev.key === "[")) { ir(f.cod, (atual.n + f.telas.length - 2) % f.telas.length + 1); ev.preventDefault(); return; }
       if (ev.key === "Escape") { ir("MESA"); return; }
       if (ev.key === "/") { $("#cmd").focus(); ev.preventDefault(); return; }
       if (ev.key.toLowerCase() === "i") { const m = $(".mesa"); m.dataset.insp = m.dataset.insp === "fechado" ? "aberto" : "fechado"; return; }
