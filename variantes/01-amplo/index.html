@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantia · Padrão amplo</title>
+<!-- Variante 01: o padrão Quant Energia de hoje, só com tela cheia, grade de 12 colunas e escuro como padrão. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../padrao/base.css">
+<link rel="stylesheet" href="../../padrao/painel.css">
+<link rel="stylesheet" href="../_nucleo/nucleo.css">
+<link rel="stylesheet" href="tema.css">
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+</head>
+<body data-variante="Padrão amplo">
+<div class="casca">
+  <nav class="nav barra" aria-label="Páginas">
+    <a class="marca" href="../../index.html">Quant Energia</a>
+    <div class="links" data-q="nav"></div>
+    <button class="btn-tema" type="button" data-q="tema">Tema claro</button>
+  </nav>
+  <main data-q="conteudo"></main>
+  <div class="aviso"><span>Laboratório de front-end com dados fictícios. Método completo em <a href="#metodologia">Metodologia</a>.</span></div>
+</div>
+<script src="../../padrao/graficos.js"></script>
+<script src="../_nucleo/ficticio.js"></script>
+<script src="../_nucleo/nucleo.js"></script>
+</body>
+</html>

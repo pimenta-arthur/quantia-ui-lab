@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantia · Parede da mesa</title>
+<!-- Variante 06: modo parede (TV da mesa). Letras grandes para ler de longe, páginas trocando sozinhas
+     a cada 25 s, com pausa, e fita de cotações no rodapé. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../padrao/base.css">
+<link rel="stylesheet" href="../../padrao/painel.css">
+<link rel="stylesheet" href="../_nucleo/nucleo.css">
+<link rel="stylesheet" href="tema.css">
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<script>window.QUANTIA_VARIANTE = { teclas: true, aoVivo: true, rotacao: 25, notas: true };</script>
+</head>
+<body data-variante="Parede da mesa">
+<div class="tv">
+  <header class="tv-topo">
+    <a class="tv-marca" href="../../index.html">QUANTIA</a>
+    <span class="tv-pg" data-q="titulo"></span>
+    <nav class="tv-nav" data-q="nav" aria-label="Páginas"></nav>
+    <span class="tv-hora num" data-q="relogio"></span>
+    <button class="tv-btn" type="button" data-q="pausa" aria-pressed="false">Pausar</button>
+    <button class="tv-btn" type="button" data-q="tema">Tema claro</button>
+  </header>
+  <div class="tv-prog" aria-hidden="true"><span data-q="progresso"></span></div>
+  <main class="tv-main" data-q="conteudo"></main>
+  <footer class="tv-fita" data-q="ticker" aria-label="Cotações simuladas"></footer>
+</div>
+<script src="../../padrao/graficos.js"></script>
+<script src="../_nucleo/ficticio.js"></script>
+<script src="../_nucleo/nucleo.js"></script>
+</body>
+</html>

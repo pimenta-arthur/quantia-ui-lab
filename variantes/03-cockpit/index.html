@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantia · Cockpit</title>
+<!-- Variante 03: aplicação com menu lateral fixo, barra superior com busca e números-chave, cartões arredondados. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../padrao/base.css">
+<link rel="stylesheet" href="../../padrao/painel.css">
+<link rel="stylesheet" href="../_nucleo/nucleo.css">
+<link rel="stylesheet" href="tema.css">
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<script>window.QUANTIA_VARIANTE = { teclas: true };</script>
+</head>
+<body data-variante="Cockpit">
+<div class="app">
+  <aside class="lateral" id="lateral">
+    <a class="c-marca" href="../../index.html"><span class="c-logo" aria-hidden="true">Q</span><span>Quantia <small>Energia</small></span></a>
+    <span class="c-secao">Mesa</span>
+    <nav class="c-nav" data-q="nav" aria-label="Páginas"></nav>
+    <div class="c-pe">
+      <button class="c-tema" type="button" data-q="tema"><span class="tema-txt">Claro</span></button>
+      <span class="c-ver">Dados fictícios · Lab</span>
+    </div>
+  </aside>
+  <div class="principal">
+    <header class="topbar">
+      <button class="c-menu" type="button" data-q="menu" aria-expanded="false" aria-controls="lateral">Menu</button>
+      <div class="c-trilha"><span>Mesa de energia</span><span aria-hidden="true">/</span><b data-q="titulo"></b></div>
+      <form class="c-busca" data-q="cmd" role="search" autocomplete="off">
+        <label for="busca" class="c-vh">Ir para a página</label>
+        <input id="busca" name="busca" placeholder="Ir para… (PLD, risco, bandeiras)" spellcheck="false">
+        <kbd>/</kbd>
+        <span class="cmd-msg" aria-live="polite"></span>
+      </form>
+    </header>
+    <div class="c-faixa" data-q="kpis" aria-label="Números-chave"></div>
+    <main data-q="conteudo"></main>
+  </div>
+</div>
+<script src="../../padrao/graficos.js"></script>
+<script src="../_nucleo/ficticio.js"></script>
+<script src="../_nucleo/nucleo.js"></script>
+</body>
+</html>

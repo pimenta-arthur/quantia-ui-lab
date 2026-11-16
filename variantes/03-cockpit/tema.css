@@ -1,0 +1,108 @@
+/* Variante 03 · Cockpit
+   Layout: menu lateral fixo (ícone + nome) à esquerda, barra superior com trilha e busca, faixa de números-chave
+   e grade de cartões arredondados com sombra leve. Visual de aplicação, azul-ardósia com destaque índigo. */
+:root {
+  --bg: #eef1f6; --surface: #ffffff; --ink: #141a26; --ink-2: #485266; --ink-3: #7a8396; --rule: #dde2ec;
+  --accent: #4b5bd7; --accent-soft: #e6e9fb; --vazio: #eef0f5;
+  --c-lateral: #ffffff; --c-lateral-ink: #485266; --c-ativo: #e6e9fb; --c-sombra: 0 1px 2px rgba(20, 26, 38, 0.06), 0 4px 14px rgba(20, 26, 38, 0.05);
+  --calor: #4b5bd7; --calor-0: #f2f4fb;
+  --f-display: "Figtree", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Figtree", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --gap: 16px; --graf-h: 240px; --raio: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1320; --surface: #151c2c; --ink: #e7ebf4; --ink-2: #a9b2c6; --ink-3: #78829a; --rule: #243049;
+    --accent: #8d9bff; --accent-soft: #232c4d; --vazio: #1d2538;
+    --c-lateral: #0b0f1a; --c-lateral-ink: #a9b2c6; --c-ativo: #1e2746; --c-sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25);
+    --calor: #8d9bff; --calor-0: #172034;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1320; --surface: #151c2c; --ink: #e7ebf4; --ink-2: #a9b2c6; --ink-3: #78829a; --rule: #243049;
+  --accent: #8d9bff; --accent-soft: #232c4d; --vazio: #1d2538;
+  --c-lateral: #0b0f1a; --c-lateral-ink: #a9b2c6; --c-ativo: #1e2746; --c-sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25);
+  --calor: #8d9bff; --calor-0: #172034;
+  color-scheme: dark;
+}
+
+body { padding: 0; font-size: 15px; }
+.app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100dvh; }
+main { max-width: none; gap: 20px; padding: 6px 24px 40px; }
+
+/* menu lateral */
+.lateral { position: sticky; top: 0; height: 100dvh; background: var(--c-lateral); border-right: 1px solid var(--rule); display: flex; flex-direction: column; gap: 6px; padding: 18px 12px; }
+.c-marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 1.05rem; padding: 0 8px 14px; }
+.c-marca small { display: block; font-weight: 500; font-size: 0.75rem; color: var(--ink-3); }
+.c-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: var(--surface); font-weight: 700; }
+.c-secao { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); padding: 8px 10px 4px; }
+.c-nav { display: grid; gap: 2px; }
+.c-nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: var(--c-lateral-ink); font-weight: 500; font-size: 0.92rem; }
+.c-nav a .nav-k { display: inline; margin-left: auto; order: 3; font: 0.7rem var(--f-data); color: var(--ink-3); border: 1px solid var(--rule); border-radius: 5px; padding: 0 5px; }
+.c-nav a:hover { background: var(--vazio); color: var(--ink); }
+.c-nav a[aria-current="page"] { background: var(--c-ativo); color: var(--accent); }
+.c-nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.c-pe { margin-top: auto; display: grid; gap: 8px; padding: 8px; }
+.c-tema { justify-self: start; display: inline-flex; gap: 8px; align-items: center; background: var(--vazio); border: 1px solid var(--rule); color: var(--ink-2); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 0.82rem; }
+.c-tema::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-2); box-shadow: inset -3px -1px 0 var(--surface); }
+.c-ver { font-size: 0.72rem; color: var(--ink-3); }
+
+/* barra superior */
+.principal { min-width: 0; display: flex; flex-direction: column; }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 14px 24px; position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); }
+.c-trilha { display: flex; gap: 8px; color: var(--ink-3); font-size: 0.9rem; } .c-trilha b { color: var(--ink); }
+.c-busca { margin-left: auto; position: relative; display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 6px 10px; width: min(360px, 100%); box-shadow: var(--c-sombra); }
+.c-busca input { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 0.88rem; outline: none; }
+.c-busca:focus-within { border-color: var(--accent); }
+.c-busca kbd { font: 0.72rem var(--f-data); color: var(--ink-3); border: 1px solid var(--rule); border-radius: 5px; padding: 0 5px; }
+.c-busca.erro { border-color: var(--desce); }
+.cmd-msg { position: absolute; top: calc(100% + 4px); left: 0; right: 0; font-size: 0.75rem; color: var(--desce); background: var(--surface); border-radius: 8px; padding: 4px 8px; }
+.cmd-msg:empty { display: none; }
+.c-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.c-menu { display: none; }
+
+/* faixa de números-chave */
+.c-faixa { display: flex; gap: 10px; overflow-x: auto; padding: 0 24px 10px; scrollbar-width: none; }
+.gk { display: inline-flex; gap: 8px; align-items: baseline; background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px; white-space: nowrap; font-size: 0.8rem; }
+.gk-r { color: var(--ink-3); } .gk-v { color: var(--ink); font-weight: 500; }
+
+/* página e cartões */
+.pg-topo { padding-block: 8px 4px; }
+.pg-topo h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.015em; }
+.pg-topo .rotulo { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.painel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--raio); padding: 18px; box-shadow: var(--c-sombra); }
+.painel.sem-cab { box-shadow: none; }
+.painel-cab .ttl { font-size: 1rem; font-weight: 600; }
+.abas { background: var(--vazio); padding: 3px; border-radius: 10px; gap: 2px; }
+.abas button { border: 0; background: none; border-radius: 8px; padding: 4px 12px; font-family: var(--f-body); }
+.abas button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--c-sombra); border: 0; }
+.kpi { border-radius: var(--raio); padding: 18px; box-shadow: var(--c-sombra); gap: 8px; }
+.kpi-r { font-size: 0.82rem; font-weight: 500; }
+.kpi-v { font-family: var(--f-display); font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; }
+.kpi-d { display: inline-block; justify-self: start; font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: var(--vazio); }
+.kpi.destaque { background: var(--accent); border-color: var(--accent); }
+.kpi.destaque .kpi-r, .kpi.destaque .kpi-v, .kpi.destaque .kpi-d { color: var(--surface) !important; }
+.kpi.destaque .kpi-d { background: color-mix(in srgb, var(--surface) 18%, transparent); }
+.mini { border-radius: 12px; }
+table { background: none; }
+th { background: var(--vazio); } th:first-child { border-radius: 8px 0 0 8px; } th:last-child { border-radius: 0 8px 8px 0; }
+th, td { border-bottom-color: var(--rule); }
+.prob-barra, .cel { border-radius: 6px; }
+.med-trilho { height: 10px; }
+.dica { border-radius: 10px; box-shadow: var(--c-sombra); }
+
+/* celular e tablet: menu lateral vira gaveta */
+@media (max-width: 980px) {
+  .app { grid-template-columns: 1fr; }
+  .lateral { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 20; transform: translateX(-100%); transition: transform 0.2s; box-shadow: var(--c-sombra); padding-top: calc(18px + env(safe-area-inset-top, 0px)); }
+  [data-menu-aberto] .lateral { transform: none; }
+  .c-menu { display: inline-flex; background: var(--surface); border: 1px solid var(--rule); color: var(--ink); border-radius: 9px; padding: 5px 12px; cursor: pointer; }
+  .topbar { padding: 12px 16px; top: env(safe-area-inset-top, 0px); }
+  .c-busca { width: 100%; margin-left: 0; order: 5; }
+  .c-faixa { padding-inline: 16px; }
+  main { padding: 6px 16px 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .lateral { transition: none; } }

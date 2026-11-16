@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quantia UI Lab</title>
 <link rel="stylesheet" href="padrao/base.css">
+<style>
+  #lista, .pacote { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  #lista li, .pacote li { display: grid; gap: 2px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  #lista a, .pacote a { color: var(--accent); font-weight: 600; }
+  #lista span, .pacote span { color: var(--ink-2); font-size: 0.95rem; }
+</style>
 </head>
 <body>
 <main>
@@ -14,6 +20,13 @@
     <div class="meta"><span>Variações de layout e visual para o Quantia Energia App. Dados fictícios.</span></div>
   </section>
   <section>
+    <h2>Migração para o terminal</h2>
+    <ul class="pacote">
+      <li><a href="migracao-terminal/exemplos/index.html">Catálogo de exemplos (VG-1, BAND-2…)</a><span>Uma página por página do app, cada visualização com código de referência e o formato de dados.</span></li>
+      <li><a href="migracao-terminal/padrao/modelo.html">Modelo de página v2.0</a><span>Casca do terminal em branco; regras em migracao-terminal/padrao/GUIA.md.</span></li>
+    </ul>
+  </section>
+  <section>
     <h2>Variantes</h2>
     <ul id="lista"></ul>
   </section>
@@ -21,10 +34,16 @@
 <script>
   // Cada variante em variantes/<nome>/index.html; registrar aqui ao criar uma nova.
   const variantes = [
-    { pasta: "00-padrao", titulo: "Padrão atual (referência)" },
+    { pasta: "00-padrao", titulo: "Padrão atual (referência)", desc: "Catálogo de componentes do padrão Quant Energia v1.3.1, como está hoje." },
+    { pasta: "01-amplo", titulo: "01 · Padrão amplo", desc: "O visual de hoje, em tela cheia, com 2 a 3 blocos por linha e escuro como padrão." },
+    { pasta: "02-terminal", titulo: "02 · Terminal", desc: "Inspirado no Bloomberg: comando, teclas de função, fita de cotações, painéis colados e fonte mono." },
+    { pasta: "03-cockpit", titulo: "03 · Cockpit", desc: "Aplicação com menu lateral, busca, faixa de números-chave e cartões arredondados." },
+    { pasta: "04-mesa", titulo: "04 · Estação da mesa", desc: "Tela fixa de trabalho: abas no topo, monitor de cotações à direita, fita no rodapé." },
+    { pasta: "05-editorial", titulo: "05 · Editorial", desc: "Mais espaço e hierarquia: cada bloco com uma frase de leitura ao lado do gráfico." },
+    { pasta: "06-parede", titulo: "06 · Parede da mesa", desc: "Modo TV: letras grandes e páginas que trocam sozinhas a cada 25 s." },
   ];
   document.getElementById("lista").innerHTML = variantes
-    .map(v => `<li><a href="variantes/${v.pasta}/index.html">${v.titulo}</a></li>`).join("");
+    .map(v => `<li><a href="variantes/${v.pasta}/index.html">${v.titulo}</a><span>${v.desc}</span></li>`).join("");
 </script>
 </body>
 </html>

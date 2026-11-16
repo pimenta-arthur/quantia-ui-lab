@@ -1,0 +1,22 @@
+/* Variante 01 · Padrão amplo
+   Mesmo visual do padrão Quant Energia v1.3.1 (cores, fontes, blocos), com três mudanças só:
+   conteúdo em tela cheia (sem o limite de 1080 px), grade de 12 colunas com 2 a 3 blocos por linha
+   no desktop e tema escuro como padrão, com botão para o claro. Carrega depois de base, painel e nucleo.css. */
+:root {
+  --gap: 16px; --graf-h: 250px;
+}
+body { padding-inline: clamp(16px, 2vw, 32px); padding-block: 20px 40px; }
+.casca { display: grid; gap: 26px; }
+main { max-width: none; gap: 22px; }
+.nav.barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--rule); align-items: center; }
+.nav .links { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.nav .links .ico { display: none; }
+.btn-tema { background: none; border: 1px solid var(--rule); color: var(--ink-2); border-radius: 999px; padding: 4px 12px; font-size: 0.82rem; cursor: pointer; }
+.btn-tema:hover { color: var(--ink); border-color: var(--ink-3); }
+.btn-tema:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.painel { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px; }
+.painel.sem-cab { padding: 0; }
+.kpi { border-radius: 8px; padding: 16px; }
+.kpi-v { font-family: var(--f-display); font-size: 1.9rem; }
+.kpi.destaque .kpi-v { color: var(--accent); }
+@media (max-width: 760px) { .nav.barra { position: static; } }

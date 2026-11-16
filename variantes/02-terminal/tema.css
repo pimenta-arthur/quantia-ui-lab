@@ -1,0 +1,122 @@
+/* Variante 02 · Terminal
+   Layout: barra de comando + teclas de função + fita de cotações no topo; painéis colados (1 px) numa grade
+   de 12 colunas que ocupa a tela inteira; barra de status no rodapé. Densidade alta, sem cantos arredondados,
+   tudo em mono; rótulos em âmbar, valores em branco, alta e baixa em verde e vermelho. */
+:root {
+  --bg: #e9e7e1; --surface: #ffffff; --ink: #111111; --ink-2: #3d3d3d; --ink-3: #6b6b6b; --rule: #c9c6bd;
+  --accent: #b35900; --accent-soft: #f6e6d3; --vazio: #ecebe6;
+  --t-ambar: #9a4d00; --t-barra: #dad6cc; --t-barra-ink: #111111; --t-fn: #1f3b73; --t-fn-ink: #ffffff; --t-cmd: #fff8e6; --t-sobre: #ffffff;
+  --sm-se: #2a78d6; --sm-s: #159a6c; --sm-ne: #e0662f; --sm-n: #a8329a;
+  --calor: #b35900; --calor-0: #f7f2e8;
+  --f-display: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --f-body: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --gap: 2px; --graf-h: 210px; --raio: 0;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #07090b; --ink: #f2f2f2; --ink-2: #c9c9c9; --ink-3: #8a8a8a; --rule: #23272b;
+    --accent: #ffa31a; --accent-soft: #2a1d08; --vazio: #15181b;
+    --t-ambar: #ffa31a; --t-barra: #15181c; --t-barra-ink: #ffa31a; --t-fn: #1a2c55; --t-fn-ink: #f2f2f2; --t-cmd: #0d0f12; --t-sobre: #000000;
+    --sm-se: #4f8fe0; --sm-s: #1f9e73; --sm-ne: #e0703a; --sm-n: #c55bb6;
+    --calor: #ffa31a; --calor-0: #0d0f12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #07090b; --ink: #f2f2f2; --ink-2: #c9c9c9; --ink-3: #8a8a8a; --rule: #23272b;
+  --accent: #ffa31a; --accent-soft: #2a1d08; --vazio: #15181b;
+  --t-ambar: #ffa31a; --t-barra: #15181c; --t-barra-ink: #ffa31a; --t-fn: #1a2c55; --t-fn-ink: #f2f2f2; --t-cmd: #0d0f12; --t-sobre: #000000;
+  --sm-se: #4f8fe0; --sm-s: #1f9e73; --sm-ne: #e0703a; --sm-n: #c55bb6;
+  --calor: #ffa31a; --calor-0: #0d0f12;
+  color-scheme: dark;
+}
+
+body { padding: 0; font-size: 14px; line-height: 1.4; }
+.term { display: grid; grid-template-rows: auto auto auto 1fr auto; min-height: 100dvh; }
+main { max-width: none; display: block; }
+
+/* topo: marca, comando, página, relógio */
+.t-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 6px 12px; background: var(--surface); border-bottom: 1px solid var(--rule); font-family: var(--f-data); font-size: 0.8rem; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; }
+.t-marca { font-weight: 600; color: var(--bg); background: var(--t-ambar); padding: 2px 8px; text-decoration: none; letter-spacing: 0.08em; }
+.t-cmd { display: flex; align-items: center; gap: 6px; flex: 1 1 320px; background: var(--t-cmd); border: 1px solid var(--rule); padding: 2px 4px 2px 8px; position: relative; }
+.t-prompt { color: var(--t-ambar); font-weight: 600; }
+.t-cmd input { flex: 1; min-width: 0; background: none; border: 0; color: var(--ink); font: 500 0.85rem var(--f-data); text-transform: uppercase; padding: 4px 0; outline: none; }
+.t-cmd input::placeholder { color: var(--ink-3); text-transform: none; }
+.t-cmd button { background: var(--sobe); color: var(--bg); border: 0; font: 600 0.75rem var(--f-data); padding: 3px 10px; cursor: pointer; }
+.t-cmd:focus-within { border-color: var(--t-ambar); }
+.t-cmd.erro { border-color: var(--desce); }
+.cmd-msg { position: absolute; top: 100%; left: 0; color: var(--desce); font-size: 0.72rem; background: var(--surface); padding-inline: 4px; }
+.cmd-msg:empty { display: none; }
+.t-pg { color: var(--ink); text-transform: uppercase; } .t-pg b { color: var(--t-ambar); }
+.t-hora { color: var(--ink-2); white-space: nowrap; } .t-vivo { color: var(--sobe); }
+.t-btn { background: none; border: 1px solid var(--rule); color: var(--ink-2); font: 500 0.72rem var(--f-data); padding: 3px 8px; cursor: pointer; text-transform: uppercase; }
+.t-btn:hover { color: var(--t-ambar); border-color: var(--t-ambar); }
+
+/* teclas de função */
+.t-fn { display: flex; gap: 2px; padding: 2px; border-bottom: 1px solid var(--rule); background: var(--bg); overflow-x: auto; scrollbar-width: none; }
+.t-fn a { display: flex; align-items: center; gap: 6px; padding: 5px 12px 5px 6px; background: var(--t-fn); color: var(--t-fn-ink); text-decoration: none; font: 500 0.78rem var(--f-data); white-space: nowrap; border: 0; }
+.t-fn a .nav-k { display: inline-block; background: var(--t-ambar); color: var(--t-sobre); padding: 0 5px; font-weight: 600; }
+.t-fn a .nav-cod { display: inline; font-weight: 600; }
+.t-fn a .nav-nome { color: color-mix(in srgb, var(--t-fn-ink) 70%, transparent); }
+.t-fn a .ico { display: none; }
+.t-fn a[aria-current="page"] { background: var(--t-ambar); color: var(--t-sobre); }
+.t-fn a[aria-current="page"] .nav-k { background: var(--t-sobre); color: var(--t-ambar); }
+.t-fn a[aria-current="page"] .nav-nome { color: var(--t-sobre); }
+.t-fn a:hover { outline: 1px solid var(--t-ambar); outline-offset: -1px; }
+
+
+/* fita de cotações */
+.t-ticker { background: var(--surface); border-block: 1px solid var(--rule); padding-block: 4px; font-family: var(--f-data); }
+.tk { font-size: 0.78rem; } .tk-r { color: var(--t-ambar); } .tk-v { color: var(--ink); font-weight: 500; }
+
+/* conteúdo */
+.t-main { padding: 2px; }
+.pg-topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 8px 10px; background: var(--surface); margin-bottom: 2px; }
+.pg-topo h1 { font: 600 0.95rem var(--f-data); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink); order: -1; }
+.pg-topo .rotulo { color: var(--t-ambar); font-size: 0.7rem; }
+.pg-topo .meta { font-size: 0.7rem; flex: 1; }
+.pg-grade { background: var(--rule); border: 1px solid var(--rule); }
+.painel { background: var(--surface); padding: 0 0 8px; gap: 6px; }
+.painel.sem-cab { background: var(--rule); padding: 0; }
+.painel-cab { background: var(--t-barra); padding: 3px 8px; min-height: 28px; }
+.painel-cab .ttl { font: 600 0.74rem var(--f-data); text-transform: uppercase; letter-spacing: 0.04em; color: var(--t-barra-ink); }
+.painel-corpo, .painel .leg { padding-inline: 10px; }
+.painel .leg { font-size: 0.7rem; font-family: var(--f-data); }
+.abas { gap: 2px; }
+.abas button { border-radius: 0; font: 500 0.7rem var(--f-data); padding: 2px 8px; background: var(--surface); border-color: var(--rule); }
+.abas button[aria-pressed="true"] { background: var(--t-ambar); border-color: var(--t-ambar); color: var(--t-sobre); }
+.legenda-mini { font-family: var(--f-data); font-size: 0.7rem; }
+
+.kpis { gap: 2px; }
+.kpi { border: 0; border-radius: 0; padding: 8px 10px; }
+.kpi-r { color: var(--t-ambar); font-family: var(--f-data); font-size: 0.68rem; text-transform: uppercase; }
+.kpi-v { font: 600 1.45rem var(--f-data); }
+.kpi-d { font-family: var(--f-data); font-size: 0.7rem; }
+
+table { font-size: 0.8rem; font-family: var(--f-data); }
+th, td { padding: 4px 8px; }
+th { color: var(--t-ambar); background: var(--surface); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--ink) 3%, var(--surface)); }
+tbody tr:hover td { background: var(--accent-soft); }
+table.calor tbody tr td, table.celulas tbody tr td { background: none; }
+.cel, .prob-barra, .med-trilho, .med-barra, .erro, .band { border-radius: 0; }
+.eventos li { font-family: var(--f-data); font-size: 0.74rem; }
+dl.estat, dl.premissas { font-family: var(--f-data); font-size: 0.78rem; }
+dl.estat dt, dl.premissas dt { color: var(--t-ambar); }
+.mini { border-radius: 0; background: var(--surface); border-color: var(--rule); }
+.mini .ttl { font-family: var(--f-data); color: var(--t-ambar); font-size: 0.75rem; }
+.dica { border-radius: 0; font-family: var(--f-data); font-size: 0.75rem; background: var(--t-barra); color: var(--ink); border: 1px solid var(--t-ambar); }
+.texto-corrido .texto { font-family: var(--f-body); font-size: 0.95rem; padding-block: 8px; }
+.texto-corrido h3 { font-family: var(--f-data); color: var(--t-ambar); text-transform: uppercase; font-size: 0.85rem; }
+
+/* status */
+.t-status { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 4px 12px; background: var(--t-ambar); color: var(--t-sobre); font: 600 0.7rem var(--f-data); letter-spacing: 0.04em; }
+
+@media (max-width: 760px) {
+  .t-topo { position: static; }
+  .t-pg, .t-atalhos { display: none; }
+  .t-cmd { order: 5; flex-basis: 100%; }
+  .pg-topo .meta { flex-basis: 100%; }
+}

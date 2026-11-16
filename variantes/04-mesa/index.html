@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantia · Estação da mesa</title>
+<!-- Variante 04: estação de trabalho. A tela inteira é a aplicação: abas no topo, monitor de cotações fixo
+     à direita, fita no rodapé e área central que rola sozinha. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../padrao/base.css">
+<link rel="stylesheet" href="../../padrao/painel.css">
+<link rel="stylesheet" href="../_nucleo/nucleo.css">
+<link rel="stylesheet" href="tema.css">
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<script>window.QUANTIA_VARIANTE = { teclas: true, aoVivo: true };</script>
+</head>
+<body data-variante="Estação da mesa">
+<div class="ws">
+  <header class="ws-topo">
+    <a class="ws-marca" href="../../index.html"><span class="ws-pt" aria-hidden="true"></span>Quantia <span>Mesa</span></a>
+    <nav class="ws-abas" data-q="nav" aria-label="Páginas"></nav>
+    <div class="ws-dir">
+      <span class="ws-hora num" data-q="relogio"></span>
+      <button class="ws-btn" type="button" data-q="tema">Tema claro</button>
+    </div>
+  </header>
+  <main class="ws-main" data-q="conteudo"></main>
+  <aside class="ws-lado" aria-label="Monitor">
+    <div class="ws-lado-cab"><h2>Monitor</h2><span class="ws-sim">cotação simulada</span></div>
+    <div class="ws-watch" data-q="watch"></div>
+    <div class="ws-lado-cab"><h2>Agenda de hoje</h2></div>
+    <ul class="ws-agenda">
+      <li><span class="num">08:00</span>Prévia do PLD de amanhã (CCEE)</li>
+      <li><span class="num">10:30</span>Comitê de risco semanal</li>
+      <li><span class="num">14:00</span>Rodada do Forecast com ECMWF 12z</li>
+      <li><span class="num">18:00</span>Fechamento do book indicativo</li>
+    </ul>
+  </aside>
+  <footer class="ws-fita" data-q="ticker" aria-label="Cotações simuladas"></footer>
+</div>
+<script src="../../padrao/graficos.js"></script>
+<script src="../_nucleo/ficticio.js"></script>
+<script src="../_nucleo/nucleo.js"></script>
+</body>
+</html>

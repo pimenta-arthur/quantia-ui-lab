@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantia · Editorial</title>
+<!-- Variante 05: relatório de leitura. Cada bloco vira uma linha larga com título e uma frase de leitura à
+     esquerda e o gráfico à direita; números grandes no topo; mais espaço e hierarquia. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../padrao/base.css">
+<link rel="stylesheet" href="../../padrao/painel.css">
+<link rel="stylesheet" href="../_nucleo/nucleo.css">
+<link rel="stylesheet" href="tema.css">
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<script>window.QUANTIA_VARIANTE = { notas: true };</script>
+</head>
+<body data-variante="Editorial">
+<div class="ed">
+  <header class="ed-topo">
+    <a class="ed-marca" href="../../index.html">Quantia <em>Energia</em></a>
+    <nav class="ed-nav" data-q="nav" aria-label="Páginas"></nav>
+    <button class="ed-btn" type="button" data-q="tema">Tema claro</button>
+  </header>
+  <main data-q="conteudo"></main>
+  <footer class="ed-pe">Laboratório de front-end com dados fictícios. Nenhum número desta página vem do Quantia Energia App.</footer>
+</div>
+<script src="../../padrao/graficos.js"></script>
+<script src="../_nucleo/ficticio.js"></script>
+<script src="../_nucleo/nucleo.js"></script>
+</body>
+</html>
