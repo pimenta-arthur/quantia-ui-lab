@@ -1380,6 +1380,61 @@
   }
 
   // =====================================================================================================
+  // Chuva de hoje por bacia (bloco de baixo do resumo na MESA). FICTÍCIO até chegar a base de chuva verificada.
+  // Barra = chuva observada acumulada hoje (mm, média na bacia), hora a hora; traço = previsão do ECMWF para o dia
+  // inteiro; marca ▾ = onde a barra deveria estar a esta hora pelo perfil típico do dia (chove mais à tarde).
+  // =====================================================================================================
+  const CHUVA_BACIAS = [ // nome, subsistema, previsão ECMWF do dia (mm), razão observado/previsto do dia (fictícia)
+    ["Grande", "SE", 12.4, 1.22], ["Paranaíba", "SE", 10.1, 0.83], ["Tietê", "SE", 7.6, 0.58], ["Paranapanema", "SE", 6.2, 1.04],
+    ["Iguaçu", "S", 4.3, 0.34], ["Uruguai", "S", 3.1, 1.55], ["São Francisco", "NE", 8.8, 0.95], ["Tocantins", "N", 11.3, 0.71],
+  ];
+  // perfil típico do dia: um pouco de chuva o dia todo e um pico de tarde/noite (convecção); soma 1
+  const CHUVA_PERFIL = (() => { const w = Array.from({ length: 24 }, (_, h) => 0.35 + 2.4 * Math.exp(-((h - 17) ** 2) / 18)); const t = w.reduce((a, b) => a + b, 0); return w.map(v => v / t); })();
+  const chuvaAcum = h => CHUVA_PERFIL.slice(0, h).reduce((a, b) => a + b, 0);
+  function chuvaHoje() {
+    const h = new Date().getHours(); // horas já verificadas hoje (relógio local)
+    return CHUVA_BACIAS.map(([nome, sub, prev, razao], k) => {
+      // chuva observada hora a hora: segue o perfil, com a razão da bacia e uma oscilação fixa por hora
+      const horas = Array.from({ length: 24 }, (_, j) => j < h ? Math.max(0, prev * razao * CHUVA_PERFIL[j] * (0.55 + 0.9 * Math.abs(Math.sin(k * 7.1 + j * 1.9)))) : null);
+      const obs = horas.reduce((a, b) => a + (b || 0), 0), ritmo = prev * chuvaAcum(h);
+      return { nome, sub, prev, horas, obs, ritmo, pctRitmo: ritmo > 0.05 ? obs / ritmo : null };
+    });
+  }
+  function chuvaInspetor(b) {
+    return el => {
+      const prevH = CHUVA_PERFIL.map(w => b.prev * w);
+      el.append(mk("p", "hyd-chuva-nota", `${b.sub} · observado ${n(b.obs, 1)} mm até agora · previsto ${n(b.prev, 1)} mm no dia · ${b.pctRitmo == null ? "sem ritmo ainda" : `${n(b.pctRitmo * 100)}% do ritmo`} · dados fictícios`));
+      grafico(el, (svg, W, H) => barras(svg, W, H, { cats: Array.from({ length: 24 }, (_, j) => String(j).padStart(2, "0") + "h"), series: [{ nome: "Observado", v: b.horas.map(v => v == null ? 0 : v), cor: "var(--hyd-chuva)" }, { nome: "Previsto (perfil × ECMWF)", v: prevH, cor: "var(--ink-3)" }], fmt: v => n(v, 1) + " mm", rotX: j => (j % 3 === 0 ? String(j).padStart(2, "0") + "h" : null) }));
+    };
+  }
+  function chuvaBloco(box) {
+    const wrap = mk("div", "hyd-chuva"); box.append(wrap);
+    let horaDesenhada = -1;
+    const desenhar = () => {
+      const h = new Date().getHours(); if (h === horaDesenhada) return; horaDesenhada = h;
+      const B = chuvaHoje(), max = Math.max(...B.map(b => Math.max(b.prev, b.obs))) * 1.08;
+      wrap.innerHTML = `<div class="hyd-chuva-cab"><b>Chuva hoje por bacia ⓘ</b><span>mm · barra: observado · traço: previsto · ▾ ritmo · até ${String(h).padStart(2, "0")}h (${h} de 24 h) · ECMWF 00z · fictício</span></div>`;
+      const lista = mk("div", "hyd-chuva-lista"); wrap.append(lista);
+      B.forEach(b => {
+        const acima = b.pctRitmo != null && b.pctRitmo >= 1;
+        const l = mk("div", "hyd-chuva-l" + (acima ? " acima" : ""));
+        l.innerHTML = `<span class="hyd-chuva-n">${b.nome}<i>${b.sub}</i></span>` +
+          `<span class="hyd-chuva-trilho"><span class="hyd-chuva-barra" style="width:${(b.obs / max) * 100}%"></span>` +
+          `<span class="hyd-chuva-prev" style="left:${(b.prev / max) * 100}%"></span><span class="hyd-chuva-ritmo" style="left:${(b.ritmo / max) * 100}%"></span></span>` +
+          `<span class="hyd-chuva-v num">${n(b.obs, 1)}<i>/${n(b.prev, 1)}</i></span>` +
+          `<span class="hyd-chuva-p num">${b.pctRitmo == null ? "—" : `${seta(b.pctRitmo - 1)} ${n(b.pctRitmo * 100)}%`}</span>`;
+        dicaEm(l, `<b>${b.nome}</b> (${b.sub})<span class="dica-l">Observado hoje: ${n(b.obs, 1)} mm</span><span class="dica-l">A esta hora, pelo perfil: ${n(b.ritmo, 1)} mm</span><span class="dica-l">Previsto ECMWF no dia: ${n(b.prev, 1)} mm</span><span class="dica-l">Clique para a chuva hora a hora</span>`);
+        Mesa.alvo(l, `Chuva hoje · ${b.nome}`, chuvaInspetor(b));
+        lista.append(l);
+      });
+      // a legenda vai na dica do título, para o bloco caber na tela
+      wrap.querySelector(".hyd-chuva-cab b").title = "Barra: observado acumulado hoje · traço: previsto no dia (ECMWF) · ▾: onde deveria estar a esta hora pelo perfil típico do dia · %: observado sobre esse ritmo (azul acima, cinza abaixo) · clique numa bacia para a chuva hora a hora";
+    };
+    desenhar();
+    const t = setInterval(() => { if (!wrap.isConnected) clearInterval(t); else desenhar(); }, 60000);
+  }
+
+  // =====================================================================================================
   // registro na Mesa: sinal, resumo, alertas e telas
   // =====================================================================================================
   Mesa.registrar({
@@ -1399,6 +1454,7 @@
       QC.kpis(box, SUBS.map(k => { const p = pM(k, M1), d = dM1(k); return { r: `ENA ${k} ${rot(M1)}`, v: `${n(p.media)}%`, d: `${n(p.p10)}–${n(p.p90)}${d != null ? ` · ${seta(d)} ${sn(d)} p.p.` : ""}`, tom: d == null ? "" : tom(d) }; }));
       box.append(mk("p", "hyd-resumo-l", `<b>ENSO</b> ${I.regime_enso} · Niño 3.4 ${n(N3, 2)} (3 m), ${nm(N_MES, 2)} em ${rot(I.ultimo_mes_ersst)} · camada forte ${ATIVA3 ? "ativa" : ATIVAM ? "ativa pelo mês" : "inativa"}`));
       box.append(mk("p", "hyd-resumo-l", `<b>Similares</b> <span class="hyd-sim">${ANOS_SIM.join(" · ")}</span> · SE ${rot(M1)} sim. ${n(sM("SE", M1).media)}%${A ? ` · ${A.dias} dias de ${rot(A.mes)}` : ""}`));
+      chuvaBloco(el); // metade de baixo: chuva de hoje por bacia
     },
     alertas: () => {
       const L = [];

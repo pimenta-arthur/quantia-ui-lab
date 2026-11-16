@@ -90,11 +90,11 @@ tr[data-insp-alvo]:hover td { background: var(--accent-soft); }
 /* MESA: resumo de cada função */
 /* RISK e BAND: os números ficam numa faixa compacta (rótulo pequeno, valor médio, detalhe em até 2 linhas),
    para o gráfico subir e a caixa não crescer sem ganho */
-#p-RISK .kpis, #p-BAND .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
-#p-RISK .kpi, #p-BAND .kpi { padding: 4px 8px; gap: 1px; }
-#p-RISK .kpi-r, #p-BAND .kpi-r { font-size: 0.6rem; }
-#p-RISK .kpi-v, #p-BAND .kpi-v { font-size: 1.05rem; }
-#p-RISK .kpi-d, #p-BAND .kpi-d { font-size: 0.62rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#p-RISK .kpis, #p-BAND .kpis, #p-HYD .kpis { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); grid-auto-flow: column; gap: 2px; }
+#p-RISK .kpi, #p-BAND .kpi, #p-HYD .kpi { padding: 4px 8px; gap: 1px; }
+#p-RISK .kpi-r, #p-BAND .kpi-r, #p-HYD .kpi-r { font-size: 0.6rem; }
+#p-RISK .kpi-v, #p-BAND .kpi-v, #p-HYD .kpi-v { font-size: 1.05rem; }
+#p-RISK .kpi-d, #p-BAND .kpi-d, #p-HYD .kpi-d { font-size: 0.62rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .m-resumo .painel-corpo { gap: 6px; }
 .m-resumo-ir { font: 0.68rem var(--f-data); color: var(--t-ambar); text-decoration: none; }
 
