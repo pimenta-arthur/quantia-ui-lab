@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quant Energia</title>
+<!-- Página inicial no padrão terminal v2.0: casca do terminal e uma linha por funcionalidade (código, nome,
+     descrição curta e páginas). A ordem das funcionalidades é a mesma da barra de funções de todas as páginas. -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/padrao/base.css">
+<link rel="stylesheet" href="/padrao/painel.css">
+<style>
+  /* uma linha por funcionalidade: identificação à esquerda, páginas à direita */
+  .func { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr); gap: 2px; background: var(--rule); }
+  .func-id, .func-pag { background: var(--surface); padding: 12px 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .func-id h2 { font-size: 0.9rem; color: var(--ink); }
+  .func-id h2 a { color: inherit; text-decoration: none; }
+  .func-id h2 a:hover { color: var(--t-ambar); }
+  .func-id .cod { font: 600 0.7rem var(--f-data); color: var(--t-sobre); background: var(--t-ambar); padding: 1px 6px; margin-right: 8px; }
+  .func-desc { color: var(--ink-2); font-size: 0.9rem; }
+  .func-pag { display: flex; flex-wrap: wrap; gap: 4px 16px; align-content: center; font-family: var(--f-data); font-size: 0.78rem; }
+  @media (max-width: 760px) { .func { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="/">QUANT ENERGIA</a>
+    <form class="t-cmd" data-comando role="search" autocomplete="off">
+      <label class="t-prompt" for="cmd">CMD&gt;</label>
+      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
+      <button type="submit">GO</button>
+      <span class="t-cmd-msg" aria-live="polite"></span>
+    </form>
+    <span class="t-pg"><b>INI</b> Início</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <nav class="t-fn" aria-label="Funcionalidades">
+    <a data-cod="INI" href="/" aria-current="page"><span class="k">1</span><b>INI</b><span>Início</span></a>
+    <a data-cod="BAND" href="/forecast_bandeiras/"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
+    <a data-cod="RISK" href="/risk_lab_dessem/"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
+    <a data-cod="NEN" href="/pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
+    <a data-cod="HYD" href="/hydro_inflow_similarity/"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
+  </nav>
+  <!-- fita: só com dados publicados; sem chamada a Terminal.fita, fica escondida -->
+  <div class="t-fita" data-fita aria-label="Cotações" hidden></div>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Mesa de energia</span>
+      <h1>Quant Energia</h1>
+      <div class="meta"><span>Funcionalidades independentes, cada uma com o seu pipeline e as suas páginas</span></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-band">
+      <div class="func-id">
+        <h2 id="f-band"><span class="cod">BAND</span><a href="/forecast_bandeiras/">Forecast Bandeiras</a></h2>
+        <p class="func-desc">Projeção da bandeira tarifária de M+1 a M+6</p>
+      </div>
+      <div class="func-pag"><a href="/forecast_bandeiras/">Projeções</a><a href="/forecast_bandeiras/relato.html">Relato do DECOMP</a><a href="/forecast_bandeiras/metodologia.html">Metodologia</a></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-risk">
+      <div class="func-id">
+        <h2 id="f-risk"><span class="cod">RISK</span><a href="/risk_lab_dessem/">Risk Lab DESSEM</a></h2>
+        <p class="func-desc">PLD horário: acompanhamento do DESSEM sobre o DECOMP</p>
+      </div>
+      <div class="func-pag"><a href="/risk_lab_dessem/">Acompanhamento</a><a href="/risk_lab_dessem/simulador.html">Simulador</a><a href="/risk_lab_dessem/metodologia.html">Metodologia</a></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-nen">
+      <div class="func-id">
+        <h2 id="f-nen"><span class="cod">NEN</span><a href="/pricing_descolamento/compra_venda.html">Pricing Descolamento</a></h2>
+        <p class="func-desc">Precificação do descolamento do NE e N: compra e venda</p>
+      </div>
+      <div class="func-pag"><a href="/pricing_descolamento/compra_venda.html">Compra e venda NE e N</a><a href="/pricing_descolamento/">Descolamento NE e N</a><a href="/pricing_descolamento/fundamentos.html">Fundamentos</a><a href="/pricing_descolamento/compra_venda_metodologia.html">Metodologia</a></div>
+    </section>
+
+    <section class="func" aria-labelledby="f-hyd">
+      <div class="func-id">
+        <h2 id="f-hyd"><span class="cod">HYD</span><a href="/hydro_inflow_similarity/">Hydro Inflow Similarity</a></h2>
+        <p class="func-desc">Projeção da ENA por subsistema e anos similares de ENSO</p>
+      </div>
+      <div class="func-pag"><a href="/hydro_inflow_similarity/">Afluências e ENSO</a><a href="/hydro_inflow_similarity/clima.html">Indicadores climáticos</a><a href="/hydro_inflow_similarity/fundamentos.html">Fundamentos</a><a href="/hydro_inflow_similarity/metodologia.html">Metodologia</a></div>
+    </section>
+  </main>
+  <footer class="t-status"><span>Quant Energia</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
+</div>
+<script src="/padrao/graficos.js"></script>
+<script src="/padrao/componentes.js"></script>
+<script src="/padrao/terminal.js"></script>
+</body>
+</html>

@@ -8,8 +8,10 @@
 [hidden] { display: none !important; }
 
 /* ---------- casca do terminal ---------- */
-/* ordem: topo (comando) · teclas de função · fita de cotações · conteúdo · status */
-.terminal { display: grid; grid-template-rows: auto auto auto 1fr auto; min-height: 100dvh; }
+/* ordem: topo (comando) · teclas de função · [páginas da funcionalidade] · fita de cotações · conteúdo · status.
+   Coluna flexível: o conteúdo cresce e o resto ocupa só o que precisa, com ou sem fita (oculta quando não há dados). */
+.terminal { display: flex; flex-direction: column; min-height: 100dvh; }
+.terminal > main { flex: 1 0 auto; }
 .t-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 6px 12px; background: var(--surface); border-bottom: 1px solid var(--rule); font-family: var(--f-data); font-size: 0.8rem; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; }
 .t-marca { font-weight: 600; color: var(--t-sobre); background: var(--t-ambar); padding: 2px 8px; text-decoration: none; letter-spacing: 0.08em; }
 .t-cmd { display: flex; align-items: center; gap: 6px; flex: 1 1 320px; background: var(--t-cmd); border: 1px solid var(--rule); padding: 2px 4px 2px 8px; position: relative; }

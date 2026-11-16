@@ -32,7 +32,6 @@
 .band-mat td.band-col.band-pc { box-shadow: inset 2px 0 0 var(--t-ambar), inset -2px 0 0 var(--t-ambar); }
 .band-mat tbody tr:hover td:not(.band-pc) { background: none; }
 .band-sw { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: 0; }
-.band-pt { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 .band-mat-mini th, .band-mat-mini td { padding: 2px 4px; }
 .band-mat-mini th.band-mcab b { font-size: 0.78rem; }
 

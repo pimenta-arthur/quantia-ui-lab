@@ -1,0 +1,368 @@
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -40,10 +40,21 @@
+ - `data/` não vai para o git, exceto `data/serving/` (o que as páginas leem, inclusive os registros das rodadas):
+   versionado para o app abrir com dados em qualquer máquina, até a fase AWS. Commitar `data/serving/` depois de
+   cada `publicar`. `raw/` e `processed/` ficam fora (pesados e binários; o histórico do git cresceria sem limite).
+-- **Padrão visual em `web/padrao/`** (`base.css`, `painel.css`, `graficos.js`, `modelo.html`, regras em `GUIA.md`):
+-  todas as páginas importam dali; nada de uma página importar o CSS de outra funcionalidade. Mudança que vale
+-  para todas as páginas vai para o padrão (e sobe a versão no topo dos arquivos se mudar regra); o resto fica
+-  na página. Antes de mexer no padrão, comparar prints de todas as páginas (claro e escuro) antes e depois.
++- **Padrão visual em `web/padrao/`, v2.0 terminal** (`base.css`, `painel.css`, `graficos.js`, `componentes.js`,
++  `terminal.js`, `modelo.html`, regras em `GUIA.md`): todas as páginas importam dali; nada de uma página importar o
++  CSS de outra funcionalidade. Tela cheia (sem largura máxima), **escuro como padrão, sem seguir o sistema** (claro só
++  pelo botão; a escolha fica salva no navegador). Mudança que vale para todas as páginas vai para o padrão (e sobe a
++  versão no topo dos arquivos se mudar regra); o resto fica na página. Antes de mexer no padrão, comparar prints de
++  todas as páginas (escuro e claro, desktop e celular) antes e depois.
++- **Casca do terminal igual em todas as páginas** (ver `web/padrao/modelo.html`): topo com comando, barra de
++  funções (`.t-fn`), páginas da funcionalidade (`.t-sub`), fita de cotações (`.t-fita`) e status. Na `.t-fn`, as
++  funcionalidades ficam na mesma ordem em todas as páginas e em `web/index.html` (a ordem define as teclas 1–N),
++  cada uma com o código de comando (`data-cod`: BAND, RISK, NEN, HYD) e a rota real. Funcionalidade nova entra na
++  `.t-fn` de todas as páginas de uma vez. A fita (`Terminal.fita`) só mostra dados publicados, nunca valores fixos.
++- **Painéis e gráficos:** cada seção vira painéis (`.painel` com título, unidade e legenda curta) na grade de 12
++  colunas (`.grade`; cada linha soma 12); gráficos por `grafico()` (desenham na largura real); toda cor é token
++  (escuro em `:root`, claro em `:root[data-theme="light"]`, nunca `prefers-color-scheme`); cores de bandeira só para
++  bandeira. Referências de cada visualização: pacote de migração do quantia-ui-lab (`migracao-terminal/exemplos/`).
+ - **Pendência da fase AWS:** até lá, `data/raw/` existe só na máquina local (sem backup, por escolha do
+   Arthur: arquivos pesados). Na AWS, o bucket com versionamento passa a ser a cópia de segurança.
+ 
+--- a/README.md
++++ b/README.md
+@@ -38,7 +38,7 @@
+ core/                  qe_core: configuração, armazenamento (local|S3), leitores CCEE/ONS/NEWAVE/ECMWF/ANEEL
+ features/forecast_bandeiras/    qe_forecast_bandeiras: ingestão → tratamento → projeção → publicação
+ api/                   qe_api: FastAPI que serve as páginas e o serving local
+-web/                   páginas (uma pasta por funcionalidade) e web/padrao/ (padrão visual: CSS, JS, modelo e guia)
++web/                   páginas (uma pasta por funcionalidade) e web/padrao/ (padrão visual v2.0, terminal: CSS, JS, casca, modelo e guia)
+ src/qe/                linha de comando `qe`
+ tests/                 testes de aceitação
+ data/                  (fora do git) imita o bucket: raw/ processed/ serving/
+--- a/docs/nova_funcionalidade.md
++++ b/docs/nova_funcionalidade.md
+@@ -32,7 +32,8 @@
+ ```
+ - Incluir `features/<nome>` em `[tool.uv.workspace].members` da raiz, adicionar `qe-<nome>` às dependências da
+   raiz e registrar o sub-app em `src/qe/cli.py` (`app.add_typer(…, name="<nome>")`).
+-- Ligar a página em `web/index.html`.
++- Ligar a página em `web/index.html` e na barra de funções (`.t-fn`) de **todas** as páginas, com um código de
++  comando curto (ex.: `BAND`, `RISK`, `NEN`, `HYD`) e a mesma posição (tecla) em todas.
+ 
+ ## 2. Regras de dados
+ - **Todo acesso a dados pelo `qe_core.armazenamento`**, por chave. Nada de abrir caminhos de `data/`.
+@@ -56,9 +57,17 @@
+    Um teste de paridade com a pesquisa pode ficar opt-in (variável de ambiente).
+ 
+ ## 5. Página
+-- Mesmo visual: padrão em `web/padrao/` (`base.css`, `painel.css`, `graficos.js`; regras em `GUIA.md`). Partir de
+-  `web/padrao/modelo.html`; estilos próprios da página depois dos do padrão.
++- Mesmo visual: padrão terminal v2.0 em `web/padrao/` (`base.css`, `painel.css`, `graficos.js`, `componentes.js`,
++  `terminal.js`; regras em `GUIA.md`). Partir de `web/padrao/modelo.html`, que já traz a casca (comando, funções,
++  páginas da funcionalidade, fita, status); estilos próprios da página depois dos do padrão, em `web/<nome>/pagina.css`.
++- O topo de cada página mostra primeiro a resposta (números da decisão em cartões, `QC.kpis`), depois as evidências.
++- Cada seção vira painéis na grade de 12 colunas, com título que diz o que o gráfico mostra (com unidade), legenda
++  curta e tooltip em todo valor; gráficos por `grafico()`. Peças prontas em `componentes.js` (probabilidade de
++  bandeira, mapa de calor, medidores, tabelas…) e referências no pacote de migração do quantia-ui-lab.
++- Páginas da funcionalidade na `.t-sub` (mesma ordem em todas as páginas dela); a fita recebe os números publicados
++  que a mesa acompanha (`Terminal.fita`).
+ - Metodologia da funcionalidade em `web/<nome>/metodologia.html`, identificando a versão do modelo.
++- Conferir em escuro (padrão), claro e celular, e passar o mouse pelos gráficos, antes de publicar.
+ 
+ ## 6. Independência
+ Cada funcionalidade roda, testa e publica sozinha: falha numa não afeta as outras. O que é comum fica no
+--- a/docs/nova_pesquisa.md
++++ b/docs/nova_pesquisa.md
+@@ -38,7 +38,7 @@
+ uv add --dev pytest ruff ipykernel jupyter
+ uv run python -m ipykernel install --user --name <tema>-analytics --display-name "Python (<tema>-analytics)"
+ mkdir -p data/raw data/processed notebooks reports/figures docs tests web
+-cp -R ../quant-energia-app/web/padrao web/padrao      # cópia do padrão visual, não link
++cp -R ../quant-energia-app/web/padrao web/padrao      # cópia do padrão visual (v2.0, terminal), não link
+ # PowerShell (Windows): Copy-Item -Recurse ..\quant-energia-app\web\padrao web\padrao
+ git init && git add -A && git commit -m "Estrutura inicial"
+ gh repo create pimenta-arthur/<tema>-analytics --private --source . --push
+@@ -99,7 +99,8 @@
+ - Commit e push só quando pedido; tags nos marcos (versão de modelo, promoção).
+ - Não sobrescrever análises anteriores; variante nova vai para pasta/arquivo novo.
+ - Começar sempre por baseline simples; não treinar modelos sem pedido.
+-- Visual sóbrio (padrão `web/padrao`), títulos que descrevem o gráfico, legendas curtas, tooltips numéricos.
++- Visual do terminal (padrão `web/padrao` v2.0): escuro, tela cheia, painéis com títulos que descrevem o gráfico,
++  legendas curtas, tooltips numéricos.
+ 
+ ## Comandos
+ - `uv run python -m <pacote>.preparar`: raw → processed (idempotente).
+@@ -208,7 +209,8 @@
+ 
+ ## 8. Páginas
+ 
+-Partir de `web/padrao/modelo.html` (regras em `web/padrao/GUIA.md`). Três páginas com papéis separados:
++Partir de `web/padrao/modelo.html` (padrão terminal v2.0, regras em `web/padrao/GUIA.md`; peças prontas em
++`componentes.js`). Três páginas com papéis separados:
+ 
+ | Página | Papel | Conteúdo típico |
+ |---|---|---|
+@@ -218,6 +220,8 @@
+ 
+ - Dados gerados por `web.py` (`dados.js` por página); o texto fixo da metodologia é revisado a cada versão.
+ - **Contas no Python, desenho no JS.** No navegador só o que depende da entrada do usuário, com teste de paridade.
++- Layout de terminal: casca do `modelo.html`, a resposta primeiro (cartões de número no topo), seções em painéis
++  na grade de 12 colunas, tela cheia e escuro como padrão.
+ - Tooltips numéricos e objetivos; textos curtos; avisos no fim, com as premissas e o link para a metodologia.
+ - Gráficos relevantes também em PNG em `reports/figures/`.
+ - Revisão com o Arthur pelo artifact (arquivo único com CSS, JS e dados embutidos); site estático opcional.
+--- a/web/index.html
++++ b/web/index.html
+@@ -2,25 +2,95 @@
+ <html lang="pt-BR">
+ <head>
+ <meta charset="utf-8">
+-<meta name="viewport" content="width=device-width, initial-scale=1">
++<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+ <title>Quant Energia</title>
++<!-- Página inicial no padrão terminal v2.0: casca do terminal e uma linha por funcionalidade (código, nome,
++     descrição curta e páginas). A ordem das funcionalidades é a mesma da barra de funções de todas as páginas. -->
++<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
++<link rel="preconnect" href="https://fonts.googleapis.com">
++<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
++<link rel="stylesheet" href="/padrao/base.css">
++<link rel="stylesheet" href="/padrao/painel.css">
+ <style>
+-  body { font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 40px 20px; background: #f6f7f8; color: #15191d; }
+-  main { max-width: 720px; margin: auto; display: grid; gap: 12px; }
+-  a { color: #1d5f86; }
+-  li span { color: #7a838c; font-size: 0.9rem; }
+-  @media (prefers-color-scheme: dark) { body { background: #111518; color: #e8ecef; } a { color: #6fb0d8; } }
++  /* uma linha por funcionalidade: identificação à esquerda, páginas à direita */
++  .func { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr); gap: 2px; background: var(--rule); }
++  .func-id, .func-pag { background: var(--surface); padding: 12px 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
++  .func-id h2 { font-size: 0.9rem; color: var(--ink); }
++  .func-id h2 a { color: inherit; text-decoration: none; }
++  .func-id h2 a:hover { color: var(--t-ambar); }
++  .func-id .cod { font: 600 0.7rem var(--f-data); color: var(--t-sobre); background: var(--t-ambar); padding: 1px 6px; margin-right: 8px; }
++  .func-desc { color: var(--ink-2); font-size: 0.9rem; }
++  .func-pag { display: flex; flex-wrap: wrap; gap: 4px 16px; align-content: center; font-family: var(--f-data); font-size: 0.78rem; }
++  @media (max-width: 760px) { .func { grid-template-columns: 1fr; } }
+ </style>
+ </head>
+ <body>
+-<main>
+-  <h1>Quant Energia</h1>
+-  <ul>
+-    <li><a href="/forecast_bandeiras/">Forecast Bandeiras</a> <span>· projeção da bandeira tarifária de M+1 a M+6</span></li>
+-    <li><a href="/risk_lab_dessem/">Risk Lab DESSEM</a> <span>· PLD horário: acompanhamento do DESSEM sobre o DECOMP</span></li>
+-    <li><a href="/pricing_descolamento/compra_venda.html">Pricing Descolamento</a> <span>· precificação do descolamento do NE e N: compra e venda</span></li>
+-    <li><a href="/hydro_inflow_similarity/">Hydro Inflow Similarity</a> <span>· projeção da ENA por subsistema e anos similares de ENSO</span></li>
+-  </ul>
+-</main>
++<div class="terminal">
++  <header class="t-topo">
++    <a class="t-marca" href="/">QUANT ENERGIA</a>
++    <form class="t-cmd" data-comando role="search" autocomplete="off">
++      <label class="t-prompt" for="cmd">CMD&gt;</label>
++      <input id="cmd" name="cmd" placeholder="BAND, RISK, NEN, HYD… ou 1–5" spellcheck="false">
++      <button type="submit">GO</button>
++      <span class="t-cmd-msg" aria-live="polite"></span>
++    </form>
++    <span class="t-pg"><b>INI</b> Início</span>
++    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
++    <button class="t-btn" type="button" data-tema>Tema claro</button>
++  </header>
++  <nav class="t-fn" aria-label="Funcionalidades">
++    <a data-cod="INI" href="/" aria-current="page"><span class="k">1</span><b>INI</b><span>Início</span></a>
++    <a data-cod="BAND" href="/forecast_bandeiras/"><span class="k">2</span><b>BAND</b><span>Forecast Bandeiras</span></a>
++    <a data-cod="RISK" href="/risk_lab_dessem/"><span class="k">3</span><b>RISK</b><span>Risk Lab DESSEM</span></a>
++    <a data-cod="NEN" href="/pricing_descolamento/compra_venda.html"><span class="k">4</span><b>NEN</b><span>Pricing Descolamento</span></a>
++    <a data-cod="HYD" href="/hydro_inflow_similarity/"><span class="k">5</span><b>HYD</b><span>Hydro Inflow Similarity</span></a>
++  </nav>
++  <!-- fita: só com dados publicados; sem chamada a Terminal.fita, fica escondida -->
++  <div class="t-fita" data-fita aria-label="Cotações" hidden></div>
++  <main>
++    <section class="hero">
++      <span class="rotulo">Mesa de energia</span>
++      <h1>Quant Energia</h1>
++      <div class="meta"><span>Funcionalidades independentes, cada uma com o seu pipeline e as suas páginas</span></div>
++    </section>
++
++    <section class="func" aria-labelledby="f-band">
++      <div class="func-id">
++        <h2 id="f-band"><span class="cod">BAND</span><a href="/forecast_bandeiras/">Forecast Bandeiras</a></h2>
++        <p class="func-desc">Projeção da bandeira tarifária de M+1 a M+6</p>
++      </div>
++      <div class="func-pag"><a href="/forecast_bandeiras/">Projeções</a><a href="/forecast_bandeiras/relato.html">Relato do DECOMP</a><a href="/forecast_bandeiras/metodologia.html">Metodologia</a></div>
++    </section>
++
++    <section class="func" aria-labelledby="f-risk">
++      <div class="func-id">
++        <h2 id="f-risk"><span class="cod">RISK</span><a href="/risk_lab_dessem/">Risk Lab DESSEM</a></h2>
++        <p class="func-desc">PLD horário: acompanhamento do DESSEM sobre o DECOMP</p>
++      </div>
++      <div class="func-pag"><a href="/risk_lab_dessem/">Acompanhamento</a><a href="/risk_lab_dessem/simulador.html">Simulador</a><a href="/risk_lab_dessem/metodologia.html">Metodologia</a></div>
++    </section>
++
++    <section class="func" aria-labelledby="f-nen">
++      <div class="func-id">
++        <h2 id="f-nen"><span class="cod">NEN</span><a href="/pricing_descolamento/compra_venda.html">Pricing Descolamento</a></h2>
++        <p class="func-desc">Precificação do descolamento do NE e N: compra e venda</p>
++      </div>
++      <div class="func-pag"><a href="/pricing_descolamento/compra_venda.html">Compra e venda NE e N</a><a href="/pricing_descolamento/">Descolamento NE e N</a><a href="/pricing_descolamento/fundamentos.html">Fundamentos</a><a href="/pricing_descolamento/compra_venda_metodologia.html">Metodologia</a></div>
++    </section>
++
++    <section class="func" aria-labelledby="f-hyd">
++      <div class="func-id">
++        <h2 id="f-hyd"><span class="cod">HYD</span><a href="/hydro_inflow_similarity/">Hydro Inflow Similarity</a></h2>
++        <p class="func-desc">Projeção da ENA por subsistema e anos similares de ENSO</p>
++      </div>
++      <div class="func-pag"><a href="/hydro_inflow_similarity/">Afluências e ENSO</a><a href="/hydro_inflow_similarity/clima.html">Indicadores climáticos</a><a href="/hydro_inflow_similarity/fundamentos.html">Fundamentos</a><a href="/hydro_inflow_similarity/metodologia.html">Metodologia</a></div>
++    </section>
++  </main>
++  <footer class="t-status"><span>Quant Energia</span><span class="t-atalhos">1–5 funcionalidades · / comando · T tema</span></footer>
++</div>
++<script src="/padrao/graficos.js"></script>
++<script src="/padrao/componentes.js"></script>
++<script src="/padrao/terminal.js"></script>
+ </body>
+ </html>
+--- a/tests/test_pagina_inicial.py
++++ b/tests/test_pagina_inicial.py
+@@ -1,29 +1,31 @@
+-"""Página inicial (web/index.html): a descrição de cada funcionalidade cabe em uma linha só, sem quebra.
++"""Página inicial (web/index.html), padrão terminal v2.0.
+ 
+-A lista tem a largura da `main` menos o recuo dos marcadores. Cada caractere ocupa até ~7,9 px (medido no Chrome com a
+-fonte da página: de 6,8 a 7,8 px por caractere conforme as letras), então o limite de caracteres sai da largura da
+-própria página: se ela for alargada, o limite sobe junto. O detalhe de cada funcionalidade fica no topo da página dela,
+-não nesta lista.
++Cada funcionalidade é uma linha (`section.func`) com código, nome, descrição curta e páginas. A página não tem mais
++largura máxima (tela cheia), então o limite da descrição é fixo: ela tem de caber em uma linha na coluna da
++esquerda em 1280 px (cerca de 60 caracteres). O detalhe de cada funcionalidade fica no topo da página dela.
++A barra de funções (`.t-fn`) tem de listar as mesmas funcionalidades, na mesma ordem, com código de comando.
+ """
+ 
+-import math
+ import re
+ from pathlib import Path
+ 
+ import pytest
+ 
+ INDEX = Path(__file__).resolve().parents[1] / "web" / "index.html"
+-RECUO_LISTA_PX = 40  # padding-left padrão do <ul>, onde ficam os marcadores
+-PX_POR_CARACTERE = 7.9  # pior caso medido (letras maiúsculas e largas)
++LIMITE_DESCRICAO = 60  # caracteres; ver o docstring
+ 
+ 
+-def _itens(html: str) -> list[tuple[str, str]]:
+-    return re.findall(r'<li><a href="[^"]+">([^<]+)</a>\s*<span>([^<]*)</span></li>', html)
++def _funcionalidades(html: str) -> list[tuple[str, str, str, str]]:
++    """(código, rota, nome, descrição) de cada linha da página."""
++    return re.findall(
++        r'<span class="cod">([A-Z]+)</span><a href="([^"]+)">([^<]+)</a></h2>\s*<p class="func-desc">([^<]*)</p>', html
++    )
+ 
+ 
+-def _limite_caracteres(html: str) -> int:
+-    largura = int(re.search(r"main\s*\{[^}]*max-width:\s*(\d+)px", html).group(1))
+-    return math.floor((largura - RECUO_LISTA_PX) / PX_POR_CARACTERE)
++def _barra(html: str) -> list[tuple[str, str]]:
++    """(código, rota) de cada item da barra de funções, sem o Início."""
++    nav = re.search(r'<nav class="t-fn"[^>]*>(.*?)</nav>', html, re.S).group(1)
++    return [(c, r) for c, r in re.findall(r'<a data-cod="([A-Z]+)" href="([^"]+)"', nav) if c != "INI"]
+ 
+ 
+ @pytest.fixture(scope="module")
+@@ -32,19 +34,25 @@
+ 
+ 
+ def test_a_pagina_lista_as_funcionalidades(html):
+-    nomes = [n for n, _ in _itens(html)]
++    nomes = [n for _, _, n, _ in _funcionalidades(html)]
+     assert len(nomes) >= 4 and len(set(nomes)) == len(nomes)
+ 
+ 
++def test_barra_de_funcoes_igual_a_lista(html):
++    assert [(c, r) for c, r, _, _ in _funcionalidades(html)] == _barra(html)
++
++
+ def test_descricao_cabe_em_uma_linha(html):
+-    limite = _limite_caracteres(html)
+-    longas = [(n, len(f"{n} {d}")) for n, d in _itens(html) if len(f"{n} {d}") > limite]
+-    assert not longas, (
+-        f"descrição acima de {limite} caracteres (nome incluído); encurte o texto, o detalhe vai no topo da "
+-        f"página da funcionalidade: {longas}"
+-    )
++    longas = [(n, len(d)) for _, _, n, d in _funcionalidades(html) if len(d) > LIMITE_DESCRICAO]
++    assert not longas, f"descrição acima de {LIMITE_DESCRICAO} caracteres; o detalhe vai no topo da página: {longas}"
+ 
+ 
+ def test_sem_quebra_de_linha_forcada_nas_descricoes(html):
+-    for n, d in _itens(html):
++    for _, _, n, d in _funcionalidades(html):
+         assert "<br" not in d.lower() and "\n" not in d, n
++
++
++def test_usa_o_padrao_terminal(html):
++    for arq in ("base.css", "painel.css", "graficos.js", "componentes.js", "terminal.js"):
++        assert f"/padrao/{arq}" in html, arq
++    assert "prefers-color-scheme" not in html  # o tema não segue o sistema: escuro padrão, claro pelo botão
+--- a/tests/test_forecast_bandeiras_exportacao.py
++++ b/tests/test_forecast_bandeiras_exportacao.py
+@@ -29,6 +29,8 @@
+         "padrao/base.css",
+         "padrao/painel.css",
+         "padrao/graficos.js",
++        "padrao/componentes.js",
++        "padrao/terminal.js",
+         "dados/produto_dados.js",
+         "dados/relato_dados.js",
+         ".nojekyll",
+@@ -40,6 +42,10 @@
+         for caminho in locais:  # todo arquivo local referenciado existe no site
+             assert (destino / caminho.split("#")[0]).exists() or caminho in ("./",), (nome, caminho)
+     assert 'src="dados/produto_dados.js"' in (destino / "index.html").read_text(encoding="utf-8")
++    for nome in ("index.html", "metodologia.html", "relato.html"):  # barra de funções só com esta funcionalidade
++        html = (destino / nome).read_text(encoding="utf-8")
++        codigos = re.findall(r'<a data-cod="([A-Z]+)"', html)
++        assert set(codigos) <= {"BAND"}, (nome, codigos)
+     assert 'src="dados/relato_dados.js"' in (destino / "relato.html").read_text(encoding="utf-8")
+ 
+ 
+--- a/features/forecast_bandeiras/src/qe_forecast_bandeiras/exportacao.py
++++ b/features/forecast_bandeiras/src/qe_forecast_bandeiras/exportacao.py
+@@ -4,6 +4,10 @@
+ e os dados da última rodada publicada e da página do relato (serving/) para uma pasta, com os caminhos trocados por relativos, para abrir sem o
+ servidor do app. Só escreve os arquivos do site na pasta de destino (README, .git e outros ficam).
+ O app não lê nada da pasta de destino.
++
++Padrão terminal v2.0: o site leva também `componentes.js` e `terminal.js`; a marca e o link da própria funcionalidade na
++barra de funções viram "./", e os links das outras funcionalidades (e do Início) saem da barra, porque o site só tem
++esta funcionalidade.
+ """
+ 
+ import re
+@@ -15,14 +19,18 @@
+ WEB = Path(__file__).resolve().parents[4] / "web"
+ PAGINAS = ("index.html", "metodologia.html", "relato.html")
+ COMPLEMENTOS = ("relato_conta.js",)  # arquivos de web/forecast_bandeiras/ que as páginas carregam
+-PADRAO = ("base.css", "painel.css", "graficos.js")
++PADRAO = ("base.css", "painel.css", "graficos.js", "componentes.js", "terminal.js")
+ TROCAS = (
+     ('href="../padrao/', 'href="padrao/'),
+     ('src="../padrao/', 'src="padrao/'),
+     ('src="/dados/forecast_bandeiras/produto_dados.js"', 'src="dados/produto_dados.js"'),
+     ('src="/dados/forecast_bandeiras/relato_dados.js"', 'src="dados/relato_dados.js"'),
+     ('<a class="marca" href="/">', '<a class="marca" href="./">'),
++    ('<a class="t-marca" href="/">', '<a class="t-marca" href="./">'),
++    ('href="/forecast_bandeiras/"', 'href="./"'),
+ )
++# barra de funções do terminal: link de outra funcionalidade ou do Início (rota absoluta que o site não tem)
++OUTRAS_FUNCOES = re.compile(r'\s*<a data-cod="[A-Z]+" href="/[^"]*"[^>]*>.*?</a>', re.S)
+ 
+ 
+ def exportar(arm: Armazenamento, destino: Path) -> list[str]:
+@@ -40,6 +48,7 @@
+         html = (WEB / "forecast_bandeiras" / nome).read_text(encoding="utf-8")
+         for a, b in TROCAS:
+             html = html.replace(a, b)
++        html = OUTRAS_FUNCOES.sub("", html)
+         # o site não tem o servidor do app: nenhum caminho absoluto ou fora da pasta pode sobrar
+         sobra = re.findall(r'(?:href|src)="(/[^/"][^"]*|\.\./[^"]*)"', html)
+         if sobra:

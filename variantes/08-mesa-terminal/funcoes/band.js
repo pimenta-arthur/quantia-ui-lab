@@ -20,8 +20,6 @@
   const chip = (c, txt) => `<b class="band-chip band-${SIG[c]}" title="${c}">${txt == null ? c : txt}</b>`;
   const CEN = {
     esp: { nome: "Esperado", curto: "Esperado", cor: "var(--cen-esp)" },
-    li: { nome: "Seco (P10)", curto: "Seco", cor: "var(--cen-li)" },
-    ls: { nome: "Úmido (P90)", curto: "Úmido", cor: "var(--cen-ls)" },
   };
   const LIMX = D.limites_x, LIM = [LIMX.Verde, LIMX.Amarela, LIMX["Vermelha 1"]];
   const P = D.projecoes, H = D.historico, RD = D.rodadas, SEL = D.selecao, CG = D.calculo_gsf_cenarios;
@@ -104,25 +102,23 @@
       add(el, `<div class="band-i-topo">${chip(p.cor_esp)}<b class="num">${pct(p.prob[p.cor_esp])}</b><span>M+${p.h}${p.anunciada ? ` · oficial ${chip(p.anunciada, AB[p.anunciada])}${p.anunciada === p.cor_esp ? " ✓" : " ✗"}` : " · projeção"}</span></div>`);
       pbar(el, p.prob, rot(p.alvo));
       add(el, `<table class="band-i-tab"><thead><tr><th>Cenário</th><th class="n">GSF</th><th class="n">PLD</th><th class="n">X</th><th>Cor</th></tr></thead><tbody>` +
-        ["esp", "li", "ls"].map(c => `<tr><td>${CEN[c].curto}</td><td class="n">${n(p["gsf_" + c], 2)}</td><td class="n">${n(p["pld_" + c], 0)}</td><td class="n">${n(p["x_" + c], 1)}</td><td>${chip(p["cor_" + c], AB[p["cor_" + c]])}</td></tr>`).join("") + `</tbody></table>`);
+        ["esp"].map(c => `<tr><td>${CEN[c].curto}</td><td class="n">${n(p["gsf_" + c], 2)}</td><td class="n">${n(p["pld_" + c], 0)}</td><td class="n">${n(p["x_" + c], 1)}</td><td>${chip(p["cor_" + c], AB[p["cor_" + c]])}</td></tr>`).join("") + `</tbody></table>`);
       add(el, `<p class="band-i-txt">${textoGatilho(gt, p.pld_esp)}</p>`);
       const k = SEL.periodos.indexOf(p.alvo), per = SEL.periodos.slice(0, k + 1);
       add(el, `<h3>ENA do SIN, deck → ${rot(p.alvo)}</h3>`);
       grafico(el, (svg, W, Hh) => linhas(svg, W, Hh, {
         n: per.length, fmt: v => n(v, 1) + " mil MWmed",
         series: [{ nome: "MLT", v: per.map(m => mltDe[m] / 1000), cor: "var(--ink-3)", larg: 1, tracejado: true, semPonto: true },
-          ...["li", "esp", "ls"].map(c => ({ nome: CEN[c].curto, v: SEL.referencias[c].slice(0, k + 1).map(v => v / 1000), cor: CEN[c].cor }))],
+          ...["esp"].map(c => ({ nome: CEN[c].curto, v: SEL.referencias[c].slice(0, k + 1).map(v => v / 1000), cor: CEN[c].cor }))],
         rotX: i => rot(per[i]),
       }), null, `ENA de referência por cenário até ${rot(p.alvo)}`);
       const q = D.insumos.projetado.find(x => x.mes === p.alvo), cg = CG.esp.find(c => c.alvo === p.alvo);
       const folga = cg.gh_band - 0.96 * cg.gf_band;
       QC.pares(el, [
         ["ENA esperada", `${n(q.ena_esp / 1000, 1)} mil · ${pct(q.ena_esp / q.mlt)} MLT`],
-        ["ENA seco · úmido", `${n(q.ena_li / 1000, 1)} · ${n(q.ena_ls / 1000, 1)} mil`],
         ["GH_band · GF_band", `${n(cg.gh_band)} · ${n(cg.gf_band)} MWmed`],
         [folga < 0 ? "Falta p/ GSF 0,96" : "Sobra sobre 0,96", `${n(Math.abs(folga) / 1000, 1)} mil MWmed`],
         ["Adicional esperado", `${rs(p.adicional / 10, 3)} / 100 kWh`],
-        ["Faixa úmido–seco", `${rs(D.adicional_vigente[p.cor_ls] / 10, 2)} a ${rs(D.adicional_vigente[p.cor_li] / 10, 2)}`],
       ]);
       const hist = RD.filter(r => r.alvo === p.alvo).sort((a, b) => (chaveR(a) < chaveR(b) ? -1 : 1));
       add(el, `<h3>Rodadas para ${rot(p.alvo)}</h3><table class="band-i-tab"><tbody>` + hist.map(r => `<tr><td>${rotRod(chaveR(r))}</td><td>M+${r.h}</td><td>${chip(r.esp, AB[r.esp])}</td><td class="n">${(probDe(r.prob) || {})[r.esp] != null ? pct(probDe(r.prob)[r.esp]) : "—"}</td><td class="n">${n(r.gsf_esp, 2)}</td><td class="n">${n(r.pld_esp, 0)}</td></tr>`).join("") + `</tbody></table>`);
@@ -157,8 +153,8 @@
     return el => {
       const rs0 = RD.filter(r => chaveR(r) === k).sort((a, b) => a.h - b.h), r0 = rs0[0], pub = r0.publicada;
       QC.pares(el, [["Tipo", pub ? "Publicada" : "Backtest (reconstruída)"], ["Data", pub ? dataHora(k) : `deck de ${rot(r0.deck)}`], ["Deck NEWAVE", `${rot(r0.deck)} · versão ${r0.deck_versao}`], ["ECMWF", r0.ecmwf ? dataBr(r0.ecmwf) : "—"], ["Modelo", r0.modelo], ["Motivo", r0.motivo]], "premissas");
-      add(el, `<table class="band-i-tab"><thead><tr><th>Mês</th><th>Esp.</th><th class="n">GSF</th><th class="n">PLD</th><th>S · U</th><th>Ofic.</th></tr></thead><tbody>` +
-        rs0.map(r => { const pr = probDe(r.prob); return `<tr><td>${rot(r.alvo)}</td><td>${chip(r.esp, AB[r.esp])} ${pr ? pct(pr[r.esp]) : ""}</td><td class="n">${n(r.gsf_esp, 2)}</td><td class="n">${n(r.pld_esp, 0)}</td><td>${chip(r.li, AB[r.li])}${chip(r.ls, AB[r.ls])}</td><td>${r.real ? chip(r.real, AB[r.real]) + (r.real === r.esp ? "✓" : "✗") : "—"}</td></tr>`; }).join("") + `</tbody></table>`);
+      add(el, `<table class="band-i-tab"><thead><tr><th>Mês</th><th>Esp.</th><th class="n">GSF</th><th class="n">PLD</th><th>Ofic.</th></tr></thead><tbody>` +
+        rs0.map(r => { const pr = probDe(r.prob); return `<tr><td>${rot(r.alvo)}</td><td>${chip(r.esp, AB[r.esp])} ${pr ? pct(pr[r.esp]) : ""}</td><td class="n">${n(r.gsf_esp, 2)}</td><td class="n">${n(r.pld_esp, 0)}</td><td>${r.real ? chip(r.real, AB[r.real]) + (r.real === r.esp ? "✓" : "✗") : "—"}</td></tr>`; }).join("") + `</tbody></table>`);
       if (!pub || !rs0.some(r => probDe(r.prob))) add(el, `<p class="band-i-txt">${probDe(r0.prob) ? "" : "Sem probabilidade: menos de 8 erros passados disponíveis na data do deck. "}Rodadas de backtest usam só a informação disponível em cada data.</p>`);
     };
   }
@@ -168,8 +164,7 @@
       const pr = probDe(r.prob), ofi = histDe(r.alvo), gt = gatilhos(r.gsf_esp, r.pld_esp);
       add(el, `<div class="band-i-topo">${chip(r.esp)}<b class="num">${pr ? pct(pr[r.esp]) : "—"}</b><span>${rotRod(chaveR(r))} · M+${r.h}</span></div>`);
       if (pr) pbar(el, pr, rot(r.alvo));
-      const L = [["GSF · PLD", `${n(r.gsf_esp, 2)} · ${rs(r.pld_esp, 0)}`], ["X", n(gt.x, 1) + " R$/MWh"],
-        ["Seco", r.gsf_li != null ? `${r.li} · ${n(r.gsf_li, 2)} · ${rs(r.pld_li, 0)}` : r.li], ["Úmido", r.gsf_ls != null ? `${r.ls} · ${n(r.gsf_ls, 2)} · ${rs(r.pld_ls, 0)}` : r.ls]];
+      const L = [["GSF · PLD", `${n(r.gsf_esp, 2)} · ${rs(r.pld_esp, 0)}`], ["X", n(gt.x, 1) + " R$/MWh"]];
       if (ant) L.push(["Rodada anterior", `${rotRod(chaveR(ant))}: ${ant.esp} · ${n(ant.gsf_esp, 2)} · ${rs(ant.pld_esp, 0)}`]);
       if (ofi) L.push(["Oficial", ofi.cor + (ofi.gsf != null ? ` · ${n(ofi.gsf, 2)} · ${rs(ofi.pld, 0)}` : "")]);
       if (ofi && ofi.gsf != null) L.push(["Erro GSF · PLD", `${sn(r.gsf_esp - ofi.gsf, 2)} · ${srs(r.pld_esp - ofi.pld, 0)}`]);
@@ -240,11 +235,11 @@
   // ================================================================================================
   function decisaoMon(area) {
     const p = PROX, pr = p.prob[p.cor_esp], s2 = segundo(p.prob), gt = gatilhos(p.gsf_esp, p.pld_esp);
-    const p3 = fut[1], verdeSeco = fut.find(q => q.cor_li === "Verde");
-    const itens = [{ r: `Próxima bandeira · ${rot(p.alvo)} · M+${p.h}`, v: `${p.cor_esp} ${pct(pr)}`, d: `${s2} ${pct(p.prob[s2])} · seco ${p.cor_li} · úmido ${p.cor_ls}`, principal: true }];
+    const p3 = fut[1], primVerde = fut.find(q => q.cor_esp === "Verde");
+    const itens = [{ r: `Próxima bandeira · ${rot(p.alvo)} · M+${p.h}`, v: `${p.cor_esp} ${pct(pr)}`, d: `${s2} ${pct(p.prob[s2])}`, principal: true }];
     if (VIG) itens.push({ r: `Vigente · ${rot(VIG.alvo)}`, v: VIG.anunciada, d: `oficial ANEEL · modelo dava ${AB[VIG.cor_esp]} ${pct(VIG.prob[VIG.cor_esp])} ${VIG.anunciada === VIG.cor_esp ? "✓" : "✗"}` });
-    if (p3) itens.push({ r: `${rot(p3.alvo)} · M+${p3.h}`, v: `${p3.cor_esp} ${pct(p3.prob[p3.cor_esp])}`, d: `seco ${p3.cor_li} · úmido ${p3.cor_ls}` });
-    itens.push({ r: "Verde também no seco", v: verdeSeco ? rot(verdeSeco.alvo) : "fora do horizonte", d: `esperado verde desde ${rot((fut.find(q => q.cor_esp === "Verde") || p).alvo)}` });
+    if (p3) { const s3 = segundo(p3.prob); itens.push({ r: `${rot(p3.alvo)} · M+${p3.h}`, v: `${p3.cor_esp} ${pct(p3.prob[p3.cor_esp])}`, d: `${s3} ${pct(p3.prob[s3])}` }); }
+    itens.push({ r: "Primeira verde provável", v: primVerde ? rot(primVerde.alvo) : "fora do horizonte", d: primVerde ? `Verde ${pct(primVerde.prob.Verde)} · M+${primVerde.h}` : "nenhum mês com verde esperada" });
     if (gt.acima) itens.push({ r: `Gatilho ${rot(p.alvo)} → ${AB[gt.acima.cor]}`, v: `PLD > ${isFinite(gt.acima.pld) ? rs(gt.acima.pld, 0) : "—"}`, d: `hoje ${rs(p.pld_esp, 0)} · GSF ${n(p.gsf_esp, 2)} · ou GSF < ${gt.acima.gsf != null ? n(gt.acima.gsf, 2) : "—"}` });
     Mesa.decisao(area, itens);
   }
@@ -263,14 +258,11 @@
           `background:color-mix(in srgb, ${COR(k)} ${Math.round(v * 100)}%, var(--vazio));color:${v >= 0.62 ? TXT(k) : "var(--ink)"}`);
       }, "band-l-p");
     });
-    html += linha("GSF", p => cel(p, n(p.gsf_esp, 2), `<b>${rot(p.alvo)}</b> · GSF esperado ${n(p.gsf_esp, 2)}<br>seco ${n(p.gsf_li, 2)} · úmido ${n(p.gsf_ls, 2)}`, "n"), "band-l-sep");
-    html += linha("PLD gatilho R$", p => cel(p, n(p.pld_esp, 0), `<b>${rot(p.alvo)}</b> · PLD gatilho esperado ${rs(p.pld_esp, 2)}<br>seco ${rs(p.pld_li, 0)} · úmido ${rs(p.pld_ls, 0)}`, "n"));
+    html += linha("GSF", p => cel(p, n(p.gsf_esp, 2), `<b>${rot(p.alvo)}</b> · GSF esperado ${n(p.gsf_esp, 2)}`, "n"), "band-l-sep");
+    html += linha("PLD gatilho R$", p => cel(p, n(p.pld_esp, 0), `<b>${rot(p.alvo)}</b> · PLD gatilho esperado ${rs(p.pld_esp, 2)}`, "n"));
     html += linha("X = PLD × (1 − GSF)", p => cel(p, n(p.x_esp, 1), `<b>${rot(p.alvo)}</b> · X ${n(p.x_esp, 2)} R$/MWh<br>limites: Vd ≤ ${n(LIM[0], 2)} · Am ≤ ${n(LIM[1], 2)} · V1 ≤ ${n(LIM[2], 2)}`, "n"));
     html += linha("Sobe de cor se PLD >", p => { const gt = gatilhos(p.gsf_esp, p.pld_esp), a = gt.acima; const v = !a ? "—" : !isFinite(a.pld) ? "nunca" : a.pld > D.pld_max ? "> teto" : n(a.pld, 0); return cel(p, v, `<b>${rot(p.alvo)}</b> · ${a ? `vira ${a.cor} com PLD acima de ${pldTxt(a.pld)} (GSF ${n(gt.g, 2)} fixo)${a.gsf != null ? `<br>ou com GSF abaixo de ${n(a.gsf, 2)} (PLD fixo)` : ""}` : "já na cor mais cara"}`, "n"); });
-    [["li", "Seco (P10)"], ["ls", "Úmido (P90)"]].forEach(([c, r], i) => {
-      html += linha(`<i class="band-pt" style="background:${CEN[c].cor}"></i>${r}`, p => cel(p, `${chip(p["cor_" + c], AB[p["cor_" + c]])} <small>${n(p["gsf_" + c], 2)} · ${n(p["pld_" + c], 0)}</small>`, `<b>${rot(p.alvo)}</b> · ${r}: ${p["cor_" + c]}<br>GSF ${n(p["gsf_" + c], 2)} · PLD ${rs(p["pld_" + c], 0)} · X ${n(p["x_" + c], 1)}`), i ? "" : "band-l-sep");
-    });
-    html += linha("Adicional R$/100 kWh", p => cel(p, n(p.adicional / 10, 2), `<b>${rot(p.alvo)}</b> · adicional da cor esperada: ${rs(p.adicional / 10, 3)} por 100 kWh<br>faixa úmido–seco: ${rs(D.adicional_vigente[p.cor_ls] / 10, 2)} a ${rs(D.adicional_vigente[p.cor_li] / 10, 2)}`, "n"), "band-l-sep");
+    html += linha("Adicional R$/100 kWh", p => cel(p, n(p.adicional / 10, 2), `<b>${rot(p.alvo)}</b> · adicional da cor esperada: ${rs(p.adicional / 10, 3)} por 100 kWh`, "n"), "band-l-sep");
     t.innerHTML = html + "</tbody>";
     box.append(t); corpo.append(box);
     t.querySelectorAll("td[data-dica]").forEach(td => dicaEm(td, td.dataset.dica));
@@ -282,22 +274,15 @@
   }
 
   function abacoMon(corpo) {
-    const jan = janela(P.flatMap(p => [p.gsf_li, p.gsf_ls]), P.map(p => p.pld_li), D.pld_max);
+    const jan = janela(P.map(p => p.gsf_esp), P.map(p => p.pld_esp * 1.15), D.pld_max);
     grafAlt(corpo, (svg, W, Hh) => abaco(svg, W, Hh, jan, ({ x, y }) => {
       const grupos = [], rotulos = [];
       P.forEach(p => {
         const g = S(svg, "g", {}); grupos.push(g);
-        const pt = k => [x(p["gsf_" + k]), y(p["pld_" + k])];
-        S(g, "polyline", { points: ["ls", "esp", "li"].map(k => pt(k).join(",")).join(" "), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1.2, "stroke-dasharray": "3 3" });
-        [["ls", "U", "úmido"], ["li", "S", "seco"]].forEach(([k, letra, nome]) => {
-          const [cx, cy] = pt(k), c = S(g, "g", { class: "cen-marca-svg" });
-          S(c, "circle", { cx, cy, r: 6.5 }); S(c, "text", { x: cx, y: cy + 3, "text-anchor": "middle" }, letra);
-          dicaEm(c, `${rot(p.alvo)} · ${nome}: ${p["cor_" + k]}<br>GSF ${n(p["gsf_" + k], 2)} · PLD ${rs(p["pld_" + k], 0)}`);
-        });
-        const [ex, ey] = pt("esp"), c = S(g, "g", { class: "cen-marca-svg band-marca" });
+        const ex = x(p.gsf_esp), ey = y(p.pld_esp), c = S(g, "g", { class: "cen-marca-svg band-marca" });
         S(c, "circle", { cx: ex, cy: ey, r: 8, style: "stroke-width:2.5px" }); S(c, "text", { x: ex, y: ey + 3, "text-anchor": "middle" }, "E");
         rotulos.push({ el: S(g, "text", { x: ex, y: ey - 12, "text-anchor": "middle", class: "forte" }, rot(p.alvo)), x: ex, y: ey - 12 });
-        dicaEm(c, `${rot(p.alvo)} · esperado ${p.cor_esp}<br>GSF ${n(p.gsf_esp, 2)} · PLD ${rs(p.pld_esp, 0)}<br>seco: GSF ${n(p.gsf_li, 2)}, ${rs(p.pld_li, 0)} (${p.cor_li})<br>úmido: GSF ${n(p.gsf_ls, 2)}, ${rs(p.pld_ls, 0)} (${p.cor_ls})<br><i>clique para o detalhe</i>`);
+        dicaEm(c, `${rot(p.alvo)} · esperado ${p.cor_esp}<br>GSF ${n(p.gsf_esp, 2)} · PLD ${rs(p.pld_esp, 0)} · X ${n(p.x_esp, 1)}<br>${pct(p.prob[p.cor_esp])} de chance<br><i>clique para o detalhe</i>`);
         Mesa.alvo(c, `${rot(p.alvo)} · M+${p.h}`, inspMes(p));
         g.addEventListener("pointerenter", () => grupos.forEach(o => o.setAttribute("opacity", o === g ? 1 : 0.15)));
         g.addEventListener("pointerleave", () => grupos.forEach(o => o.removeAttribute("opacity")));
@@ -328,7 +313,6 @@
       ["Modelo", `${md.versao} · ${md.k} séries · σ em 2 grupos`],
       ["Horizonte", `${rotLongo(P[0].alvo)} a ${rotLongo(P[P.length - 1].alvo)}`],
       ["GSF sempre verde", `≥ ${n(md.gsf_verde, 2)}`],
-      ["Seco · úmido", `P${md.quantil_li * 100} · P${md.quantil_ls * 100} dos membros`],
       ["PLD mín · máx", `${rs(D.pld_min, 2)} · ${rs(D.pld_max, 2)}`],
       ["Limites de X", `Vd ≤ ${n(LIM[0], 2)} · Am ≤ ${n(LIM[1], 2)} · V1 ≤ ${n(LIM[2], 2)}`],
       ["Adicional /100 kWh", `Am ${rs(D.adicional_vigente.Amarela / 10, 3)} · V1 ${rs(D.adicional_vigente["Vermelha 1"] / 10, 3)} · V2 ${rs(D.adicional_vigente["Vermelha 2"] / 10, 3)}`],
@@ -339,12 +323,12 @@
   function montarMon(area) {
     decisaoMon(area);
     const g = Mesa.grade(area);
-    const p1 = painel(g, { cod: "BAND-1", titulo: "Probabilidade por mês e cenários", unidade: "% · GSF · R$/MWh", tam: "xl", ajuda: "probabilidade",
-      leg: "Clique num mês para ver tudo dele no inspetor. Quanto mais forte a cor, maior a chance. GSF e PLD são médias das 15 séries do cenário; com GSF ≥ 0,96 a bandeira é verde. Seco e úmido: P10 e P90 dos membros do ECMWF.",
+    const p1 = painel(g, { cod: "BAND-1", titulo: "Probabilidade por mês", unidade: "% · GSF · R$/MWh", tam: "xl", ajuda: "probabilidade",
+      leg: "Clique num mês para ver tudo dele no inspetor. Quanto mais forte a cor, maior a chance. GSF e PLD são médias das 15 séries escolhidas (cenário esperado); com GSF ≥ 0,96 a bandeira é verde.",
       fonte: `Rodada ${dataHora(D.rodada.publicada_em)} · deck ${rot(D.deck)} · ECMWF ${dataBr(D.rodada.insumos.ecmwf_emissao)}` });
     matriz(p1.corpo);
     const p2 = painel(g, { cod: "BAND-2", titulo: "Ábaco regulatório", unidade: "GSF × R$/MWh", tam: "s", ajuda: "regra",
-      leg: "A cor é dada por X = PLD × (1 − GSF). E: esperado; S e U: seco e úmido do mesmo mês, ligados pelo tracejado. Clique num E para o detalhe." });
+      leg: "A cor é dada por X = PLD × (1 − GSF). Cada E é um mês no cenário esperado (GSF e PLD médios das 15 séries). Clique num E para o detalhe." });
     abacoMon(p2.corpo);
     const p3 = painel(g, { cod: "BAND-3", titulo: "O que mudou desde a rodada anterior", unidade: RANT ? `${rotRod(RANT)} → ${rotRod(RATUAL)}` : "", tam: "xl", ajuda: "historico",
       leg: `Insumo que mudou: ${D.rodada.motivo}. ▲▼ na cor: mais cara ou mais barata. Δ PLD em verde quando o preço caiu (ajuda a cor). Clique numa linha para a evolução do mês em todas as rodadas.` });
@@ -356,8 +340,8 @@
   // ================================================================================================
   // TELA 2 · CEN Cenários e fundamentos
   // ================================================================================================
-  let cenSel = LS.ler("cen", "esp"), visSel = LS.ler("vis", "traj");
-  if (!CEN[cenSel]) cenSel = "esp";
+  const cenSel = "esp";   // só o cenário esperado; mesa.band.cen de versões anteriores é ignorado
+  let visSel = LS.ler("vis", "traj");
 
   function cartao(box, titulo) { const card = h("div", "mini band-card"); card.innerHTML = `<div class="ttl">${titulo}</div>`; box.append(card); return card; }
 
@@ -448,11 +432,7 @@
         S(svg, "line", { x1: XG(0.96), x2: XG(0.96), y1: yg - 9, y2: yg + 9, stroke: "var(--ink-3)", "stroke-dasharray": "2 2" });
         S(svg, "text", { x: XG(0.96), y: yg + 20, "text-anchor": "middle", style: "font-size:9px" }, "0,96");
         [0.7, 1.1].forEach(v => S(svg, "text", { x: XG(v), y: yg + 20, "text-anchor": "middle", style: "font-size:9px" }, n(v, 1)));
-        [["ls", "úmido"], ["esp", "referência"], ["li", "seco"]].forEach(([k, nome]) => {
-          const gg = CG[k].find(z => z.alvo === p.alvo).gsf;
-          const ci = S(svg, "circle", { cx: XG(gg), cy: yg, r: k === cenSel ? 6 : 4.5, fill: CEN[k].cor, stroke: k === cenSel ? "var(--ink)" : "var(--surface)", "stroke-width": k === cenSel ? 1.5 : 1.2 });
-          dicaEm(ci, `${rot(p.alvo)} · GSF ${nome} ${n(gg, 2)}`);
-        });
+        { const ci = S(svg, "circle", { cx: XG(c.gsf), cy: yg, r: 6, fill: CEN.esp.cor, stroke: "var(--ink)", "stroke-width": 1.5 }); dicaEm(ci, `${rot(p.alvo)} · GSF esperado ${n(c.gsf, 2)}`); }
         const ref = D.insumos.realizado.find(r => r.mes === anoAnterior(p.alvo));
         if (ref) { const xa = XG(ref.gsf); const d = S(svg, "path", { d: `M${xa} ${yg - 6} L${xa + 5} ${yg} L${xa} ${yg + 6} L${xa - 5} ${yg} Z`, fill: "var(--ink-3)", stroke: "var(--surface)", "stroke-width": 1.2 }); dicaEm(d, `${rot(anoAnterior(p.alvo))} · GSF oficial ${n(ref.gsf, 2)}`); }
         S(svg, "text", { x: W, y: yg + 4, "text-anchor": "end", class: "forte" }, n(c.gsf, 2));
@@ -467,11 +447,10 @@
     const meses = [...Rr.map(r => r.mes), ...Q.map(q => q.mes)], val = v => (o.esc ? v / 1000 : v), ult = val(Rr[i0][campo]);
     const oficial = meses.map((_, i) => (i <= i0 ? val(Rr[i][campo]) : null));
     const proj = k => meses.map((_, i) => (i < i0 ? null : i === i0 ? ult : val(Q[i - i0 - 1][campo + "_" + k])));
-    const li = proj("li"), ls = proj("ls");
     const series = [{ nome: "Oficial (PMO/CCEE)", v: oficial, cor: "var(--ink)", larg: 2, semPonto: true }, { nome: "Esperado", v: proj("esp"), cor: "var(--accent)", larg: 2.2 }];
     if (o.mlt) series.unshift({ nome: "MLT", v: meses.map((_, i) => (i <= i0 ? Rr[i].mlt : Q[i - i0 - 1].mlt) / 1000), cor: "var(--ink-3)", larg: 1, tracejado: true, semPonto: true });
     grafico(corpo, (svg, W, Hh) => linhas(svg, W, Hh, {
-      n: meses.length, series, faixa: { lo: li.map((v, i) => (v == null ? null : Math.min(v, ls[i]))), hi: li.map((v, i) => (v == null ? null : Math.max(v, ls[i]))) },
+      n: meses.length, series,
       refs: o.ref != null ? [{ v: o.ref, rot: o.refRot }] : [], marca: { i: i0, rot: "deck" }, zero: o.zero,
       rotX: i => (rotuloDeMes(meses[i]) ? rot(meses[i]) : null), titX: i => `${rot(meses[i])} · ${i <= i0 ? "oficial" : "projeção"}`, fmt: o.fmt,
     }));
@@ -480,28 +459,27 @@
   function montarCen(area) {
     const p = PROX, q = D.insumos.projetado.find(x => x.mes === p.alvo), cg = CG.esp.find(c => c.alvo === p.alvo), folga = cg.gh_band - 0.96 * cg.gf_band;
     Mesa.decisao(area, [
-      { r: `ENA de referência · ${rot(p.alvo)} · MWmed`, v: `${n(q.ena_esp / 1000, 1)} mil`, d: `${pct(q.ena_esp / q.mlt)} da MLT · seco ${n(q.ena_li / 1000, 1)} · úmido ${n(q.ena_ls / 1000, 1)}`, principal: true },
-      { r: `GSF · ${rot(p.alvo)}`, v: n(p.gsf_esp, 2), d: `seco ${n(p.gsf_li, 2)} · úmido ${n(p.gsf_ls, 2)}` },
-      { r: `PLD gatilho · ${rot(p.alvo)}`, v: rs(p.pld_esp, 0), d: `seco ${rs(p.pld_li, 0)} · úmido ${rs(p.pld_ls, 0)}` },
+      { r: `ENA de referência · ${rot(p.alvo)} · MWmed`, v: `${n(q.ena_esp / 1000, 1)} mil`, d: `${pct(q.ena_esp / q.mlt)} da MLT · média do ECMWF`, principal: true },
+      { r: `GSF · ${rot(p.alvo)}`, v: n(p.gsf_esp, 2), d: `X ${n(p.x_esp, 1)} · ${p.cor_esp}` },
+      { r: `PLD gatilho · ${rot(p.alvo)}`, v: rs(p.pld_esp, 0), d: (() => { const a = gatilhos(p.gsf_esp, p.pld_esp).acima; return a && isFinite(a.pld) ? `vira ${a.cor} acima de ${pldTxt(a.pld)}` : "média das 15 séries"; })() },
       { r: folga < 0 ? `Falta para GSF 0,96 · ${rot(p.alvo)}` : `Acima de GSF 0,96 · ${rot(p.alvo)}`, v: `${n(Math.abs(folga) / 1000, 1)} mil MWmed`, d: `+1.000 MWmed ≈ +${n(sens, 3)} de GSF` },
-      { r: "Séries por mês e cenário", v: `${D.modelo.k} de 2.000`, d: "as mais parecidas com o ECMWF (D029)" },
+      { r: "Séries por mês", v: `${D.modelo.k} de 2.000`, d: "as mais parecidas com o ECMWF (D029)" },
     ]);
     const g = Mesa.grade(area);
-    const p5 = painel(g, { cod: "BAND-5", titulo: "Seleção de cenários", unidade: "mil MWmed · GSF · R$/MWh", tam: "full", ajuda: "cenarios" });
+    const p5 = painel(g, { cod: "BAND-5", titulo: "Seleção das séries do NEWAVE", unidade: "mil MWmed · GSF · R$/MWh", tam: "full", ajuda: "passos" });
     const box = h("div", "mini6 band-mini6"); p5.corpo.append(box);
     const leg = h("div", "band-legs"); p5.corpo.after(leg);
     function desenhar() {
       leg.innerHTML = visSel === "traj"
         ? QC.legenda([["var(--vazio)", "2.000 séries (P10–P90)"], [CEN[cenSel].cor, "15 escolhidas", "l"], ["var(--ink)", "ECMWF", "t"], ["var(--ink)", "Média das 15 (traço)"]]) +
           `<p class="leg">Para cada mês ficam as 15 séries do NEWAVE cuja trajetória de ENA, do deck ao mês, mais se parece com a do ECMWF. Embaixo, GSF e PLD de cada série; o fundo do PLD é a bandeira de cada preço com o GSF médio fixo. Escalas iguais nos seis meses. Clique num mês para as 15 séries.</p>`
-        : QC.legenda([["var(--ink-2)", "Hidráulica (NEWAVE)"], ["var(--desce)", "Deduções"], ["var(--sobe)", "PCH no MRE"], [CEN[cenSel].cor, "GH_band"], ["var(--ink-3)", "GF_band"], [CEN.ls.cor, "Úmido"], [CEN.esp.cor, "Referência"], [CEN.li.cor, "Seco"], ["var(--ink-3)", "Ano anterior (◆)"]]) +
-          `<p class="leg">Da geração hidráulica ao GSF com os fatores da CCEE, média das 15 séries; ANDE, perdas, PCH e GF_band iguais nos três cenários. Cada 1.000 MWmed a mais de geração elevam o GSF em cerca de ${n(sens, 3)}.</p>`;
+        : QC.legenda([["var(--ink-2)", "Hidráulica (NEWAVE)"], ["var(--desce)", "Deduções"], ["var(--sobe)", "PCH no MRE"], [CEN[cenSel].cor, "GH_band"], ["var(--ink-3)", "GF_band"], [CEN.esp.cor, "GSF esperado (●)"], ["var(--ink-3)", "Ano anterior (◆)"]]) +
+          `<p class="leg">Da geração hidráulica ao GSF com os fatores da CCEE, média das 15 séries; ANDE, PCH e GF_band vêm do deck e do boletim. Cada 1.000 MWmed a mais de geração elevam o GSF em cerca de ${n(sens, 3)}.</p>`;
       if (visSel === "traj") desenharTraj(box); else desenharWf(box);
     }
-    abas(p5, [["esp", "Esperado"], ["li", "Seco (LI)"], ["ls", "Úmido (LS)"]], cenSel, v => { cenSel = v; LS.gravar("cen", v); desenhar(); }, "Cenário");
     abas(p5, [["traj", "Trajetórias"], ["gsf", "Composição do GSF"]], visSel, v => { visSel = v; LS.gravar("vis", v); desenhar(); }, "Visão");
     desenhar();
-    const lg = QC.legenda([["var(--ink)", "Oficial", "l"], ["var(--accent)", "Esperado", "l"], ["var(--faixa-proj)", "Seco–úmido"], ["var(--ink-3)", "Referência", "t"]]);
+    const lg = QC.legenda([["var(--ink)", "Oficial", "l"], ["var(--accent)", "Esperado", "l"], ["var(--ink-3)", "Referência", "t"]]);
     const p6 = painel(g, { cod: "BAND-6", titulo: "ENA do SIN", unidade: "mil MWmed", tam: "m", ajuda: "passos", leg: "Água que chega aos reservatórios. Tracejado: MLT." });
     add(p6.corpo, lg); insumo(p6.corpo, "ena", { esc: true, mlt: true, fmt: v => n(v, 1) + " mil MWmed" });
     const p7 = painel(g, { cod: "BAND-7", titulo: "GSF", unidade: "razão", tam: "m", ajuda: "passos", leg: "Acima de 0,96 (tracejado), verde qualquer que seja o preço." });
@@ -566,14 +544,14 @@
           if (e != null) c.style.background = fundoErro(e, V.escala);
           const va = ant && ant[vr + "_esp"], st = va != null && Math.abs(v - va) >= V.limiar ? (v > va ? "▲" : "▼") : "";
           c.innerHTML = `<span>${V.fmt(v)}${st ? `<span class="band-seta">${st}</span>` : ""}${e != null && !curto ? `<small>${V.erro(e)}</small>` : ""}</span>`;
-          dicaEm(c, `<b>${rot(m)}</b> · ${rotRod(dk)} (M+${r.h})<br>${V.nome} projetado ${V.fmt(v)} · bandeira ${r.esp}` + (r[vr + "_li"] != null ? `<br>seco ${V.fmt(r[vr + "_li"])} · úmido ${V.fmt(r[vr + "_ls"])}` : "") + (va != null ? `<br>rodada anterior: ${V.fmt(va)}` : "") + (ofi != null ? `<br>oficial ${V.fmt(ofi)} · erro ${V.erro(e)}` : ""));
+          dicaEm(c, `<b>${rot(m)}</b> · ${rotRod(dk)} (M+${r.h})<br>${V.nome} projetado ${V.fmt(v)} · bandeira ${r.esp}` + (va != null ? `<br>rodada anterior: ${V.fmt(va)}` : "") + (ofi != null ? `<br>oficial ${V.fmt(ofi)} · erro ${V.erro(e)}` : ""));
         } else {
           c.classList.add("band-" + SIG[r.esp]);
           if (r.real && r.real !== r.esp) c.classList.add("band-errou");
           if (atual && !r.real) c.classList.add("band-proj");
           const pr = probDe(r.prob), st = ant && NIV(ant.esp) !== NIV(r.esp) ? (NIV(r.esp) > NIV(ant.esp) ? "▲" : "▼") : "";
           c.innerHTML = `<span>${AB[r.esp]}${pr && !curto ? " " + pct(pr[r.esp]) : ""}${st ? `<span class="band-seta">${st}</span>` : ""}</span>`;
-          dicaEm(c, `<b>${rot(m)}</b> · ${rotRod(dk)} (M+${r.h})<br>esperado ${r.esp}${r.prob ? " · " + r.prob : ""}<br>${r.gp}<br>seco ${r.li} · úmido ${r.ls}` + (ant ? `<br>rodada anterior (${rotRod(chaveR(ant))}): ${ant.esp}` : "") + (r.real ? `<br>oficial: ${r.real}` : ""));
+          dicaEm(c, `<b>${rot(m)}</b> · ${rotRod(dk)} (M+${r.h})<br>esperado ${r.esp}${r.prob ? " · " + r.prob : ""}<br>${r.gp}` + (ant ? `<br>rodada anterior (${rotRod(chaveR(ant))}): ${ant.esp}` : "") + (r.real ? `<br>oficial: ${r.real}` : ""));
         }
         Mesa.alvo(c, `${rot(m)} · ${rotRod(dk)}`, inspCelula(r, ant));
         return c;
@@ -601,15 +579,14 @@
 
   function adicional(corpo) {
     corpo.replaceChildren();
-    const todo = [...H.map(x => ({ mes: x.mes, v: x.adicional / 10 })), ...fut.map(p => ({ mes: p.alvo, v: p.adicional / 10, cor: p.cor_esp, lo: D.adicional_vigente[p.cor_ls] / 10, hi: D.adicional_vigente[p.cor_li] / 10, proj: true }))];
+    const todo = [...H.map(x => ({ mes: x.mes, v: x.adicional / 10 })), ...fut.map(p => ({ mes: p.alvo, v: p.adicional / 10, cor: p.cor_esp, proj: true }))];
     grafAlt(corpo, (svg, w, hh) => {
       const m = { l: 44, r: 10, t: 10, b: 36 }, nReais = todo.filter(s => !s.proj).length;
       const serie = perAdic === "rec" ? todo.slice(nReais - 24) : todo;
-      const vmax = Math.max(5, ...serie.map(s => s.hi ?? s.v)) * 1.08, bw = (w - m.l - m.r) / serie.length, hw = bw / 2;
+      const vmax = Math.max(5, ...serie.map(s => s.v)) * 1.08, bw = (w - m.l - m.r) / serie.length, hw = bw / 2;
       const x = i => m.l + (i + 0.5) * bw, y = v => m.t + (hh - m.t - m.b) * (1 - v / vmax);
       for (let v = 0; v <= vmax; v += vmax > 10 ? 5 : 2) { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(v), y2: y(v), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 6, y: y(v) + 3, "text-anchor": "end" }, rs(v, 0)); }
       const i0 = serie.findIndex(s => s.proj), ult = i0 - 1;
-      serie.forEach((s, i) => { if (s.proj) S(svg, "rect", { x: x(i) - hw, y: y(s.hi), width: bw, height: Math.max(1, y(s.lo) - y(s.hi)), fill: "var(--faixa-proj)" }); });
       S(svg, "path", { d: serie.slice(0, i0).map((s, i) => (i ? `V${y(s.v)} H${x(i) + hw}` : `M${x(0) - hw},${y(s.v)} H${x(0) + hw}`)).join(" "), fill: "none", stroke: "var(--ink)", "stroke-width": 1.6 });
       S(svg, "path", { d: `M${x(ult) + hw},${y(serie[ult].v)} ` + serie.slice(i0).map((s, j) => `V${y(s.v)} H${x(i0 + j) + hw}`).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-dasharray": "5 3" });
       S(svg, "line", { x1: x(ult) + hw, x2: x(ult) + hw, y1: m.t, y2: hh - m.b, stroke: "var(--ink-3)", "stroke-dasharray": "2 3" });
@@ -624,7 +601,7 @@
           if (bw * 12 >= 34 || +s.mes.slice(0, 4) % 2 === 1) S(svg, "text", { x: x(i) - hw + 3, y: hh - 2, class: "forte" }, bw * 12 >= 34 ? s.mes.slice(0, 4) : s.mes.slice(2, 4));
         }
         const alvo = S(svg, "rect", { x: x(i) - hw, y: m.t, width: bw, height: hh - m.t - m.b, fill: "transparent", class: "band-clicavel" });
-        dicaEm(alvo, s.proj ? `${rot(s.mes)} · projeção<br>cor esperada ${s.cor}: ${rs(s.v, 3)} · úmido ${rs(s.lo, 3)} · seco ${rs(s.hi, 3)} por 100 kWh` : `${rot(s.mes)} · ${real[s.mes]} · ${rs(s.v, 2)} por 100 kWh`);
+        dicaEm(alvo, s.proj ? `${rot(s.mes)} · projeção<br>cor esperada ${s.cor}: ${rs(s.v, 3)} por 100 kWh` : `${rot(s.mes)} · ${real[s.mes]} · ${rs(s.v, 2)} por 100 kWh`);
         alvo.addEventListener("click", () => Mesa.inspecionar(`Bandeiras de ${s.mes.slice(0, 4)}`, inspAno(s.mes.slice(0, 4), s.mes)));
       });
     }, 300);
@@ -663,7 +640,7 @@
     p10.acoes.insertAdjacentHTML("afterbegin", QC.legenda([...ORD, "Escassez hídrica"].map(c => [COR(c), c])));
     faixa(p10.corpo);
     const p11 = painel(g, { cod: "BAND-11", titulo: "Adicional tarifário na conta", unidade: "R$ por 100 kWh", tam: "xl", ajuda: "adicional",
-      leg: "Valor cobrado na conta em cada bandeira. Na projeção, o tracejado é o adicional da cor esperada e a faixa vai do cenário úmido ao seco, com os valores vigentes." });
+      leg: "Valor cobrado na conta em cada bandeira. Na projeção, o tracejado é o adicional da cor esperada, com os valores vigentes." });
     abas(p11, [["rec", "24 meses + projeção"], ["todo", "Desde 2015"]], perAdic, v => { perAdic = v; LS.gravar("adic", v); adicional(p11.corpo); }, "Período");
     adicional(p11.corpo);
     const p12 = painel(g, { cod: "BAND-12", titulo: "Meses por cor e ano", unidade: "nº · R$/100 kWh", tam: "s", ajuda: "adicional", leg: "Adicional médio do ano. Clique num ano para os meses." });
@@ -948,7 +925,6 @@
       { r: "Acerto da cor em M+1", v: pct(ac.modelo[0]), d: `contra ${pct(ac.persistencia[0])} de repetir a bandeira atual`, principal: true },
       { r: "M+1 a M+3", v: pct(media(ac.modelo, 0, 3)), d: `repetir ${pct(media(ac.persistencia, 0, 3))} · ano anterior ${pct(media(ac.ano_anterior, 0, 3))}` },
       { r: "M+4 a M+6", v: pct(media(ac.modelo, 3, 6)), d: "use como cenário" },
-      { r: "Cobertura seco–úmido", v: pct(De.cobertura_li_ls), d: "das bandeiras reais entre os cenários" },
       { r: "Backtest", v: `${De.n_decks} decks`, d: `${De.n_previsoes} previsões · ${rot(De.periodo[0])} a ${rot(De.periodo[1])}` },
     ]);
     const g = Mesa.grade(area);
@@ -1018,7 +994,7 @@
       <tr><td>Patamares de carga da CCEE</td><td>Horas de cada patamar (leve, médio, pesado) em cada semana operativa</td><td>Publicados para o ano inteiro</td></tr>
       <tr><td>Curva forward da Dcide</td><td>Preço de mercado esperado para os próximos meses; usada só como comparação</td><td>Dois decks (jan e fev de 2026)</td></tr></tbody></table></div>
       <p>Na rodada atual (BAND-4): deck NEWAVE ${rot(D.deck)} (versão ${D.rodada.insumos.deck_versao}), ECMWF emissão ${dataBr(D.rodada.insumos.ecmwf_emissao)}, modelo ${D.modelo.versao}. Adicionais vigentes: amarela ${rs(D.adicional_vigente.Amarela / 10, 3)}, vermelha 1 ${rs(D.adicional_vigente["Vermelha 1"] / 10, 3)} e vermelha 2 ${rs(D.adicional_vigente["Vermelha 2"] / 10, 3)} por 100 kWh. Patamares de carga de 2027 aproximados pelos de 2026.</p>` },
-    { id: "passos", titulo: "Passo a passo da previsão", html: `<p>A previsão é feita no início de cada mês M, com o deck do NEWAVE e a rodada do ECMWF daquele mês, para os meses M+1 a M+6. Os fundamentos (BAND-6 a BAND-8) mostram ENA, GSF e PLD gatilho oficiais até o deck e projetados depois: linha cheia oficial (PMO/CCEE), âmbar o esperado, faixa do seco ao úmido.</p>
+    { id: "passos", titulo: "Passo a passo da previsão", html: `<p>A previsão é feita no início de cada mês M, com o deck do NEWAVE e a rodada do ECMWF daquele mês, para os meses M+1 a M+6. Os fundamentos (BAND-6 a BAND-8) mostram ENA, GSF e PLD gatilho oficiais até o deck e projetados depois: linha cheia oficial (PMO/CCEE), âmbar o esperado.</p>
       <h3>1. Trajetória de ENA de referência</h3><p>Para o próprio mês M, usa-se a ENA do PMO, já publicada. De M+1 em diante, a média da abordagem por precipitação do ECMWF, somando os quatro subsistemas. Essa média erra entre 8% e 13% da ENA do SIN em todos os horizontes, contra 25% a 30% da média histórica (MLT).</p>
       <h3>2. Escolha das séries do NEWAVE</h3><p>Para cada mês-alvo, comparamos a trajetória de ENA de cada uma das 2.000 séries com a referência, do mês do deck até o alvo, e ficamos com as 15 mais próximas. A trajetória importa, e não só o mês-alvo, porque o preço de um mês depende de quanta água ficou guardada nos meses anteriores.</p>
       <div class="eq">d(s) = média<sub>t = M…alvo</sub> [ (ENA<sub>s,t</sub> − ENA<sub>ref,t</sub>) / ENA<sub>ref,t</sub> ]²<br>séries escolhidas = as 15 de menor d(s), com o mesmo peso para todos os meses</div>
@@ -1027,7 +1003,9 @@
       <h3>4. PLD gatilho de cada série</h3><p>O custo marginal de cada série, por patamar e submercado, é limitado ao PLD mínimo e máximo do ano. Depois vira uma média mensal pelas horas de cada patamar e uma média do país pela carga projetada de cada submercado.</p>
       <div class="eq">PLD<sub>s</sub> = Σ<sub>sub</sub> [ Σ<sub>pat</sub> min(max(CMO<sub>s,sub,pat</sub>, PLD<sub>mín</sub>), PLD<sub>máx</sub>) × horas<sub>pat</sub> / horas<sub>mês</sub> ] × carga<sub>sub</sub> / carga<sub>total</sub></div>
       <h3>5. Cor esperada</h3><p>GSF e PLD de cada mês-alvo são a média das 15 séries escolhidas, e sempre das mesmas séries. Isso mantém a coerência física: uma série seca tem GSF baixo e preço alto ao mesmo tempo. A cor sai da regra da ANEEL aplicada a essas médias.</p>
-      <div class="eq">X<sub>médio</sub> = PLD<sub>médio</sub> × max(0, 1 − round(GSF<sub>médio</sub>, 2)) &nbsp;→&nbsp; cor esperada</div>` },
+      <div class="eq">X<sub>médio</sub> = PLD<sub>médio</sub> × max(0, 1 − round(GSF<sub>médio</sub>, 2)) &nbsp;→&nbsp; cor esperada</div>
+      <h3>Como ler a seleção das séries (BAND-5)</h3><p><b>Trajetórias:</b> o NEWAVE simula 2.000 futuros possíveis de chuva (faixa cinza, P10–P90 das 2.000 séries). Para cada mês, ficamos com as 15 cuja trajetória de ENA, do deck até o mês, mais se parece com a média do ECMWF; o tracejado é essa referência. O GSF e o preço do mês vêm dessas mesmas 15: embaixo de cada trajetória, os pontos são o GSF e o PLD de cada série e o traço é a média usada na projeção. Escalas iguais nos seis meses. O fundo da fileira do PLD mostra a bandeira que resultaria de cada preço, com o GSF médio do mês fixo; as bordas entre cores são os gatilhos de mudança de bandeira. No GSF, o tracejado marca 0,96.</p>
+      <p><b>Composição do GSF:</b> da geração hidráulica simulada ao GSF, com os fatores da CCEE, na média das 15 séries. Na régua, o ponto é o GSF esperado e o losango é o GSF oficial do mesmo mês do ano anterior; abaixo dela, a geração que falta (ou sobra) para o GSF chegar a 0,96. Cada 1.000 MWmed a mais de geração hidráulica elevam o GSF em cerca de ${n(sens, 3)}.</p>` },
     { id: "probabilidade", titulo: "Probabilidade de cada cor", html: `<p>A probabilidade (BAND-1) mede o quanto o X médio costuma errar. Supomos que o X real fica em torno do X médio, com um desvio σ igual ao desvio dos erros passados do próprio modelo. A probabilidade de cada cor é a chance de o X real cair na faixa dela.</p>
       <div class="eq">X<sub>real</sub> ~ Normal(X<sub>médio</sub>, σ) &nbsp;&nbsp; P(cor) = P(limite inferior &lt; X<sub>real</sub> ≤ limite superior)</div>
       <ul class="lista"><li><span class="tag">Só o passado</span><span>O σ usa apenas previsões cujo mês-alvo já tinha terminado na data do deck. Com menos de 8 erros disponíveis, a probabilidade não é calculada; por isso os primeiros decks de 2025 não têm probabilidade.</span></li>
@@ -1036,11 +1014,6 @@
       <li><span class="tag">Coerência</span><span>A cor mais provável é sempre a cor esperada.</span></li>
       <li><span class="tag">Gatilho</span><span>A linha “Sobe de cor se PLD &gt;” do BAND-1 é o PLD que, com o GSF esperado fixo, leva X ao limite da cor de cima: limite ÷ (1 − GSF). Também mostramos o GSF que faz o mesmo com o PLD fixo: 1 − limite ÷ PLD.</span></li></ul>
       <p>A calibração (BAND-18) compara a probabilidade dada com a frequência observada no backtest: na diagonal, perfeito.</p>` },
-    { id: "cenarios", titulo: "Cenários seco (LI) e úmido (LS)", html: `<p>Os 51 membros do ECMWF são recentrados na média por precipitação: cada membro é multiplicado pela razão entre essa média e a média dos membros, por subsistema e mês. Assim eles mantêm a dispersão, mas em torno do centro mais preciso. Nessa forma, 82% das ENAs realizadas caíram entre o P10 e o P90 dos membros.</p>
-      <div class="eq">LI (seco) = P10 da ENA do SIN dos membros, mês a mês<br>LS (úmido) = P90 da ENA do SIN dos membros, mês a mês<br>cada cenário repete os passos 2 a 5 com essa trajetória</div>
-      <p>Testamos outras duas formas de faixa: o X de cada membro e o X médio ± 1,28σ. Elas ficaram estreitas demais de M+4 em diante (só 45% a 50% do X real dentro da faixa de 80%). A forma acima manteve 75%.</p>
-      <h3>Como ler a seleção de cenários (BAND-5)</h3><p><b>Trajetórias:</b> o NEWAVE simula 2.000 futuros possíveis de chuva (faixa cinza, P10–P90). Para cada mês, ficamos com os 15 cuja trajetória de ENA, do deck até o mês, mais se parece com a do ECMWF (média no esperado, P10 dos membros no seco, P90 no úmido); o tracejado é a referência. O GSF e o preço do mês vêm desses mesmos 15: embaixo de cada trajetória, os pontos são o GSF e o PLD de cada série e o traço é a média usada na projeção. Escalas iguais nos seis meses. O fundo da fileira do PLD mostra a bandeira que resultaria de cada preço, com o GSF médio do mês fixo; as bordas entre cores são os gatilhos de mudança de bandeira. No GSF, o tracejado marca 0,96.</p>
-      <p><b>Composição do GSF:</b> da geração hidráulica simulada ao GSF, com os fatores da CCEE. Média das 15 séries do cenário escolhido; ANDE, perdas, PCH e garantia física são as mesmas nos três cenários. Na régua, o ponto contornado é o cenário selecionado e o losango é o GSF oficial do mesmo mês do ano anterior; abaixo dela, a geração que falta (ou sobra) para o GSF chegar a 0,96. Cada 1.000 MWmed a mais de geração hidráulica elevam o GSF em cerca de ${n(sens, 3)}.</p>` },
     { id: "historico", titulo: "Rodadas e histórico", html: `<p>Cada rodada de projeção é publicada sempre que um insumo muda (deck do NEWAVE ou emissão do ECMWF), podendo haver várias no mesmo mês. No BAND-9, cada linha é uma rodada, com a cor do cenário esperado e a probabilidade dela; lendo cada coluna de baixo para cima, vê-se como a projeção do mês mudou.</p>
       <ul class="lista"><li><span class="tag">▲ ▼</span><span>Cor mais cara ou mais barata que na rodada anterior exibida (no GSF e no PLD, mudança de pelo menos 0,02 ou R$&nbsp;10).</span></li>
       <li><span class="tag">✗</span><span>Cor diferente da oficial.</span></li>
@@ -1057,7 +1030,6 @@
       <li><span class="tag">Comparações</span><span>Repetir a bandeira atual (persistência) e repetir a do mesmo mês do ano anterior.</span></li></ul>
       <div class="rolagem"><table><thead><tr><th>Rótulo</th><th>Significado</th><th>Exemplo</th></tr></thead><tbody>
       <tr><td>Fora da amostra</td><td>Previsão feita só com o que existia na data</td><td>Acerto do esperado: 72% em M+1–3, 42% em M+4–6</td></tr>
-      <tr><td>Dentro da amostra</td><td>Escolha feita e avaliada no mesmo período</td><td>Comparação entre as três formas de faixa LI/LS</td></tr>
       <tr><td>Oráculo</td><td>Usa um dado do futuro para medir um limite</td><td>ENA real no lugar do ECMWF: 70% e 75%</td></tr></tbody></table></div>` },
     { id: "relato", titulo: "Cálculo a partir do relato do DECOMP", html: `<p>Quando o relato do DECOMP já existe (por exemplo, nas execuções do mês seguinte), a bandeira pode ser calculada direto, sem o NEWAVE. A tela REL faz a conta no próprio navegador: os arquivos não são enviados a nenhum servidor.</p>
       <ul class="lista"><li><span class="tag">PLD gatilho</span><span>Do relato do DECOMP da CCEE: custo marginal por semana, patamar e submercado, limitado ao PLD mínimo e máximo, média do mês pelas horas de cada patamar e ponderação dos quatro submercados pela carga. Nunca o CMO do relato do ONS.</span></li>
@@ -1076,7 +1048,7 @@
       <tr><td class="num">D030</td><td>Centro = média por precipitação do ECMWF; incerteza = 51 membros recentrados</td><td>Menor erro em todos os horizontes; faixa calibrada</td><td><span class="status teste">Em teste</span></td></tr>
       <tr><td class="num">D031</td><td>Deck do mês M com a rodada do ECMWF do mês M</td><td>Viável na operação (rodada sai por volta do dia 5)</td><td><span class="status ok">Decidido</span></td></tr>
       <tr><td class="num">—</td><td>σ separado para M+1–3 e M+4–6</td><td>Brier de 0,54 para 0,52</td><td><span class="status teste">Em teste</span></td></tr>
-      <tr><td class="num">—</td><td>LI e LS pelo P10 e P90 mensal da ENA dos membros</td><td>Única forma que manteve a cobertura em M+4–6</td><td><span class="status teste">Em teste</span></td></tr></tbody></table></div>` },
+</tbody></table></div>` },
     { id: "limites", titulo: "Limitações conhecidas", html: `<ul class="lista"><li><span class="tag">Preço</span><span>É o elo fraco. De M+4 a M+6, trocar o PLD previsto pelo real leva o acerto de 42% para 86%; trocar o GSF, só para 49%.</span></li>
       <li><span class="tag">Fora do deck</span><span>Em alguns meses o preço real ficou acima de tudo o que o deck simulava (março de 2025 e março de 2026). Nenhuma escolha de hidrologia corrige isso.</span></li>
       <li><span class="tag">Hidrologia longa</span><span>O ECMWF pode errar várias vezes para o mesmo lado, como no segundo semestre de 2026 (previsto seco, foi úmido).</span></li>
@@ -1099,7 +1071,7 @@
   // ================================================================================================
   function sinal() {
     const p = PROX, s2 = segundo(p.prob);
-    return { v: `${rot(p.alvo)} ${p.cor_esp} ${pct(p.prob[p.cor_esp])}`, d: `${AB[s2]} ${pct(p.prob[s2])} · seco ${AB[p.cor_li]} · úmido ${AB[p.cor_ls]}`, tom: "neutro" };
+    return { v: `${rot(p.alvo)} ${p.cor_esp} ${pct(p.prob[p.cor_esp])}`, d: `${AB[s2]} ${pct(p.prob[s2])}`, tom: "neutro" };
   }
   function resumo(el) {
     const p = PROX, s2 = segundo(p.prob), primVerde = fut.find(q => q.cor_esp === "Verde");
@@ -1124,7 +1096,7 @@
         L.push({ quando, tela: 4, nivel: t !== p.cor_esp ? "alto" : "normal", texto: `Relato ${rot(u.mes)}: ${t} em ${Math.round(u.prob[t] * u.ok.length)} de ${u.ok.length} execuções; o modelo dá ${p.cor_esp} ${pct(p.prob[p.cor_esp])}` });
       }
     } catch (e) { /* relato inválido não derruba os alertas */ }
-    if (p.prob[s2] >= 0.2 || p.cor_li !== p.cor_esp) L.push({ quando, tela: 1, nivel: p.cor_li !== p.cor_esp ? "alto" : "normal", texto: `${rot(p.alvo)}: ${p.cor_esp} ${pct(p.prob[p.cor_esp])}, ${s2} ${pct(p.prob[s2])}; no seco, ${p.cor_li}${gt.acima && isFinite(gt.acima.pld) ? ` · vira com PLD > ${rs(gt.acima.pld, 0)}` : ""}` });
+    if (p.prob[s2] >= 0.2) L.push({ quando, tela: 1, nivel: p.prob[s2] >= 0.3 ? "alto" : "normal", texto: `${rot(p.alvo)}: ${p.cor_esp} ${pct(p.prob[p.cor_esp])}, ${s2} ${pct(p.prob[s2])}${gt.acima && isFinite(gt.acima.pld) ? ` · vira com PLD > ${rs(gt.acima.pld, 0)}` : ""}` });
     if (RANT) {
       const ds = P.map(q => ({ q, a: daRodada(RANT, q.alvo), b: daRodada(RATUAL, q.alvo) })).filter(x => x.a && x.b && probDe(x.a.prob) && probDe(x.b.prob));
       const mud = ds.filter(x => x.a.esp !== x.b.esp);
