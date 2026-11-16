@@ -88,7 +88,7 @@
       { id: "sen-carga", tipo: "sen", nome: "Carga +3%", f: [1.04, 1.05, 1.05, 1.06, 1.05, 1.05], k: 0.95, prem: "Esperado com carga do SIN 3% acima do PMO de novembro." },
     ];
     return BASE.map(b => ({
-      id: b.id, data: b.data, autor: "Research", nota: b.nota, origem: "exemplo", meses: MESES.slice(),
+      id: b.id, horizonte: "LP", data: b.data, autor: "Research", nota: b.nota, origem: "exemplo", meses: MESES.slice(),
       cen: CEN.filter(c => b.carga || c.id !== "sen-carga").map(c => {
         const se = b.se.map((x, i) => x * c.f[i]);
         return { id: c.id, tipo: c.tipo, nome: c.nome, prem: c.prem, v: {
@@ -101,8 +101,26 @@
   const versaoValida = v => v && typeof v.id === "string" && typeof v.data === "string" && Array.isArray(v.cen) && v.cen.length &&
     v.cen.every(c => c && TIPOS[c.tipo] && c.v && SUBS.every(s => Array.isArray(c.v[s.k]) && c.v[s.k].length === MESES.length));
   let VERS = [];
-  function carregar() { VERS = EXEMPLO.concat((LS.json("versoes", []) || []).filter(versaoValida)); }
+  // horizonte de cada versão: "LP" (longo prazo, hoje o único). Fica pronto para um futuro "CP" (curto prazo, por
+  // revisão do DECOMP): o seletor LP/CP só aparece quando houver versões de mais de um horizonte.
+  const HORIZ_NOME = { LP: "longo prazo", CP: "curto prazo" };
+  let TODAS = [], HORIZ = ["LP"], HOR = "LP";
+  function carregar() {
+    TODAS = EXEMPLO.concat((LS.json("versoes", []) || []).filter(versaoValida)).map(v => ({ ...v, horizonte: v.horizonte || "LP" }));
+    HORIZ = [...new Set(TODAS.map(v => v.horizonte))].sort();
+    const pref = LS.ler("horizonte", "LP");
+    HOR = HORIZ.includes(pref) ? pref : HORIZ.includes("LP") ? "LP" : HORIZ[0];
+    VERS = TODAS.filter(v => v.horizonte === HOR);
+  }
   carregar();
+  /** seletor LP/CP no topo da tela, só com mais de um horizonte */
+  function seletorHorizonte(area, refazer) {
+    if (HORIZ.length < 2) return;
+    const b = h("div", "res-barra res-hor", '<span class="res-r">Horizonte</span>');
+    const g = h("div", "abas"); g.setAttribute("role", "group"); g.setAttribute("aria-label", "Horizonte");
+    HORIZ.forEach(k => { const x = h("button", null, `${k} · ${HORIZ_NOME[k] || k}`); x.type = "button"; x.setAttribute("aria-pressed", String(k === HOR)); x.addEventListener("click", () => { LS.gravar("horizonte", k); RASC = null; carregar(); Mesa.atualizarSinal(); refazer(); }); g.append(x); });
+    b.append(g); area.append(b);
+  }
   const VIG = () => VERS[VERS.length - 1];
   const antDe = v => { const i = VERS.indexOf(v); return i > 0 ? VERS[i - 1] : null; };
   const verPorId = id => VERS.find(v => v.id === id);
@@ -129,7 +147,8 @@
   }
   const vDe = (c, sub, i) => (c ? num(c.v[sub][i]) : null);
   const delta = (c, ant, sub, i) => { const a = vDe(par(c, ant), sub, i), b = vDe(c, sub, i); return a == null || b == null ? null : r2(b - a); };
-  const rotVer = v => `${dataBr(v.data)} · ${v.autor || "—"}`;
+  const rotVer = v => `${v.horizonte || "LP"} ${dataBr(v.data)} · ${v.autor || "—"}`;
+  const verLP = v => `Versão ${v.horizonte || "LP"} ${dataBr(v.data)}`;
 
   /** o que mudou de A para B: maior revisão do esperado, cenários novos e removidos */
   function mudancas(A, B) {
@@ -218,7 +237,7 @@
     const R = rascunho(), val = validar(R.cen);
     if (val.erros) return { ok: false, msg: `Corrija ${val.erros} ${val.erros === 1 ? "célula" : "células"} que não ${val.erros === 1 ? "é número" : "são números"} antes de salvar.` };
     const cen = clone(R.cen).map(c => ({ ...c, nome: (c.nome || "").trim() || nomeDe(c), prem: (c.prem || "").trim() }));
-    const nova = { id: "u" + Date.now(), data: agora(), autor: (autor || "").trim() || "Research", nota: (nota || "").trim(), origem: "navegador", meses: MESES.slice(), cen };
+    const nova = { id: "u" + Date.now(), horizonte: HOR, data: agora(), autor: (autor || "").trim() || "Research", nota: (nota || "").trim(), origem: "navegador", meses: MESES.slice(), cen };
     if (!nova.nota) nova.nota = "Sem nota. " + mudancas(VIG(), nova).txt.replace(/^./, c => c.toUpperCase()) + ".";
     const salvas = (LS.json("versoes", []) || []).filter(versaoValida);
     salvas.push(nova);
@@ -332,6 +351,7 @@
       ];
     };
     const refazerDec = () => { const t = h("div"); const novo = Mesa.decisao(t, itensDec()); if (decEl) decEl.replaceWith(novo); else if (novo.childElementCount) area.prepend(novo); decEl = novo; };
+    seletorHorizonte(area, () => { area.replaceChildren(); telaCAD(area); });
     refazerDec();
     const g = Mesa.grade(area);
 
@@ -545,7 +565,8 @@
       { r: `Maior sensibilidade ${rot(MESES[0])}`, v: maiorSen ? srs(maiorSen.d, 0) : "—", d: maiorSen ? `${esc(nomeDe(maiorSen.c))} contra o esperado` : "sem sensibilidades" },
     ];
     if (sub === "SE" && TEM_REF && refSE[0] != null && e0 != null) dec.push({ r: `Esperado − deck ${rot(MESES[0])}`, v: srs(e0 - refSE[0], 0), d: `${REF_NOME} ${rs(refSE[0], 0)}` });
-    else dec.push({ r: "Versão", v: dataBr(V.data), d: `${esc(V.autor)} · ${V.cen.length} cenários` });
+    else dec.push({ r: "Versão", v: `${V.horizonte} ${dataBr(V.data)}`, d: `${esc(V.autor)} · ${V.cen.length} cenários` });
+    seletorHorizonte(area, redesenhar);
     Mesa.decisao(area, dec);
     const g = Mesa.grade(area);
 
@@ -599,8 +620,9 @@
   function telaVER(area) {
     const V = VIG(), ant = antDe(V), mud = mudancas(ant, V);
     let A = verPorId(LS.ler("verA", "")) || ant || V, B = verPorId(LS.ler("verB", "")) || V, sub = subPref("subVer");
+    seletorHorizonte(area, () => { area.replaceChildren(); telaVER(area); });
     Mesa.decisao(area, [
-      { r: "Versão vigente", v: dataBr(V.data), d: `${esc(V.autor)} · ${V.cen.length} cenários${V.origem === "navegador" ? " · salva neste navegador" : " · exemplo"}`, principal: true },
+      { r: "Versão vigente", v: `${V.horizonte} ${dataBr(V.data)}`, d: `${esc(V.autor)} · ${V.cen.length} cenários${V.origem === "navegador" ? " · salva neste navegador" : " · exemplo"}`, principal: true },
       { r: "Maior revisão do esperado", v: mud.maior ? `${SUBN[mud.maior.sub]} ${rot(MESES[mud.maior.i])} ${sn(mud.maior.d, 0)}` : "—", d: mud.maior && ant ? `R$ ${n(mud.maior.de, 0)} → ${n(mud.maior.para, 0)} contra ${dataBr(ant.data)}` : "primeira versão", tom: mud.maior ? tom(mud.maior.d) : "" },
       { r: "Versões", v: String(VERS.length), d: `desde ${dataBr(VERS[0].data)} · semanais` },
     ]);
@@ -609,12 +631,12 @@
     const p1 = painel(g, { cod: "RES-9", titulo: "Versões publicadas", tam: "l", ajuda: "versoes",
       leg: "Clique numa versão para compará-la com a anterior e ver os detalhes no inspetor.", fonte: `${FICT} ${SERVIDOR}` });
     const lista = QC.tabela(p1.corpo, [{ t: "Data" }, { t: "Autor" }, { t: "Cen.", n: true }, { t: "O que mudou" }],
-      VERS.slice().reverse().map(v => [`<span class="num">${dataHoraBr(v.data)}</span>${v === V ? ' <b class="res-tag">vigente</b>' : ""}${v.origem === "navegador" ? ' <b class="res-tag res-tag-nav">navegador</b>' : ""}`,
+      VERS.slice().reverse().map(v => [`<span class="num">${dataHoraBr(v.data)}</span><b class="res-tag res-tag-hor">${v.horizonte}</b>${v === V ? ' <b class="res-tag">vigente</b>' : ""}${v.origem === "navegador" ? ' <b class="res-tag res-tag-nav">navegador</b>' : ""}`,
         esc(v.autor), String(v.cen.length), `${esc(v.nota)}<br><span class="res-r">${esc(mudancas(antDe(v), v).txt)}</span>`]), "densa res-tab-ver");
     lista.querySelectorAll("tbody tr").forEach((tr, k) => {
       const v = VERS[VERS.length - 1 - k];
       if (v === B) tr.classList.add("res-tr-sel");
-      Mesa.alvo(tr, `Versão ${dataBr(v.data)}`, el => {
+      Mesa.alvo(tr, verLP(v), el => {
         B = v; A = antDe(v) || v; LS.gravar("verA", A.id); LS.gravar("verB", B.id);
         lista.querySelectorAll("tbody tr").forEach(x => x.classList.toggle("res-tr-sel", x === tr));
         desenharDif(); detalheVersao(el, v);
@@ -681,8 +703,10 @@
     { id: "resumo", titulo: "Em uma tela", html: `<p>A RES guarda os cenários de PLD que o time de research da mesa monta toda semana: o PLD médio mensal, em R$/MWh, de cada submercado (SE/CO, S, NE e N) nos próximos seis meses (M+1 a M+6, hoje ${rot(MESES[0])} a ${rot(MESES[5])}). Cada publicação é uma <b>versão</b>, com data, autor e uma nota do que mudou; a última é a vigente, que alimenta o sinal, o resumo da MESA e os alertas.</p>
       <p>A RES não calcula bandeira nem roda modelo: guarda e compara o que o research cadastrou. A única referência externa é o PLD do deck que a BAND usa, no SE/CO.</p>
       <p class="leg">${FICT} Premissas do laboratório ainda não confirmadas com o research: PLD médio mensal por submercado, horizonte de M+1 a M+6, cadastro feito pelo próprio research.</p>` },
+    { id: "horizonte", titulo: "LP e, depois, CP", html: `<p><b>LP</b> quer dizer <b>longo prazo</b>: os cenários que o research monta para os próximos meses (hoje M+1 a M+6, ${rot(MESES[0])} a ${rot(MESES[5])}), com PLD médio mensal por submercado. Toda versão tem o horizonte gravado (as do exemplo e as salvas aqui são LP; versões salvas antes sem esse campo contam como LP), e o sinal, a fita e o resumo da MESA levam o prefixo “LP”.</p>
+      <p><b>CP</b> (curto prazo, cenários por revisão do DECOMP) poderá entrar depois, com as próprias versões. Quando houver versões de mais de um horizonte, um seletor LP/CP aparece no topo das telas CAD, CMP e VER; com só LP, como hoje, ele fica escondido.</p>` },
     { id: "tipos", titulo: "Tipos de cenário", html: `<ul>
-      <li><b>Esperado</b>: o cenário central do research, o mais provável. É o que aparece no sinal (“Esp. SE ${rot(MESES[0])}”) e em destaque nos gráficos. Deve haver um só.</li>
+      <li><b>Esperado</b>: o cenário central do research, o mais provável. É o que aparece no sinal (“LP Esp. SE ${rot(MESES[0])}”) e em destaque nos gráficos. Deve haver um só.</li>
       <li><b>Superior</b> e <b>Inferior</b>: os limites de cima e de baixo que o research considera plausíveis (ex.: seco e úmido). Formam a faixa clara do leque. Espera-se inferior ≤ esperado ≤ superior em todo mês e submercado; quando não acontece, a tela avisa, sem impedir.</li>
       <li><b>Sensibilidade</b>: o esperado com uma premissa trocada, para medir o efeito dela (ex.: “Seca no SE −10% ENA”, “Carga +3%”). Pode haver quantas forem precisas; aparecem tracejadas e, nas tabelas estreitas, como S1, S2…</li></ul>
       <p>As <b>premissas</b> (painel RES-3) são texto curto por cenário: ENA, carga, deck, térmicas. Valem para os quatro submercados.</p>` },
@@ -718,13 +742,13 @@
   // ================================================================================================
   function sinal() {
     const V = VIG(), ant = antDe(V), E = espDe(V), x = vDe(E, "SE", 0), d = delta(E, ant, "SE", 0), Su = doTipo(V, "sup"), In = doTipo(V, "inf");
-    return { v: `Esp. SE ${rot(MESES[0])} ${rs(x, 0)}`, d: `${ant ? `${dTxt(d, 0)} vs ${dataBr(ant.data).slice(0, 5)}` : "primeira versão"}${Su && In ? ` · faixa ${n(vDe(In, "SE", 0))}–${n(vDe(Su, "SE", 0))}` : ""}`, tom: "neutro", dnum: d == null ? undefined : d };
+    return { v: `${HOR} Esp. SE ${rot(MESES[0])} ${rs(x, 0)}`, d: `${ant ? `${dTxt(d, 0)} vs ${dataBr(ant.data).slice(0, 5)}` : "primeira versão"}${Su && In ? ` · faixa ${n(vDe(In, "SE", 0))}–${n(vDe(Su, "SE", 0))}` : ""}`, tom: "neutro", dnum: d == null ? undefined : d };
   }
   function fita() {
     const V = VIG(), ant = antDe(V), E = espDe(V), Su = doTipo(V, "sup"), In = doTipo(V, "inf"), L = [];
     const ne = vDe(E, "NE", 0), dne = delta(E, ant, "NE", 0);
-    if (ne != null) L.push({ r: `RES Esp. NE ${rot(MESES[0])}`, v: n(ne, 0), d: dne == null ? undefined : dne });
-    if (Su && In) L.push({ r: `RES faixa SE ${rot(MESES[0])}`, v: `${n(vDe(In, "SE", 0))}–${n(vDe(Su, "SE", 0))}` });
+    if (ne != null) L.push({ r: `RES ${HOR} Esp. NE ${rot(MESES[0])}`, v: n(ne, 0), d: dne == null ? undefined : dne });
+    if (Su && In) L.push({ r: `RES ${HOR} faixa SE ${rot(MESES[0])}`, v: `${n(vDe(In, "SE", 0))}–${n(vDe(Su, "SE", 0))}` });
     return L;
   }
   function resumo(el) {
@@ -733,7 +757,7 @@
     const desenhar = () => {
       box.replaceChildren();
       const V = VIG(), ant = antDe(V), E = espDe(V), cs = ordenar(V.cen);
-      const topo = h("div", "res-rtopo", `<span>Versão <b>${dataBr(V.data)}</b> · ${esc(V.autor)}${ant ? ` · ▲▼ vs ${dataBr(ant.data).slice(0, 5)}` : ""}</span>`);
+      const topo = h("div", "res-rtopo", `<span>Versão <b>${V.horizonte} ${dataBr(V.data)}</b> · ${esc(V.autor)}${ant ? ` · ▲▼ vs ${dataBr(ant.data).slice(0, 5)}` : ""}</span>`);
       const ab = h("div", "abas res-abas-mini"); ab.setAttribute("role", "group"); ab.setAttribute("aria-label", "Submercado");
       SUBS.forEach(s => { const b = h("button", null, s.k === "SE" ? "SE" : s.nome); b.type = "button"; b.title = s.nome; b.setAttribute("aria-pressed", String(s.k === sub)); b.addEventListener("click", () => { sub = s.k; LS.gravar("subRes", sub); desenhar(); }); ab.append(b); });
       topo.append(ab); box.append(topo);
@@ -757,11 +781,11 @@
   function alertas() {
     const V = VIG(), ant = antDe(V), L = [], quando = V.data.slice(0, 16);
     const hoje = quando.slice(0, 10) === agora().slice(0, 10);
-    L.push({ quando, tela: 3, nivel: hoje ? "alto" : "normal", texto: `${hoje ? "Nova versão publicada hoje" : `Versão de ${dataBr(V.data)} vigente`} (${esc(V.autor)}): ${V.cen.length} cenários · ${esc(mudancas(ant, V).txt)}` });
+    L.push({ quando, tela: 3, nivel: hoje ? "alto" : "normal", texto: `${hoje ? `Nova versão ${V.horizonte} publicada hoje` : `${verLP(V)} vigente`} (${esc(V.autor)}): ${V.cen.length} cenários · ${esc(mudancas(ant, V).txt)}` });
     const inc = foraDeOrdem(V);
     if (inc.length) L.push({ quando, tela: 1, nivel: "alto", texto: `${inc[0]}${inc.length > 1 ? ` e mais ${inc.length - 1}` : ""}: confira com o research` });
     const m = mudancas(ant, V).maior;
-    if (ant && m && Math.abs(m.d) >= 3) L.push({ quando, tela: 2, nivel: Math.abs(m.d) >= 15 ? "alto" : "normal", texto: `Maior revisão do esperado: ${SUBN[m.sub]} ${rot(MESES[m.i])} ${sn(m.d, 0)} (R$ ${n(m.de, 0)} → ${n(m.para, 0)})` });
+    if (ant && m && Math.abs(m.d) >= 3) L.push({ quando, tela: 2, nivel: Math.abs(m.d) >= 15 ? "alto" : "normal", texto: `Maior revisão do esperado ${V.horizonte}: ${SUBN[m.sub]} ${rot(MESES[m.i])} ${sn(m.d, 0)} (R$ ${n(m.de, 0)} → ${n(m.para, 0)})` });
     else if (TEM_REF) {
       const E = espDe(V), i = refSE.findIndex(v => v != null), e = vDe(E, "SE", i);
       if (i >= 0 && e != null) L.push({ quando, tela: 2, nivel: "normal", texto: `Esperado SE/CO ${rot(MESES[i])} ${srs(e - refSE[i], 0)} contra o PLD do deck da BAND (${rs(refSE[i], 0)})` });
@@ -773,7 +797,7 @@
   // registro
   // ================================================================================================
   Mesa.registrar({
-    cod: "RES", decisao: false, mesa: { ordem: 2 }, nome: "Cenários do research", desc: "PLD médio mensal de M+1 a M+6 por submercado, nos cenários do research",
+    cod: "RES", decisao: false, mesa: { ordem: 2 }, nome: "Cenários do research LP", desc: "PLD médio mensal de M+1 a M+6 por submercado, nos cenários de longo prazo do research",
     sinal, fita, resumo, alertas,
     telas: [
       { cod: "CAD", nome: "Cadastro", montar: telaCAD },

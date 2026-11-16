@@ -134,3 +134,7 @@ tr.res-ref-l td { color: var(--ink-3); font-style: normal; }
 tr.res-ref-l td:first-child { font-size: 0.66rem; }
 .res-rlin { font: 0.7rem/1.45 var(--f-data); color: var(--ink-3); margin: 0; }
 .res-rlin b { color: var(--ink-2); font-weight: 600; }
+
+/* horizonte (LP hoje; seletor LP/CP só com mais de um horizonte) */
+.res-hor { background: var(--surface); padding: 4px 8px; border: 1px solid var(--rule); }
+.res-tag-hor { background: none; color: var(--t-ambar); border: 1px solid var(--t-ambar); margin-right: 4px; }
