@@ -773,7 +773,7 @@
   // registro
   // ================================================================================================
   Mesa.registrar({
-    cod: "RES", decisao: false, mesa: { ordem: 3 }, nome: "Cenários do research", desc: "PLD médio mensal de M+1 a M+6 por submercado, nos cenários do research",
+    cod: "RES", decisao: false, mesa: { ordem: 2 }, nome: "Cenários do research", desc: "PLD médio mensal de M+1 a M+6 por submercado, nos cenários do research",
     sinal, fita, resumo, alertas,
     telas: [
       { cod: "CAD", nome: "Cadastro", montar: telaCAD },

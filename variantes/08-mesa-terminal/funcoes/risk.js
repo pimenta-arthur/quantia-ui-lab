@@ -1535,7 +1535,7 @@
 
   Mesa.registrar({
     cod: "RISK", nome: "Risk Lab DESSEM", desc: "PLD horário do DESSEM contra o DECOMP e simulador do PLD médio do mês",
-    sinal, resumo, alertas, fita, mesa: { ordem: 2 },
+    sinal, resumo, alertas, fita, mesa: { ordem: 5 },
     telas: [
       { cod: "MON", nome: "Monitor", montar: area => telaMON(area) },
       { cod: "SIM", nome: "Simulador", montar: area => telaSIM(area) },

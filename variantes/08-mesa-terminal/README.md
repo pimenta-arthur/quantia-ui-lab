@@ -47,8 +47,8 @@ Depois que o app estiver no padrão terminal por páginas (a 07, via `migracao-t
 esta mesa segue `migracao-terminal/PROMPTS-08.md`.
 
 ## MESA (visão geral)
-Uma tela, sem rolar: na primeira linha, o candle do SE M+1 ao vivo (MKT, 2/3 da largura) e o PLD diário com o máximo
-da ponta (RISK); na segunda, os cenários do research (RES), a probabilidade de bandeira por mês (BAND) e a ENA de M+1
-(HYD); os alertas de todas as funções à direita. O Pricing (NEN) fica fora da MESA (tecla 3). Cada função escolhe o
+Uma tela, sem rolar: na primeira linha, o candle do SE M+1 ao vivo (MKT, 2/3 da largura) e os cenários do research
+(RES); na segunda, a probabilidade de bandeira por mês (BAND), a ENA de M+1 (HYD) e o PLD diário com o máximo da ponta
+(RISK); os alertas de todas as funções à direita. O Pricing (NEN) fica fora da MESA (tecla 3). Cada função escolhe o
 seu lugar com `mesa: { ordem, tam }` (ou `mesa: false`). MKT e RES usam dados fictícios: a BBCE e o cadastro do
 research ainda não existem.

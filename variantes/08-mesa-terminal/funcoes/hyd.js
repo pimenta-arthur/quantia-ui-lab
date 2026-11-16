@@ -1383,7 +1383,7 @@
   // registro na Mesa: sinal, resumo, alertas e telas
   // =====================================================================================================
   Mesa.registrar({
-    cod: "HYD", mesa: { ordem: 6 }, decisao: false, nome: "Hydro Inflow Similarity", desc: "ENA por subsistema e anos similares de ENSO",
+    cod: "HYD", mesa: { ordem: 4 }, decisao: false, nome: "Hydro Inflow Similarity", desc: "ENA por subsistema e anos similares de ENSO",
     sinal: () => {
       const p = pM("SE", M1), d = dM1("SE");
       return { v: `SE ${MES[+M1.slice(5, 7) - 1]} ${n(p.media)}% · ${I.regime_enso.replace(/ (forte|moderad[oa]|frac[oa])$/, "")}`, d: `${d != null ? `${seta(d)} ${sn(d)} p.p. vs. rodada ${rot(R.emissao)} · ` : ""}Niño 3.4 ${n(N3, 2)} (${I.regime_enso.split(" ").pop()})`, tom: "neutro", dnum: d == null ? undefined : Math.round(d * 10) / 10 };
