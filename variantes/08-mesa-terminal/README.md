@@ -52,3 +52,9 @@ Uma tela, sem rolar: na primeira linha, o candle do SE M+1 ao vivo (MKT, 2/3 da 
 (RISK); os alertas de todas as funções à direita. O Pricing (NEN) fica fora da MESA (tecla 3). Cada função escolhe o
 seu lugar com `mesa: { ordem, tam }` (ou `mesa: false`). MKT e RES usam dados fictícios: a BBCE e o cadastro do
 research ainda não existem.
+
+## Próximos passos combinados
+- **HYD · tela própria de chuva em tempo real** (aprovada, aguardando a base de chuva verificada): lista ou mapa das
+  bacias, acumulado do dia e de 7 dias contra o previsto, efeito esperado na ENA. Na MESA fica só o resumo atual
+  (barra observada, traço do ECMWF e marca de ritmo). A decidir: lista de bacias, perfil típico do dia (climatologia
+  horária) e previsão de referência (ECMWF 00z, rodada mais recente, outros modelos).

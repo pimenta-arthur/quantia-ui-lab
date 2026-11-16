@@ -171,6 +171,6 @@ html[data-func="BAND"] #band-p4 dl.premissas dd { overflow-wrap: anywhere; }
 /* metodologia: caminhos de código longos quebram em tela estreita */
 html[data-func="BAND"] .m-met code { overflow-wrap: anywhere; }
 
-/* MESA: a coluna da cor mais provável fica estreita (sigla com a cor, em vez do nome por extenso) */
+/* MESA: a coluna da cor mais provável fica estreita (sigla em texto, sem fundo, em vez do nome por extenso) */
 #p-BAND .prob-top { min-width: 0; }
-#p-BAND .prob-top .band { display: inline-block; min-width: 2.2em; text-align: center; font-weight: 600; }
+#p-BAND .prob-top .band-sigla { display: inline-block; min-width: 2.2em; text-align: center; font-weight: 600; color: var(--ink); }

@@ -1085,9 +1085,9 @@
     const ORD = ["Verde", "Amarela", "Vermelha 1", "Vermelha 2"];
     const probs = P.map(p => p.anunciada ? ORD.map(c => (c === p.anunciada ? 1 : 0)) : ORD.map(c => p.prob[c] || 0));
     const box = QC.probBandeiras(el, P.map(p => p.alvo), probs, { oficiais: P.filter(p => p.anunciada).length, maisProvavel: true });
-    // a mais provável vira sigla com a cor da bandeira (Vd, Am, V1, V2): a barra já mostra a distribuição
+    // a mais provável vira sigla em texto simples (Vd, Am, V1, V2): a barra já mostra a distribuição
     const SIGLA = { "Verde": ["Vd", "vd"], "Amarela": ["Am", "am"], "Vermelha P1": ["V1", "v1"], "Vermelha P2": ["V2", "v2"] };
-    box.querySelectorAll(".prob-top").forEach(t => { const sg = SIGLA[t.textContent.trim()]; if (sg) { t.title = t.textContent.trim(); t.innerHTML = `<span class="band band-${sg[1]}">${sg[0]}</span>`; } });
+    box.querySelectorAll(".prob-top").forEach(t => { const sg = SIGLA[t.textContent.trim()]; if (sg) { t.title = t.textContent.trim(); t.innerHTML = `<span class="band-sigla">${sg[0]}</span>`; } });
     box.querySelectorAll(".prob-l").forEach((linha, i) => { const p = P[i]; Mesa.alvo(linha, `${rot(p.alvo)} · M+${p.h}`, inspMes(p)); });
   }
   function alertas() {
