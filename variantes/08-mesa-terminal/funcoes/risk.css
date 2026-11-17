@@ -72,7 +72,13 @@ table.risk-mat td.ok { background: color-mix(in srgb, var(--accent) 18%, var(--s
 .risk-duas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 6px 18px; }
 .risk-tres { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 6px 14px; }
 .risk-sem { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 2px; }
+.risk-mult-c { container-type: inline-size; }
+.risk-mult { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
+@container (max-width: 1180px) { .risk-mult { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container (max-width: 560px) { .risk-mult { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .risk-mult .mini { cursor: pointer; padding: 4px 6px; }
+.risk-mult .mini .ttl { font-size: 0.74rem; }
+.risk-p13 .painel-cab { flex-wrap: wrap; }
 .risk-calor { min-width: 600px; }
 
 /* dias do perfil dia a dia */
@@ -168,8 +174,6 @@ html[data-func="RISK"] .m-insp-corpo dl.estat dd { overflow-wrap: anywhere; }
 .risk-cinza { color: var(--ink-3); font-weight: 400; font-size: 0.9em; }
 .risk-alta.risk-alta-b { max-height: 176px; }
 .risk-chips button { padding: 2px 6px; font-size: 0.8rem; }
-@media (min-width: 1400px) { html[data-func="RISK"] .risk-mult { grid-template-columns: repeat(12, minmax(0, 1fr)); } }
-.risk-mult .mini .ttl { font-size: 0.7rem; }
 .risk-ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; padding-inline: 10px; }
 .risk-ctl-mesa { padding-inline: 0; }
 .risk-ctl-mesa .abas button { padding: 1px 6px; }
