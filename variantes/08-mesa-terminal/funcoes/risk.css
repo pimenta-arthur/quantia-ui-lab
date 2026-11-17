@@ -219,3 +219,7 @@ table.risk-ph tr.risk-ph-dia td { border-top: 2px solid var(--t-ambar); }
 table.risk-ph .risk-ph-d { color: var(--t-ambar); }
 table.risk-ph .risk-ph-oculta { visibility: hidden; }
 .legenda-mini.risk-leg-peq { font-size: 0.6rem; color: var(--ink-3); }
+/* RISK-2 com as pontas: 8 colunas num terço da largura */
+table.risk-rev { font-size: 0.7rem; }
+table.risk-rev th, table.risk-rev td { padding: 3px 4px; }
+table.risk-rev th { letter-spacing: 0.02em; cursor: help; }

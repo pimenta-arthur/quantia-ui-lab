@@ -180,6 +180,12 @@
       g.emCurso = g.fim > ult; g.nome = g.rv == null ? "RV ?" : `RV${g.rv}`; });
     return (_grupos[sub] = gs);
   }
+  // preço médio da ponta (18h–21h) de uma semana por tipo de dia: útil ou sábado/domingo/feriado; só dias com perfil horário
+  function pontaSemana(sub, g) {
+    const acc = { u: [], f: [] };
+    g.dias.forEach(r => { const pf = perfilDia(sub, r[0]); if (!pf) return; const v = media(PONTA_H.map(x => pf.pld[x])); if (v == null) return; (r[5] === "útil" ? acc.u : acc.f).push(v); });
+    return { util: media(acc.u), nu: acc.u.length, sdf: media(acc.f), nf: acc.f.length };
+  }
   const descrRev = g => `${g.nome} · ${ddmm(g.ini)}–${ddmm(g.fim)}${g.emCurso ? ` · em curso (${g.dias.length} ${g.dias.length === 1 ? "dia" : "dias"})` : ""}`;
   const rvAtual = (gruposRev("SE").slice(-1)[0] || {}).rv;
 
@@ -274,7 +280,8 @@
     return { t: `${g ? g.nome : "Revisão"} · semana de ${ddmm(ini)} · ${SUBN[sub]}`, c: el => {
       if (!g) { nota(el, "Sem dados para esta revisão."); return; }
       pares(el, [["Semana operativa", `${dataBr(g.ini)} a ${dataBr(g.fim)}`], ["PMO", g.pmo ? rot(g.pmo) : "—"], ["Dias com dados", `${g.dias.length}${g.emCurso ? " (em curso)" : ""}`],
-        ["DECOMP médio", rs(g.decomp, 1)], ["DESSEM médio", rs(g.dessem, 1)], ["Desvio", `${seta(g.dessem - g.decomp)} ${sn(g.dessem - g.decomp, 1)}`], ["Vale no piso", `${n(g.piso, 1)} h/dia`]]);
+        ["DECOMP médio", rs(g.decomp, 1)], ["DESSEM médio", rs(g.dessem, 1)], ["Desvio", `${seta(g.dessem - g.decomp)} ${sn(g.dessem - g.decomp, 1)}`], ["Vale no piso", `${n(g.piso, 1)} h/dia`],
+        ...(pt => [["Ponta 18h–21h · dias úteis", pt.nu ? `${rs(pt.util, 1)} (${pt.nu} ${pt.nu === 1 ? "dia" : "dias"})` : "—"], ["Ponta · sáb., dom. e feriado", pt.nf ? `${rs(pt.sdf, 1)} (${pt.nf} ${pt.nf === 1 ? "dia" : "dias"})` : "—"]])(pontaSemana(sub, g))]);
       if (sp) {
         ttl3(el, "Perfil horário médio da semana");
         G(el, 160, (svg, w, hh) => linhasA(svg, { w, h: hh, ml: 36, mr: 6, xs: HORAS, sombras: SOMBRAS, y0: 0, nt: 4, rotX: x => (x % 6 === 0 ? x + "h" : null),
@@ -524,10 +531,17 @@
     const p2 = Mesa.painel(g, { cod: "RISK-2", titulo: "Revisões do DECOMP", unidade: `R$/MWh · ${SUBN[sub]}`, tam: "s", ajuda: "nivel",
       leg: "Semana operativa de sábado a sexta; DECOMP = PLD semanal da revisão; DESSEM = média dos dias da semana com dados. Clique numa revisão para os dias e o perfil horário." });
     const ultG = gs.slice(-12).reverse();
-    const tb = QC.tabela(p2.corpo, [{ t: "RV" }, { t: "Semana" }, { t: "DECOMP", n: 1 }, { t: "DESSEM", n: 1 }, { t: "Desvio", n: 1 }, { t: "Piso h", n: 1 }],
-      ultG.map(k => [`${k.nome}${k.pmo ? ` <span class="risk-cinza">${MES[+k.pmo.slice(5, 7) - 1]}</span>` : ""}`, `${ddmm(k.ini)}${k.emCurso ? " *" : ""}`, n(k.decomp, 1), n(k.dessem, 1), `<span class="${tom(k.dessem - k.decomp)}">${seta(k.dessem - k.decomp)} ${sn(k.dessem - k.decomp, 1)}</span>`, n(k.piso, 1)]), "risk-densa");
-    tb.querySelectorAll("tbody tr").forEach((tr, i) => alvoR(tr, () => inspRev(sub, ultG[i].ini)));
-    nota(p2.corpo, "* semana em curso. Piso h = horas do vale no piso por dia, média da semana.");
+    const pts = ultG.map(k => pontaSemana(sub, k));
+    const tb = QC.tabela(p2.corpo, [{ t: "RV" }, { t: "Sem." }, { t: "DEC", n: 1 }, { t: "DESS", n: 1 }, { t: "Desv.", n: 1 }, { t: "Piso", n: 1 }, { t: "P. útil", n: 1 }, { t: "P. s/d/f", n: 1 }],
+      ultG.map((k, i) => [`${k.nome}${k.pmo ? ` <span class="risk-cinza">${MES[+k.pmo.slice(5, 7) - 1]}</span>` : ""}`, `${ddmm(k.ini)}${k.emCurso ? "*" : ""}`, n(k.decomp, 0), n(k.dessem, 0), `<span class="${tom(k.dessem - k.decomp)}">${seta(k.dessem - k.decomp)}${sn(k.dessem - k.decomp, 0)}</span>`, n(k.piso, 1),
+        pts[i].nu ? n(pts[i].util, 0) : "—", pts[i].nf ? n(pts[i].sdf, 0) : "—"]), "risk-densa risk-rev");
+    const ths = tb.querySelectorAll("thead th"), dicas = ["Revisão do DECOMP (e mês do PMO)", "Início da semana operativa (sábado a sexta); * = em curso", "DECOMP: PLD semanal da revisão, R$/MWh", "DESSEM: PLD médio dos dias da semana com dados, R$/MWh", "Desvio: DESSEM − DECOMP, R$/MWh", "Piso: horas do vale (8h–15h) no piso por dia, média da semana",
+      "Ponta útil: PLD médio das horas de ponta (18h–21h) dos dias úteis da semana, R$/MWh", "Ponta s/d/f: PLD médio das horas de ponta (18h–21h) dos sábados, domingos e feriados da semana, R$/MWh"];
+    ths.forEach((th, j) => { th.title = dicas[j]; });
+    tb.querySelectorAll("tbody tr").forEach((tr, i) => { alvoR(tr, () => inspRev(sub, ultG[i].ini)); const td = tr.children, pt = pts[i];
+      dicaEm(td[6], pt.nu ? `<b>${ultG[i].nome} · ${ddmm(ultG[i].ini)}</b><br>ponta dos dias úteis ${rs(pt.util, 1)}<br>${pt.nu} ${pt.nu === 1 ? "dia" : "dias"} com dado` : "Nenhum dia útil com perfil horário nesta semana");
+      dicaEm(td[7], pt.nf ? `<b>${ultG[i].nome} · ${ddmm(ultG[i].ini)}</b><br>ponta de sáb., dom. e feriado ${rs(pt.sdf, 1)}<br>${pt.nf} ${pt.nf === 1 ? "dia" : "dias"} com dado` : "Nenhum sábado, domingo ou feriado com perfil horário nesta semana"); });
+    nota(p2.corpo, "* em curso (só os dias que já existem). DEC = DECOMP, DESS = DESSEM médio; Piso = horas do vale no piso por dia. P. útil e P. s/d/f = PLD médio da ponta (18h–21h) dos dias úteis e dos sábados, domingos e feriados; — = sem dia do tipo (ou sem perfil horário).");
 
     // RISK-3 · desvio por bloco, mensal · RISK-4 · o mês por dia
     const p3 = Mesa.painel(g, { cod: "RISK-3", titulo: "Desvio por bloco · mensal", unidade: "R$/MWh", tam: "s", ajuda: "blocos",
@@ -1552,7 +1566,7 @@
           ["Qual janela de dias?", "M+1: 7 dias 16,0 · 14 dias 15,8 · 30 dias 19,4 · 60 dias 18,8", "Dentro da amostra"]]) +
         tabela(["Rótulo", "Significado"], [["Fora da amostra", "Previsão feita só com o que existia na data"], ["Dentro da amostra", "Escolha feita e avaliada no mesmo período"], ["Oráculo", "Usa um dado do futuro para medir um limite"]]) },
       { id: "onde-errou", titulo: "Onde errou: premissas na RV0", html: `<p>RISK-24 compara, mês a mês e por tipo de dia, o que o simulador usaria na rodada da RV0 do mês (média dos 14 dias anteriores: a premissa da previsão de 1 mês) com o que aconteceu no mês. Na ponta, o anel é o DECOMP realizado do mês mais o prêmio da janela: separa o erro da premissa do erro do DECOMP. Só meses encerrados.</p>` },
-      { id: "nivel", titulo: "Revisões do DECOMP (MON)", html: `<p>RISK-2: as últimas revisões do DECOMP (semana operativa de sábado a sexta) com o DECOMP, o DESSEM médio dos dias com dados, o desvio e as horas do vale no piso por dia. Clique numa revisão para os dias e o perfil horário da semana.</p>` },
+      { id: "nivel", titulo: "Revisões do DECOMP (MON)", html: `<p>RISK-2: as últimas revisões do DECOMP (semana operativa de sábado a sexta) com o DECOMP, o DESSEM médio dos dias com dados, o desvio, as horas do vale no piso por dia e o preço médio da ponta (PLD médio das horas de 18h a 21h) separado em dias úteis e em sábados, domingos e feriados (feriado = dia de semana sem patamar pesado no deck). Na semana em curso, só os dias que já existem; sem dia do tipo, ou sem perfil horário (só os últimos quatro meses têm), aparece "—". Clique numa revisão para os dias e o perfil horário da semana.</p>` },
       { id: "pld-dia", titulo: "PLD do dia · DESSEM × DECOMP (MON)", html: `<p>RISK-1 mostra num gráfico só o PLD do dia do DESSEM contra o DECOMP. Cada dia é um símbolo: a barra vai do mínimo ao máximo horário do dia; o traço azul é a média do vale (8h–15h) e o vermelho, a média da ponta (18h–21h); o ponto é a média do dia, ligado aos vizinhos. O DECOMP aparece em degraus (constante dentro da semana operativa) e o piso, tracejado. As faixas alternadas são as revisões, com o DECOMP, o DESSEM médio dos dias mostrados e o desvio no topo (seta e cor). Fundo mais escuro = fim de semana ou feriado. Dias calculados do deck (sem PLD publicado) têm a barra tracejada e o ponto vazado. Com muitos dias, os traços de vale e ponta somem; no histórico longo, cada barra é uma semana. "ver horário" troca os símbolos pela linha hora a hora, na mesma escala.</p>` },
       { id: "precos-hora", titulo: "Preços por hora (MON)", html: `<p>RISK-25: o PLD de cada hora nos quatro submercados (SE/CO, S, NE, N) e os spreads NE − SE/CO e N − SE/CO, em R$/MWh. Hoje e ontem têm 24 linhas; 7 e 30 dias, uma linha por hora de cada dia, a mais recente em cima, com rolagem dentro do painel. Em destaque, as horas no piso do ano; marca azul à esquerda = vale (8h–15h), vermelha = ponta (18h–21h). No fim, média, mínimo e máximo de cada coluna no horizonte. Hoje = ${dataBr(ULT)}; ${notaCalc || "PLD publicado pela CCEE"}.</p>` },
       { id: "blocos", titulo: "Desvio por bloco de horas (MON)", html: `<p>RISK-3 e RISK-4: DESSEM − DECOMP vigente, separado na contribuição de cada bloco à média do mês (ou do dia): vale 8h–15h, ponta 18h–21h e demais horas; o ponto é o desvio total. Mês civil; DECOMP do mês = média das semanas vigentes ponderada pelos dias. O mês em curso aparece claro e tracejado: média do realizado até o último deck. Sem fev–mar/2023 (decks ausentes).</p>` },
