@@ -78,7 +78,14 @@ table.risk-mat td.ok { background: color-mix(in srgb, var(--accent) 18%, var(--s
 @container (max-width: 560px) { .risk-mult { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .risk-mult .mini { cursor: pointer; padding: 4px 6px; }
 .risk-mult .mini .ttl { font-size: 0.74rem; }
-.risk-p13 .painel-cab { flex-wrap: wrap; }
+.risk-ctl.risk-ctl13 { padding-block: 4px 0; justify-content: flex-start; gap: 4px 10px; }
+.risk-ctl13 .abas button { padding: 2px 4px; font-size: 0.68rem; }
+.risk-anos button { border-bottom: 3px solid var(--c, var(--ink-3)); }
+/* ano visível: fundo neutro e a borda na cor da linha do ano (o âmbar de "selecionado" escondia a legenda) */
+.abas.risk-anos button[aria-pressed="true"] { background: var(--surface); color: var(--ink); border-color: var(--rule); border-bottom: 4px solid var(--c, var(--ink-3)); }
+.risk-anos button[aria-pressed="false"] { opacity: 0.45; text-decoration: line-through; }
+.risk-anos button[data-v="todos"] { border-bottom-color: var(--ink-3); text-decoration: none; }
+.risk-aviso { color: var(--desce); }
 .risk-calor { min-width: 600px; }
 
 /* dias do perfil dia a dia */
