@@ -424,6 +424,98 @@
     }
     desenharPH();
 
+    // RISK-26 · protótipo: PLD do dia num gráfico só (faixa mín–máx, vale, ponta, média, DECOMP em degraus), para comparar com o RISK-1
+    const p26 = Mesa.painel(g, { cod: "RISK-26", titulo: "PLD do dia · DESSEM × DECOMP · protótipo", unidade: `R$/MWh · ${SUBN[sub]}`, tam: "full", ajuda: "pld-dia-proto" });
+    EST.perN26 = valido(EST.perN26, PER_N, "mes");
+    abasEm(p26, PER_N, EST.perN26, v => { EST.perN26 = v; guardar(); desenhar26(); }, "Período");
+    const bHor = mk("button", "risk-btn", "ver horário"); bHor.type = "button"; bHor.setAttribute("aria-pressed", String(!!EST.p26h)); noCab(p26, bHor);
+    bHor.addEventListener("click", () => { EST.p26h = !EST.p26h; bHor.setAttribute("aria-pressed", String(EST.p26h)); bHor.textContent = EST.p26h ? "ver símbolos" : "ver horário"; guardar(); desenhar26(); });
+    bHor.textContent = EST.p26h ? "ver símbolos" : "ver horário";
+    const leg26 = mk("p", "leg"); p26.el.append(leg26);
+    function desenhar26() {
+      limpar(p26.corpo);
+      const ult = u[0];
+      let lin = todas;
+      if (EST.perN26 === "rev") { const sa = inicioSemana(ult); lin = lin.filter(r => inicioSemana(r[0]) === sa); }
+      else if (EST.perN26 === "mes") lin = lin.filter(r => r[0].startsWith(ult.slice(0, 7)));
+      else if (EST.perN26 === "ano") lin = lin.filter(r => r[0].startsWith(ult.slice(0, 4)));
+      else if (EST.perN26 === "3m") { const d = new Date(ult + "T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() - 3); const c = d.toISOString().slice(0, 10); lin = lin.filter(r => r[0] > c); }
+      const horasM = new Map(); Object.values((D.dias_perfil || {})[sub] || {}).flat().forEach(d => horasM.set(d.data, d.pld));
+      let itens = lin.map(r => { const v = horasM.get(r[0]), it = { d: r[0], med: r[1], dec: r[2], piso: r[3], vp: r[4], tipo: r[5], mn: r[6], mx: r[7], h: v || null, calc: r[0] > ref.ultimo_publicado };
+        if (v) { const b = blocoMedias(v); it.vale = b.vale; it.ponta = b.ponta; it.hmn = v.indexOf(Math.min(...v)); it.hmx = v.indexOf(Math.max(...v)); } return it; });
+      // histórico longo: uma barra por semana operativa (sábado a sexta)
+      const semanal = itens.length > 400;
+      if (semanal) { const gs2 = []; itens.forEach(it => { const ini = inicioSemana(it.d); let k = gs2[gs2.length - 1]; if (!k || k.ini !== ini) { k = { ini, dias: [] }; gs2.push(k); } k.dias.push(it); });
+        itens = gs2.map(k => ({ d: k.ini, semana: true, n: k.dias.length, med: media(k.dias.map(x => x.med)), dec: media(k.dias.map(x => x.dec)), piso: k.dias[k.dias.length - 1].piso,
+          mn: Math.min(...k.dias.map(x => x.mn).filter(v => v != null)), mx: Math.max(...k.dias.map(x => x.mx).filter(v => v != null)), calc: k.dias.some(x => x.calc) })); }
+      const N = itens.length;
+      // revisões (só com dias): grupos de itens da mesma semana operativa
+      const grupos = [];
+      if (!semanal) itens.forEach((it, i) => { const ini = inicioSemana(it.d); let k = grupos[grupos.length - 1]; if (!k || k.ini !== ini) { const gg = gs.find(x => x.ini === ini) || { nome: "RV ?", ini }; k = { ...gg, ini, i0: i, i1: i, sel: [] }; grupos.push(k); } k.i1 = i; k.sel.push(it); });
+      grupos.forEach(k => { k.dc = media(k.sel.map(x => x.dec)); k.ds = media(k.sel.map(x => x.med)); });
+      legenda(p26.corpo, [["color-mix(in srgb, var(--ink-2) 55%, transparent)", "Mínimo a máximo do dia"], ["var(--accent)", "Média do dia", "l"], ["var(--risk-vale)", "Vale 8h–15h", "l"], ["var(--risk-ponta)", "Ponta 18h–21h", "l"], ["var(--ink-2)", "DECOMP", "t"], ["var(--ink-3)", "Piso", "t"]]);
+      G(p26.corpo, 236, (svg, w, hh) => {
+        const comCab = grupos.length > 0, m = { l: 42, r: 10, t: comCab ? 22 : 8, b: N <= 45 && !semanal ? 30 : 20 };
+        if (!N) { S(svg, "text", { x: w / 2, y: hh / 2, "text-anchor": "middle" }, "sem dados no período"); return; }
+        // um pico isolado não achata o resto: o eixo vai até ~1,1 × o percentil 90 dos máximos; acima disso, ▲ no topo (valor na dica)
+        const mxs = itens.map(x => x.mx).filter(v => v != null).sort((a, b) => a - b), q90 = mxs.length ? mxs[Math.floor((mxs.length - 1) * 0.9)] : 0;
+        const top = Math.max(...itens.map(x => Math.max(x.med, x.dec)), q90 * 1.1);
+        const ax = eixo(0, top, 4), y = v => Math.max(m.t, m.t + (hh - m.t - m.b) * (1 - (v - ax.a) / (ax.b - ax.a)));
+        const bw = (w - m.l - m.r) / N, x0 = i => m.l + i * bw, xc = i => x0(i) + bw / 2;
+        // fundo: revisões alternadas e fins de semana/feriados
+        grupos.forEach((k, j) => { if (j % 2 === 0) S(svg, "rect", { x: x0(k.i0), y: m.t, width: x0(k.i1 + 1) - x0(k.i0), height: hh - m.t - m.b, fill: "var(--vazio)", opacity: 0.55 });
+          S(svg, "line", { x1: x0(k.i0), x2: x0(k.i0), y1: 2, y2: hh - m.b, stroke: "var(--ink-3)", opacity: 0.6 }); });
+        if (!semanal) itens.forEach((it, i) => { if (it.tipo && it.tipo !== "útil") S(svg, "rect", { x: x0(i), y: m.t, width: bw, height: hh - m.t - m.b, fill: "color-mix(in srgb, var(--ink) 6%, transparent)" }); });
+        ax.t.forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 6, y: y(t) + 3, "text-anchor": "end" }, n(t)); });
+        // cabeçalho de cada revisão: "RV2 · DECOMP 141 · DESSEM 109 · ▼ −32" (encurta quando não cabe)
+        grupos.forEach(k => { const larg = x0(k.i1 + 1) - x0(k.i0) - 6, dv = k.ds - k.dc, dvT = `${seta(dv)} ${sn(dv, 0)}`;
+          const cheio = `${k.nome} · DECOMP ${n(k.dc, 0)} · DESSEM ${n(k.ds, 0)} · `, curto = `${k.nome} · `;
+          const pre = (cheio.length + dvT.length) * 6.2 <= larg ? cheio : (curto.length + dvT.length) * 6.2 <= larg ? curto : null; if (pre == null) return;
+          const t = S(svg, "text", { x: x0(k.i0) + 4, y: 14, class: "forte" }); S(t, "tspan", {}, pre); S(t, "tspan", { style: `fill:var(--${dv < 0 ? "desce" : "sobe"})` }, dvT); });
+        // piso e DECOMP em degraus
+        const degrau = key => itens.map((it, i) => `${i ? "L" : "M"}${x0(i)},${y(it[key])}L${x0(i + 1)},${y(it[key])}`).join("");
+        S(svg, "path", { d: degrau("piso"), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "3 3" });
+        S(svg, "path", { d: degrau("dec"), fill: "none", stroke: "var(--ink-2)", "stroke-width": 1.6, "stroke-dasharray": "6 3" });
+        const finos = bw < 6;
+        if (EST.p26h && !semanal) {
+          // linha hora a hora no espaço de cada dia, na mesma escala
+          let d = "", pen = false;
+          itens.forEach((it, i) => { if (!it.h) { pen = false; return; } it.h.forEach((z, k) => { if (z == null) { pen = false; return; } d += `${pen ? "L" : "M"}${x0(i) + (k + 0.5) * bw / 24},${y(z)}`; pen = true; }); });
+          S(svg, "path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": N > 40 ? 0.9 : 1.3, "stroke-linejoin": "round" });
+        } else {
+          itens.forEach((it, i) => { if (it.mn == null || it.mx == null) return;
+            S(svg, "rect", { x: xc(i) - (bw >= 4 ? 1.5 : 0.5), y: y(it.mx), width: bw >= 4 ? 3 : 1, height: Math.max(1, y(it.mn) - y(it.mx)), fill: "color-mix(in srgb, var(--ink-2) 55%, transparent)", opacity: it.calc ? 0.5 : 1, stroke: it.calc ? "var(--ink-2)" : null, "stroke-dasharray": it.calc ? "2 2" : null, "stroke-width": it.calc ? 0.8 : null });
+            if (it.mx > ax.b) S(svg, "text", { x: xc(i), y: m.t + 8, "text-anchor": "middle", style: "fill:var(--ink-2);font-size:9px" }, "▲");
+            if (!finos && it.vale != null) { const tw = Math.min(bw * 0.38, 9);
+              S(svg, "line", { x1: xc(i) - tw, x2: xc(i) + tw, y1: y(it.vale), y2: y(it.vale), stroke: "var(--risk-vale)", "stroke-width": 2.2, opacity: it.calc ? 0.6 : 1 });
+              S(svg, "line", { x1: xc(i) - tw, x2: xc(i) + tw, y1: y(it.ponta), y2: y(it.ponta), stroke: "var(--risk-ponta)", "stroke-width": 2.2, opacity: it.calc ? 0.6 : 1 }); } });
+          S(svg, "path", { d: itens.map((it, i) => `${i ? "L" : "M"}${xc(i)},${y(it.med)}`).join(""), fill: "none", stroke: "var(--accent)", "stroke-width": 1, opacity: 0.8 });
+          if (bw >= 4) itens.forEach((it, i) => S(svg, "circle", { cx: xc(i), cy: y(it.med), r: Math.min(3, bw / 3), fill: it.calc ? "var(--surface)" : "var(--accent)", stroke: "var(--accent)", "stroke-width": 1.2 }));
+        }
+        // eixo X: dia e inicial do dia da semana; com muitos dias, só os inícios de mês (ou de ano, no semanal)
+        let ultX = -1e9;
+        itens.forEach((it, i) => {
+          if (semanal) { if (i === 0 || it.d.slice(0, 4) !== itens[i - 1].d.slice(0, 4)) { const t = it.d.slice(0, 4); if (xc(i) - ultX > 36) { S(svg, "text", { x: xc(i), y: hh - 6, "text-anchor": "middle", class: "forte" }, t); ultX = xc(i); } } return; }
+          if (N <= 45) { if (bw < 14 && i % 2) return; S(svg, "text", { x: xc(i), y: hh - 17, "text-anchor": "middle", class: it.tipo && it.tipo !== "útil" ? null : "forte" }, it.d.slice(8, 10)); S(svg, "text", { x: xc(i), y: hh - 5, "text-anchor": "middle" }, diaSem(it.d)[0]); return; }
+          const novo = it.d.endsWith("-01") || i === 0, t = novo ? rot(it.d.slice(0, 7)) : it.d.slice(8, 10);
+          if ((novo || (N <= 120 && it.d.slice(8, 10) % 7 === 1)) && xc(i) - ultX > t.length * 6.4 + 6) { S(svg, "text", { x: xc(i), y: hh - 6, "text-anchor": "middle", class: novo ? "forte" : null }, t); ultX = xc(i); } });
+        // alvos: tooltip e clique por dia (ou semana)
+        itens.forEach((it, i) => { const a = S(svg, "rect", { x: x0(i), y: m.t, width: bw, height: hh - m.t - m.b, fill: "transparent", class: "risk-alvo" });
+          const dv = it.med - it.dec;
+          dicaEm(a, it.semana ? `<b>Semana de ${dataBr(it.d)}</b> · ${it.n} dias<br>média ${rs(it.med, 1)} · mínimo ${n(it.mn, 1)} · máximo ${n(it.mx, 1)}<br>DECOMP ${n(it.dec, 1)} · desvio ${seta(dv)} ${sn(dv, 1)}`
+            : `<b>${dataBr(it.d)} ${diaSem(it.d)}</b>${it.tipo ? " · " + it.tipo : ""}${it.calc ? " · calculado do deck" : ""}<br>média ${rs(it.med, 1)}<br>mínimo ${n(it.mn, 1)}${it.h ? ` (${it.hmn}h)` : ""} · máximo ${n(it.mx, 1)}${it.h ? ` (${it.hmx}h)` : ""}` +
+              (it.vale != null ? `<br>vale ${n(it.vale, 1)} · ponta ${n(it.ponta, 1)}` : "") + `<br>DECOMP ${n(it.dec, 1)} · desvio ${seta(dv)} ${sn(dv, 1)}`);
+          if (N <= 400) alvoR(a, () => (it.semana ? inspRev(sub, it.d) : inspDia(sub, it.d))); });
+      }, "PLD do dia: faixa do mínimo ao máximo, vale, ponta, média e DECOMP");
+      const calc = itens.filter(x => x.calc && !x.semana).map(x => ddmm(x.d));
+      leg26.textContent = (semanal ? "Histórico longo: uma barra por semana operativa (sábado a sexta), com mínimo, máximo e média da semana. " : "Um símbolo por dia: barra do mínimo ao máximo horário, traço azul = média do vale (8h–15h), vermelho = média da ponta (18h–21h), ponto = média do dia. ") +
+        (!semanal && itens.some(x => x.vale != null) && (w26() < 6) ? "Com muitos dias, só a faixa e a média. " : "") +
+        "▲ = máximo acima da escala (valor na dica). DECOMP em degraus por revisão; piso tracejado. Faixas alternadas = revisões, com DECOMP, DESSEM e desvio no topo; fundo mais escuro = fim de semana ou feriado." +
+        (calc.length ? ` ${calc.join(" e ")}: calculados do deck (barra tracejada, ponto vazado).` : "") + (EST.p26h ? " Modo horário: linha hora a hora na mesma escala." : "") + " Clique num dia para o perfil horário.";
+      function w26() { return (p26.corpo.clientWidth - 52) / Math.max(1, N); }
+    }
+    desenhar26();
+
     // RISK-2 · revisões do DECOMP
     const p2 = Mesa.painel(g, { cod: "RISK-2", titulo: "Revisões do DECOMP", unidade: `R$/MWh · ${SUBN[sub]}`, tam: "s", ajuda: "nivel",
       leg: "Semana operativa de sábado a sexta; DECOMP = PLD semanal da revisão; DESSEM = média dos dias da semana com dados. Clique numa revisão para os dias e o perfil horário." });
@@ -1514,6 +1606,7 @@
         tabela(["Rótulo", "Significado"], [["Fora da amostra", "Previsão feita só com o que existia na data"], ["Dentro da amostra", "Escolha feita e avaliada no mesmo período"], ["Oráculo", "Usa um dado do futuro para medir um limite"]]) },
       { id: "onde-errou", titulo: "Onde errou: premissas na RV0", html: `<p>RISK-24 compara, mês a mês e por tipo de dia, o que o simulador usaria na rodada da RV0 do mês (média dos 14 dias anteriores: a premissa da previsão de 1 mês) com o que aconteceu no mês. Na ponta, o anel é o DECOMP realizado do mês mais o prêmio da janela: separa o erro da premissa do erro do DECOMP. Só meses encerrados.</p>` },
       { id: "nivel", titulo: "PLD do dia e revisões (MON)", html: `<p>RISK-1: em cima, a média das 24 horas de cada dia do DESSEM e o DECOMP (PLD semanal da revisão vigente, com limites); embaixo, o PLD hora a hora no mesmo eixo de dias. Na revisão e no mês, cada revisão leva um rótulo com as datas de sábado a sexta, o DECOMP e o DESSEM médio dos dias mostrados; em 3 meses, RV, o mês do PMO quando muda e DECOMP · DESSEM; no ano e no histórico, a faixa do mínimo ao máximo horário de cada dia e a média. Faixas alternadas = uma revisão.</p><p>RISK-2: as últimas revisões do DECOMP com o DECOMP, o DESSEM médio, o desvio e as horas do vale no piso por dia. A linha de decisão do Monitor traz o PLD médio de hoje, o desvio da semana em curso e o do mês até o último deck; o primeiro item é o resultado do simulador (tela SIM).</p>` },
+      { id: "pld-dia-proto", titulo: "PLD do dia num gráfico só (MON, protótipo)", html: `<p>RISK-26 mostra num gráfico só o que o RISK-1 mostra em dois. Cada dia é um símbolo: a barra vai do mínimo ao máximo horário do dia; o traço azul é a média do vale (8h–15h) e o vermelho, a média da ponta (18h–21h); o ponto é a média do dia, ligado aos vizinhos. O DECOMP aparece em degraus (constante dentro da semana operativa) e o piso, tracejado. As faixas alternadas são as revisões, com o DECOMP, o DESSEM médio dos dias mostrados e o desvio no topo (seta e cor). Fundo mais escuro = fim de semana ou feriado. Dias calculados do deck (sem PLD publicado) têm a barra tracejada e o ponto vazado. Com muitos dias, os traços de vale e ponta somem; no histórico longo, cada barra é uma semana. "ver horário" troca os símbolos pela linha hora a hora, na mesma escala.</p>` },
       { id: "precos-hora", titulo: "Preços por hora (MON)", html: `<p>RISK-25: o PLD de cada hora nos quatro submercados (SE/CO, S, NE, N) e os spreads NE − SE/CO e N − SE/CO, em R$/MWh. Hoje e ontem têm 24 linhas; 7 e 30 dias, uma linha por hora de cada dia, a mais recente em cima, com rolagem dentro do painel. Em destaque, as horas no piso do ano; marca azul à esquerda = vale (8h–15h), vermelha = ponta (18h–21h). No fim, média, mínimo e máximo de cada coluna no horizonte. Hoje = ${dataBr(ULT)}; ${notaCalc || "PLD publicado pela CCEE"}.</p>` },
       { id: "blocos", titulo: "Desvio por bloco de horas (MON)", html: `<p>RISK-3 e RISK-4: DESSEM − DECOMP vigente, separado na contribuição de cada bloco à média do mês (ou do dia): vale 8h–15h, ponta 18h–21h e demais horas; o ponto é o desvio total. Mês civil; DECOMP do mês = média das semanas vigentes ponderada pelos dias. O mês em curso aparece claro e tracejado: média do realizado até o último deck. Sem fev–mar/2023 (decks ausentes).</p>` },
       { id: "resumo", titulo: "Resumo para a mesa (SIM)", html: `<p>RISK-6 resume a simulação: PLD previsto e desvio; direção com o acerto histórico (desde mar/2025, regime atual; "pouco histórico" = menos de 5 previsões da mesma direção); faixa provável 10–90%; de onde vem o desvio (vale no piso, outras horas, ponta, com o peso de cada um) e a comparação com o prêmio de ponta de 12 meses; estresse de ponta; e quando a previsão muda (RV0). Alertas: DECOMP perto do piso (com o histórico dos meses no piso), prêmio da ponta afastado da média de 12 meses e premissas editadas.</p>` },
