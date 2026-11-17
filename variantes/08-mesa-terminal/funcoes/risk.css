@@ -188,3 +188,33 @@ html[data-func="RISK"] .m-insp-corpo dl.estat dd { overflow-wrap: anywhere; }
 .risk-ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; padding-inline: 10px; }
 .risk-ctl-mesa { padding-inline: 0; }
 .risk-ctl-mesa .abas button { padding: 1px 6px; }
+/* faixa de filtros do RISK-11 e RISK-12, dentro da grade, acima dos dois */
+.risk-barra.risk-faixa { grid-column: 1 / -1; border: 0; flex-wrap: nowrap; gap: 0; padding: 3px 10px; overflow-x: auto; scrollbar-width: none; }
+.risk-faixa .risk-barra-g { flex-wrap: nowrap; white-space: nowrap; padding: 0 12px; }
+.risk-faixa .risk-barra-g + .risk-barra-g { border-left: 1px solid var(--rule); }
+.risk-faixa .risk-barra-g:empty, .risk-faixa .risk-barra-g:has(> .risk-barra-r:empty):not(:has(.risk-barra-t:not(:empty))) { display: none; }
+.risk-faixa-cod { font: 600 0.62rem var(--f-data); color: var(--t-sobre); background: var(--t-ambar); padding: 0 4px; margin-right: 4px; white-space: nowrap; }
+@media (max-width: 760px) { .risk-barra.risk-faixa { flex-wrap: wrap; gap: 4px 0; } .risk-faixa .risk-barra-g { padding: 0 8px 0 0; } .risk-faixa .risk-barra-g + .risk-barra-g { border-left: 0; } }
+/* RISK-25 · preços por hora: rolagem dentro do painel, cabeçalho e rodapé fixos */
+.risk-ph-box { max-height: 440px; overflow: auto; }
+table.risk-ph th, table.risk-ph td { padding: 2px 5px; white-space: nowrap; }
+table.risk-ph thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+table.risk-ph tfoot { position: sticky; bottom: 0; z-index: 1; }
+table.risk-ph tfoot td { background: var(--t-barra); color: var(--ink); font-weight: 600; border-bottom: 0; }
+table.risk-ph tfoot td:first-child { color: var(--t-ambar); }
+table.risk-ph tr.risk-h-vale td:first-child { box-shadow: inset 3px 0 0 var(--risk-vale); }
+table.risk-ph tr.risk-h-ponta td:first-child { box-shadow: inset 3px 0 0 var(--risk-ponta); }
+/* faixa do RISK-11/12 com abas e rótulo em cima de cada grupo */
+.risk-barra.risk-faixa2 { flex-wrap: wrap; align-items: flex-end; gap: 4px 0; overflow: visible; padding: 4px 10px; }
+.risk-faixa2 .risk-faixa-cod { align-self: center; margin-right: 10px; }
+.risk-faixa2 .risk-grp:first-of-type { border-left: 0; padding-left: 0; }
+.risk-faixa2 .abas button { padding: 2px 4px; font-size: 0.68rem; }
+.risk-faixa2 .abas button:disabled { opacity: 0.35; cursor: default; }
+.risk-faixa2 .risk-aviso { align-self: center; margin-left: 10px; }
+/* faixa do RISK-11/12 = mesma linha de controles do RISK-13, como faixa da grade */
+.risk-ctl.risk-faixa3 { grid-column: 1 / -1; background: var(--surface); padding-bottom: 4px; }
+.risk-faixa3 .risk-faixa-vale { margin-left: auto; align-self: flex-end; font: 0.62rem var(--f-data); color: var(--ink-3); white-space: nowrap; padding-bottom: 3px; }
+.risk-faixa3 .risk-aviso { align-self: flex-end; margin-left: 10px; font-size: 0.66rem; padding-bottom: 3px; }
+table.risk-ph tr.risk-ph-dia td { border-top: 2px solid var(--t-ambar); }
+table.risk-ph .risk-ph-d { color: var(--t-ambar); }
+table.risk-ph .risk-ph-oculta { visibility: hidden; }

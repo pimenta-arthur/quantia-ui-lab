@@ -26,6 +26,7 @@
   const SOMBRAS = [[8, 15, "var(--risk-sombra-vale)"], [18, 21, "var(--risk-sombra-ponta)"]];
   const VARS = [["pld", "PLD", "R$/MWh"], ["decomp", "DECOMP vigente", "R$/MWh"], ["carga_liquida", "Carga líquida", "MW"], ["demanda", "Demanda bruta", "MW"], ["demanda_sem_mmgd", "Demanda sem MMGD", "MW"],
     ["renov_com_mmgd", "Renovável com MMGD", "MW"], ["renov_sem_mmgd", "Renovável sem MMGD", "MW"], ["renov_saida", "Renovável gerada (saída)", "MW"]];
+  const VCURTO = { pld: "PLD", decomp: "DECOMP", carga_liquida: "Carga líq.", demanda: "Demanda", demanda_sem_mmgd: "Dem. s/MMGD", renov_com_mmgd: "Ren. c/MMGD", renov_sem_mmgd: "Ren. s/MMGD", renov_saida: "Ren. gerada" };
   const classe = d => (d < -5 ? "desconto" : d > 5 ? "prêmio" : "neutro");
   const tomDir = d => (d === "desconto" ? "desce" : d === "prêmio" ? "sobe" : "neutro");
   const corDir = d => (d === "desconto" ? "var(--risk-vale)" : d === "prêmio" ? "var(--risk-verm)" : "var(--ink-3)");
@@ -94,7 +95,8 @@
     area.append(b); return b;
   }
   // elemento que abre o inspetor: fn() → { t: título, c: html ou (el) => desenha }
-  function alvoR(el, fn) { let r; Mesa.alvo(el, () => (r = fn()).t, c => { if (typeof r.c === "function") r.c(c); else c.innerHTML = r.c; }); }
+  function alvoR(el, fn) { if (!el) return; let r;  // sem elemento (ex.: tela com decisao: false, cards vazios), nada a ligar
+    Mesa.alvo(el, () => (r = fn()).t, c => { if (typeof r.c === "function") r.c(c); else c.innerHTML = r.c; }); }
   const remontar = (area, fn) => { const st = area.scrollTop; limpar(area); fn(area); area.scrollTop = st; };
 
   // ---------- gráfico de linhas genérico (o do app.js da 07) + alvo: clique abre o inspetor ----------
@@ -390,21 +392,53 @@
     }
     desenharNivel();
 
+    // RISK-25 · preços por hora dos quatro submercados (como o PLD-4 do catálogo), ao lado do RISK-1
+    const p25 = Mesa.painel(g, { cod: "RISK-25", titulo: "Preços por hora · 4 submercados", unidade: "R$/MWh", tam: "s", ajuda: "precos-hora",
+      leg: "Em destaque, as horas no piso. Spreads contra o SE/CO. Clique numa linha para o dia no inspetor." });
+    const HOR = [["hoje", "Hoje"], ["ontem", "Ontem"], ["7d", "7 dias"], ["30d", "30 dias"]];
+    EST.ph = valido(EST.ph, HOR, "hoje");
+    const ctl25 = mk("div", "risk-ctl"); ctl25.append(abas(HOR, EST.ph, v => { EST.ph = v; guardar(); desenharPH(); }, "Horizonte")); p25.corpo.before(ctl25);
+    const legPH = p25.el.querySelector(".leg");
+    function desenharPH() {
+      limpar(p25.corpo);
+      const dSE = ((D.dias_nivel || {}).SE || []).map(r => r[0]), k = { hoje: 1, ontem: 1, "7d": 7, "30d": 30 }[EST.ph];
+      const datas = EST.ph === "ontem" ? dSE.slice(-2, -1) : dSE.slice(-k);
+      const pisoDe = new Map((D.dias_nivel.SE || []).map(r => [r[0], r[3]]));
+      const SUBS4 = ["SE", "S", "NE", "N"], linhas = [];
+      datas.slice().reverse().forEach(d => { const pf = Object.fromEntries(SUBS4.map(sb => [sb, perfilDia(sb, d)]));
+        const hs = HORAS.map(x => ({ d, x, v: SUBS4.map(sb => (pf[sb] ? pf[sb].pld[x] : null)) }));
+        hs.forEach(l => linhas.push(l)); });  // dias do mais recente ao mais antigo; dentro do dia, 00h → 23h
+      const um = k === 1, cs = um ? 2 : k === 30 ? 0 : 1, cel = (v, d) => (v == null ? "—" : `<span class="${v <= pisoDe.get(d) + 0.005 ? "no-piso" : ""}">${n(v, cs)}</span>`);
+      const cols = [{ t: um ? "Hora" : "Data e hora" }, ...SUBS4.map(sb => ({ t: SUBN[sb], n: 1 })), { t: "NE − SE", n: 1 }, { t: "N − SE", n: 1 }];
+      const sp = (a, b) => (a == null || b == null ? null : a - b);
+      const vals = l => [...l.v, sp(l.v[2], l.v[0]), sp(l.v[3], l.v[0])];
+      const box = QC.tabela(p25.corpo, cols, linhas.map(l => [`${um ? "" : `<span class="risk-ph-d${l.x ? " risk-ph-oculta" : ""}">${ddmm(l.d)}</span> `}${String(l.x).padStart(2, "0")}h`, ...l.v.map(v => cel(v, l.d)), sn(sp(l.v[2], l.v[0]), cs), sn(sp(l.v[3], l.v[0]), cs)]), "risk-densa risk-ph");
+      box.classList.add("risk-ph-box");
+      const est = j => { const c = linhas.map(l => vals(l)[j]).filter(v => v != null); return c.length ? [c.reduce((a, b) => a + b, 0) / c.length, Math.min(...c), Math.max(...c)] : [null, null, null]; };
+      const E7 = [0, 1, 2, 3, 4, 5].map(est), fmt = (j, v) => (j < 4 ? n(v, cs) : sn(v, cs));
+      box.querySelector("table").insertAdjacentHTML("beforeend", "<tfoot>" + ["Média", "Mínimo", "Máximo"].map((nm, q) => `<tr><td>${nm}</td>${E7.map((e, j) => `<td class="n">${fmt(j, e[q])}</td>`).join("")}</tr>`).join("") + "</tfoot>");
+      box.querySelectorAll("tbody tr").forEach((tr, i) => { const l = linhas[i]; if (!um && l.x === 0 && i > 0) tr.classList.add("risk-ph-dia"); if (VALE_H.includes(l.x) || PONTA_H.includes(l.x)) tr.classList.add(PONTA_H.includes(l.x) ? "risk-h-ponta" : "risk-h-vale");
+        alvoR(tr, () => inspDia(sub, l.d)); });
+      const calc = datas.filter(d => d > ref.ultimo_publicado);
+      legPH.textContent = `${um ? `${dataBr(datas[0])} ${diaSem(datas[0])}` : `${ddmm(datas[0])} a ${ddmm(datas[datas.length - 1])}, dias do mais recente ao mais antigo, horas de 00h a 23h; fio = virada do dia`}. Em destaque, as horas no piso (${rs(pisoDe.get(datas[0]), 2)}); marca azul à esquerda = vale, vermelha = ponta. Spreads contra o SE/CO. No fim, média, mínimo e máximo de cada coluna.${calc.length ? ` ${calc.map(ddmm).join(" e ")}: PLD calculado do deck.` : ""} Clique numa linha para o dia no inspetor (no submercado da barra).`;
+    }
+    desenharPH();
+
     // RISK-2 · revisões do DECOMP
     const p2 = Mesa.painel(g, { cod: "RISK-2", titulo: "Revisões do DECOMP", unidade: `R$/MWh · ${SUBN[sub]}`, tam: "s", ajuda: "nivel",
       leg: "Semana operativa de sábado a sexta; DECOMP = PLD semanal da revisão; DESSEM = média dos dias da semana com dados. Clique numa revisão para os dias e o perfil horário." });
-    const ultG = gs.slice(-14).reverse();
+    const ultG = gs.slice(-12).reverse();
     const tb = QC.tabela(p2.corpo, [{ t: "RV" }, { t: "Semana" }, { t: "DECOMP", n: 1 }, { t: "DESSEM", n: 1 }, { t: "Desvio", n: 1 }, { t: "Piso h", n: 1 }],
       ultG.map(k => [`${k.nome}${k.pmo ? ` <span class="risk-cinza">${MES[+k.pmo.slice(5, 7) - 1]}</span>` : ""}`, `${ddmm(k.ini)}${k.emCurso ? " *" : ""}`, n(k.decomp, 1), n(k.dessem, 1), `<span class="${tom(k.dessem - k.decomp)}">${seta(k.dessem - k.decomp)} ${sn(k.dessem - k.decomp, 1)}</span>`, n(k.piso, 1)]), "risk-densa");
     tb.querySelectorAll("tbody tr").forEach((tr, i) => alvoR(tr, () => inspRev(sub, ultG[i].ini)));
     nota(p2.corpo, "* semana em curso. Piso h = horas do vale no piso por dia, média da semana.");
 
     // RISK-3 · desvio por bloco, mensal · RISK-4 · o mês por dia
-    const p3 = Mesa.painel(g, { cod: "RISK-3", titulo: "Desvio por bloco de horas · mês a mês", unidade: `DESSEM − DECOMP, R$/MWh · ${SUBN[sub]}`, tam: "xl", ajuda: "blocos",
+    const p3 = Mesa.painel(g, { cod: "RISK-3", titulo: "Desvio por bloco · mensal", unidade: "R$/MWh", tam: "s", ajuda: "blocos",
       leg: "Contribuição de cada bloco ao desvio médio do mês; o mês em curso aparece claro e tracejado (realizado até o último deck). Mês civil; DECOMP = média das semanas vigentes ponderada pelos dias. Sem fev–mar/2023 (decks ausentes). Clique num mês para o detalhe e para vê-lo por dia ao lado." });
-    const HIST = [["ano", ultMes.slice(0, 4)], ["12m", "12 meses"], ["todo", "Histórico"]];
+    const HIST = [["ano", `No ano (${ultMes.slice(0, 4)})`], ["12m", "12 meses"], ["24m", "24 meses"], ["todo", "Histórico"]];
     EST.hist = valido(EST.hist, HIST, "12m");
-    abasEm(p3, HIST, EST.hist, v => { EST.hist = v; guardar(); desenharMensal(); }, "Período do histórico");
+    const ctl3 = mk("div", "risk-ctl"); ctl3.append(abas(HIST, EST.hist, v => { EST.hist = v; guardar(); desenharMensal(); }, "Período do histórico")); p3.corpo.before(ctl3);
     const p4 = Mesa.painel(g, { cod: "RISK-4", titulo: "O mês, por dia", unidade: "R$/MWh", tam: "s", ajuda: "blocos", leg: "Mesmos blocos e cores do mês a mês, em escala própria. Clique num dia para o perfil horário." });
     const todosDias = ((D.dias_blocos || {})[sub] || []);
     const mesesDias = [...new Set(todosDias.map(r => r.data.slice(0, 7)))].sort().reverse();
@@ -415,9 +449,10 @@
       let dm2 = D.desvio_mensal.filter(r => r.sub === sub).sort((a, b) => (a.mes < b.mes ? -1 : 1));
       if (EST.hist === "ano") dm2 = dm2.filter(r => r.mes.startsWith(ultMes.slice(0, 4)));
       if (EST.hist === "12m") dm2 = dm2.slice(-12);
+      if (EST.hist === "24m") dm2 = dm2.slice(-24);
       const curto = EST.hist !== "todo";
       const rowsM = dm2.map(r => ({ ...r, extra: `<br>DECOMP ${n(r.decomp, 1)} · DESSEM ${n(r.dessem, 1)}` + (r.parcial ? `<br>mês em curso: ${r.dias} dias, até ${dataBr(ULT)}` : "") }));
-      G(p3.corpo, 230, (svg, w, hh) => empilhado(svg, rowsM, w, hh,
+      G(p3.corpo, 280, (svg, w, hh) => empilhado(svg, rowsM, w, hh,
         r => (curto ? { t: rot(r.mes) + (r.parcial ? "*" : ""), forte: r.mes.endsWith("-01") } : r.mes.endsWith("-01") ? { t: r.mes.slice(0, 4), forte: true } : null), r => rotLongo(r.mes) + (r.parcial ? " (parcial)" : ""),
         r => { if (mesesDias.includes(r.mes) && r.mes !== EST.mesDias) { EST.mesDias = r.mes; guardar(); selDias.value = r.mes; requestAnimationFrame(desenharDias); } return inspMes(sub, r.mes); }));
     }
@@ -426,10 +461,11 @@
       const dd = todosDias.filter(r => r.data.startsWith(EST.mesDias)).sort((a, b) => (a.data < b.data ? -1 : 1));
       const dm3 = D.desvio_mensal.find(r => r.sub === sub && r.mes === EST.mesDias);
       mt(p4.corpo, rotLongo(EST.mesDias) + (EST.mesDias === ultMes ? ` · até ${ddmm(ULT)}` : ""), dm3 ? `mês ${sn(dm3.delta, 1)}` : "");
-      G(p4.corpo, 230, (svg, w, hh) => empilhado(svg, dd.map(r => ({ ...r, extra: `<br>DECOMP ${n(r.decomp, 1)} · DESSEM ${n(r.dessem, 1)}` })), w, hh,
+      G(p4.corpo, 300, (svg, w, hh) => empilhado(svg, dd.map(r => ({ ...r, extra: `<br>DECOMP ${n(r.decomp, 1)} · DESSEM ${n(r.dessem, 1)}` })), w, hh,
         (r, i) => (i % Math.max(1, Math.ceil(dd.length / 8)) === 0 ? { t: r.data.slice(8, 10) } : null), r => `${dataBr(r.data)} · ${diaSem(r.data)}`, r => inspDia(sub, r.data)));
     }
     desenharMensal(); desenharDias();
+    g.append(p2.el);  // linha de baixo: mês a mês, o mês por dia e as revisões, um terço cada
   }
   // divisão entre dias no eixo X: tique curto; com até ~45 dias, também linha pontilhada clara
   function divisoesDia(svg, xsDia, m, hh) {
@@ -897,18 +933,28 @@
       { r: "Hora mais cara do mês", v: n(mx.v, 1), d: `${ddmm(Mp.dias[mx.i])} ${diaSem(Mp.dias[mx.i])} às ${mx.x}h · ${Mp.tipos[mx.i]}` },
     ]);
     alvoR(dec.children[0], () => inspMec(mu.mes)); alvoR(dec.children[3], () => inspDia(subP, Mp.dias[mx.i]));
-    barra(area, [
-      { rot: "Submercado", opc: SUBS_FIS, atual: sub, aoTrocar: v => { EST.pSub = v; guardar(); remontar(area, telaPER); } },
-      { rot: "Variável", sel: true, opc: VARS.map(v => [v[0], `${v[1]} (${v[2] === "MW" ? "GW" : v[2]})`]), atual: VAR, aoTrocar: v => { EST.pVar = v; guardar(); remontar(area, telaPER); } },
-      { rot: "Mês", sel: true, opc: ms.map(m => [m, rot(m) + (m === ultMes ? " (corrente)" : "")]), atual: MESP, aoTrocar: v => { EST.pMes = v; guardar(); remontar(area, telaPER); } },
-      { rot: "", txt: sub === "SIN" && ehPreco(VAR) ? "PLD e DECOMP não têm SIN: mostrando o SE/CO." : "" },
-    ]);
     const g = Mesa.grade(area);
+    // filtros do RISK-11 e do RISK-12 (ligados entre si): o mesmo componente da linha de controles do RISK-13
+    // (.risk-ctl .risk-ctl13 e .risk-grp), na mesma ordem, para os grupos ficarem alinhados com os de baixo
+    const faixa = mk("div", "risk-ctl risk-ctl13 risk-faixa3"); g.append(faixa);
+    const grp = (rotulo, conteudo) => { const gr = mk("div", "risk-grp"); gr.append(mk("span", "risk-grp-r", rotulo), conteudo); return gr; };
+    const re = () => { guardar(); remontar(area, telaPER); };
+    // meses com dado, do mais antigo ao mais recente; com mais de 12, mostra 12 por vez e "◀" / "▶" para andar
+    const msA = ms.slice().sort(), JAN12 = 12, iSel = msA.indexOf(MESP);
+    let ini = Math.max(0, msA.length - JAN12);
+    if (iSel < ini) ini = Math.max(0, iSel - JAN12 + 1);
+    const abMes = abas(msA.slice(ini, ini + JAN12).map(m => [m, rot(m)]), MESP, v => { EST.pMes = v; re(); }, "Mês do RISK-11 e RISK-12");
+    if (ini > 0) { const b = mk("button", "risk-mes-ant", "◀"); b.type = "button"; b.title = "Meses anteriores"; b.addEventListener("click", ev => { ev.stopPropagation(); EST.pMes = msA[Math.max(0, ini - 1)]; re(); }); abMes.prepend(b); }
+    faixa.append(grp("Variável", abas(VARS.map(x => [x[0], VCURTO[x[0]]]), VAR, v => { EST.pVar = v; re(); }, "Variável do RISK-11 e RISK-12")),
+      grp("Submercado", abas(SUBS_FIS, sub, v => { EST.pSub = v; re(); }, "Submercado do RISK-11 e RISK-12")),
+      grp("Meses", abMes));
+    if (sub === "SIN" && ehPreco(VAR)) faixa.append(mk("span", "risk-barra-t risk-aviso", "PLD e DECOMP não têm SIN: mostrando o SE/CO."));
+    faixa.append(mk("span", "risk-faixa-vale", "vale para RISK-11 e RISK-12"));
 
     // RISK-11 · perfil horário do mês, dia a dia
-    const p11 = Mesa.painel(g, { cod: "RISK-11", titulo: `Perfil horário dia a dia · ${nomeV}`, unidade: `${unC} · ${rotSub(sub, VAR)} · ${rot(MESP)}`, tam: "l", ajuda: "perfis",
+    const p11 = Mesa.painel(g, { cod: "RISK-11", titulo: `Perfil horário dia a dia · ${nomeV} · ${rotSub(sub, VAR)} · ${rot(MESP)}`, unidade: unC, tam: "l", ajuda: "perfis",
       leg: `Uma linha por dia, na cor do tipo de dia; tracejado = média dos ${M.dias.length} dias. Faixas: vale 8h–15h e ponta 18h–21h. Clique num dia (botões) para destacar e ver o detalhe.${MESP === ultMes ? ` Mês corrente até ${dataBr(ULT)}.` : ""} Últimos 6 meses.` });
-    const p12 = Mesa.painel(g, { cod: "RISK-12", titulo: `Mapa de calor · dia × hora`, unidade: `${unC} · ${rotLongo(MESP)}`, tam: "l", ajuda: "perfis" });
+    const p12 = Mesa.painel(g, { cod: "RISK-12", titulo: `Mapa de calor · ${nomeV} · ${rotSub(sub, VAR)} · ${rot(MESP)}`, unidade: unC, tam: "l", ajuda: "perfis" });
     const legC = mk("p", "leg"); p12.el.append(legC);
     const corT = t => corTipo(t);
     function desenharPerfilDia() {
@@ -949,10 +995,12 @@
     function desenharCalor() {
       limpar(p12.corpo);
       const box = mk("div", "rolagem"), dentro = mk("div", "risk-calor"); box.append(dentro); p12.corpo.append(box);
-      const ND = M.dias.length, m = { l: 54, r: 4, t: 22, b: 4 }, ch = 12, hT = m.t + (ND + 1) * ch + 8 + m.b;
+      // linhas com altura pela caixa: depois de desenhar, a caixa cresce até o RISK-12 ter a altura do RISK-11 ao lado
+      const ND = M.dias.length, m = { l: 54, r: 4, t: 22, b: 4 }, hT = m.t + (ND + 1) * 12 + 8 + m.b;
       const lo = C.lo, hi = C.hi, tt = v => Math.max(0, Math.min(1, (v - lo) / ((hi - lo) || 1)));
       const cor = v => `color-mix(in srgb, var(--calor) ${Math.round(8 + 80 * tt(v))}%, var(--calor-0))`;
-      G(dentro, hT, (svg, w, hh) => {
+      const caixa = G(dentro, hT, (svg, w, hh) => {
+        const ch = Math.max(12, Math.min(26, (hh - m.t - 8 - m.b) / (ND + 1))), fs = Math.max(8, Math.min(11, ch * 0.55)).toFixed(1);
         const vao = 8, cwM = 40, cw = (w - m.l - m.r - vao - cwM) / 24, xM = w - m.r - cwM, txt = v => (un === "MW" ? n(v / 1000, cw < 26 ? 0 : 1) : n(v, 0));
         HORAS.forEach(x => { const vale = VALE_H.includes(x), ponta = PONTA_H.includes(x);
           S(svg, "text", { x: m.l + (x + 0.5) * cw, y: m.t - 8, "text-anchor": "middle", class: vale || ponta ? "forte" : null, style: ponta ? "fill:var(--risk-ponta)" : vale ? "fill:var(--risk-vale)" : null }, x % 2 === 0 || cw > 26 ? x + "h" : ""); });
@@ -960,7 +1008,7 @@
         S(svg, "line", { x1: xM - vao / 2, x2: xM - vao / 2, y1: m.t - 4, y2: hh - m.b, stroke: "var(--ink-3)" });
         const celula = (x0, yy, larg, v, dica) => {
           const r = S(svg, "rect", { x: x0 + 0.5, y: yy + 0.5, width: larg - 1, height: ch - 1, fill: cor(v) });
-          S(svg, "text", { x: x0 + larg / 2, y: yy + ch * 0.74, "text-anchor": "middle", style: `font-size:8px;pointer-events:none;fill:${tt(v) > 0.6 ? "var(--surface)" : "var(--ink)"}` }, txt(v));
+          S(svg, "text", { x: x0 + larg / 2, y: yy + ch / 2 + fs * 0.36, "text-anchor": "middle", style: `font-size:${fs}px;pointer-events:none;fill:${tt(v) > 0.6 ? "var(--surface)" : "var(--ink)"}` }, txt(v));
           dicaEm(r, dica);
         };
         M.dias.forEach((d, i) => {
@@ -978,6 +1026,11 @@
         celula(xM, ym, cwM, C.mes, `<b>Média do mês</b> · todas as horas<br>${nomeV}: ${fmtV(C.mes)} (${nTot} horas)`);
         [...DESTAQUE].forEach(i => { if (i < ND) S(svg, "rect", { x: m.l, y: m.t + i * ch, width: w - m.l - m.r, height: ch, fill: "none", stroke: "var(--ink)", "stroke-width": 1.4, "pointer-events": "none" }); });
       });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (!caixa.isConnected || p11.el.offsetTop !== p12.el.offsetTop) return;
+        const livre = p12.corpo.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom;  // o corpo estica (flex: 1): a sobra fica embaixo da caixa
+        if (Math.abs(livre) > 2) caixa.style.height = Math.max(hT, caixa.offsetHeight + livre) + "px";
+      }));
       legC.textContent = `Cor de um só tom, do mais fraco (≤ ${un === "MW" ? n(lo / 1000, 1) : n(lo, 0)}) ao forte (≥ ${un === "MW" ? n(hi / 1000, 1) : n(hi, 0)}): percentis 5 a 95 do mês, para um pico isolado não apagar o resto. Dia na cor do tipo de dia; o dia destacado aparece contornado. Cabeçalho: vale em azul, ponta em vermelho. À direita, a média do dia; embaixo, a média de cada hora. Clique no dia para o detalhe.`;
     }
     desenharPerfilDia(); desenharCalor();
@@ -985,7 +1038,6 @@
     // RISK-13 · perfil horário por mês do ano, todos os anos
     // RISK-13 tem os seus próprios filtros (variável, submercado, modo e anos), independentes da barra da tela;
     // guardados em mesa.risk.telas (aVar, aSub, visao, aOcultos). Submercado sem a variável (PLD no SIN): regra D084, mostra o SE/CO.
-    const VCURTO = { pld: "PLD", decomp: "DECOMP", carga_liquida: "Carga líq.", demanda: "Demanda", demanda_sem_mmgd: "Dem. s/MMGD", renov_com_mmgd: "Ren. c/MMGD", renov_sem_mmgd: "Ren. s/MMGD", renov_saida: "Ren. gerada" };
     EST.aVar = valido(EST.aVar, VARS, "pld"); EST.aSub = valido(EST.aSub, SUBS_FIS, "SE");
     const VIS = [["hora", "Por hora do dia"], ["mes", "Média do mês por ano"]];
     EST.visao = valido(EST.visao, VIS, "hora");
@@ -1462,6 +1514,7 @@
         tabela(["Rótulo", "Significado"], [["Fora da amostra", "Previsão feita só com o que existia na data"], ["Dentro da amostra", "Escolha feita e avaliada no mesmo período"], ["Oráculo", "Usa um dado do futuro para medir um limite"]]) },
       { id: "onde-errou", titulo: "Onde errou: premissas na RV0", html: `<p>RISK-24 compara, mês a mês e por tipo de dia, o que o simulador usaria na rodada da RV0 do mês (média dos 14 dias anteriores: a premissa da previsão de 1 mês) com o que aconteceu no mês. Na ponta, o anel é o DECOMP realizado do mês mais o prêmio da janela: separa o erro da premissa do erro do DECOMP. Só meses encerrados.</p>` },
       { id: "nivel", titulo: "PLD do dia e revisões (MON)", html: `<p>RISK-1: em cima, a média das 24 horas de cada dia do DESSEM e o DECOMP (PLD semanal da revisão vigente, com limites); embaixo, o PLD hora a hora no mesmo eixo de dias. Na revisão e no mês, cada revisão leva um rótulo com as datas de sábado a sexta, o DECOMP e o DESSEM médio dos dias mostrados; em 3 meses, RV, o mês do PMO quando muda e DECOMP · DESSEM; no ano e no histórico, a faixa do mínimo ao máximo horário de cada dia e a média. Faixas alternadas = uma revisão.</p><p>RISK-2: as últimas revisões do DECOMP com o DECOMP, o DESSEM médio, o desvio e as horas do vale no piso por dia. A linha de decisão do Monitor traz o PLD médio de hoje, o desvio da semana em curso e o do mês até o último deck; o primeiro item é o resultado do simulador (tela SIM).</p>` },
+      { id: "precos-hora", titulo: "Preços por hora (MON)", html: `<p>RISK-25: o PLD de cada hora nos quatro submercados (SE/CO, S, NE, N) e os spreads NE − SE/CO e N − SE/CO, em R$/MWh. Hoje e ontem têm 24 linhas; 7 e 30 dias, uma linha por hora de cada dia, a mais recente em cima, com rolagem dentro do painel. Em destaque, as horas no piso do ano; marca azul à esquerda = vale (8h–15h), vermelha = ponta (18h–21h). No fim, média, mínimo e máximo de cada coluna no horizonte. Hoje = ${dataBr(ULT)}; ${notaCalc || "PLD publicado pela CCEE"}.</p>` },
       { id: "blocos", titulo: "Desvio por bloco de horas (MON)", html: `<p>RISK-3 e RISK-4: DESSEM − DECOMP vigente, separado na contribuição de cada bloco à média do mês (ou do dia): vale 8h–15h, ponta 18h–21h e demais horas; o ponto é o desvio total. Mês civil; DECOMP do mês = média das semanas vigentes ponderada pelos dias. O mês em curso aparece claro e tracejado: média do realizado até o último deck. Sem fev–mar/2023 (decks ausentes).</p>` },
       { id: "resumo", titulo: "Resumo para a mesa (SIM)", html: `<p>RISK-6 resume a simulação: PLD previsto e desvio; direção com o acerto histórico (desde mar/2025, regime atual; "pouco histórico" = menos de 5 previsões da mesma direção); faixa provável 10–90%; de onde vem o desvio (vale no piso, outras horas, ponta, com o peso de cada um) e a comparação com o prêmio de ponta de 12 meses; estresse de ponta; e quando a previsão muda (RV0). Alertas: DECOMP perto do piso (com o histórico dos meses no piso), prêmio da ponta afastado da média de 12 meses e premissas editadas.</p>` },
       { id: "historico", titulo: "Histórico das premissas (SIM)", html: `<p>RISK-7, RISK-8 e RISK-9: média dos ${D.premissas_hist.janela} dias anteriores a cada data, por tipo de dia (o último ponto é hoje), e embaixo cada dia da janela. Na ponta, as médias móveis de 7, 14, 30 e 60 dias e a média dos 12 meses encerrados; cada etiqueta mostra o preço médio, o prêmio sobre o DECOMP e o preço equivalente com o DECOMP digitado, e clicar nela usa aquele prêmio no simulador. O desconto das outras horas aparece numa curva só; trecho tracejado claro = janela com DECOMP no piso (espaço médio abaixo de R$ 20 ou ao menos um quarto dos dias no piso), em que o % não é comparável. É só informativo: o simulador usa a média de 12 meses.</p>` },
@@ -1567,9 +1620,9 @@
     cod: "RISK", nome: "Risk Lab DESSEM", desc: "PLD horário do DESSEM contra o DECOMP e simulador do PLD médio do mês",
     sinal, resumo, alertas, fita, mesa: { ordem: 5 },
     telas: [
-      { cod: "MON", nome: "Monitor", montar: area => telaMON(area) },
+      { cod: "MON", nome: "Monitor", decisao: false, montar: area => telaMON(area) },
       { cod: "SIM", nome: "Simulador", montar: area => telaSIM(area) },
-      { cod: "PER", nome: "Perfis", montar: area => telaPER(area) },
+      { cod: "PER", nome: "Perfis", decisao: false, montar: area => telaPER(area) },
       { cod: "IND", nome: "Indicadores", montar: area => telaIND(area) },
       { cod: "DES", nome: "Desempenho", montar: area => telaDES(area) },
       { cod: "MET", nome: "Metodologia", montar: area => telaMET(area) },

@@ -13,6 +13,7 @@
      telas: [ { cod: "MON", nome: "Monitor", montar: (area, ctx) => { … } }, … ],  // a ordem define ⇧1–9
      mesa: { ordem: 1, tam: "m" },         // opcional: posição e tamanho do resumo na MESA (padrão: ordem das funções, "m"); false = fora da MESA
      decisao: false                        // opcional: as telas da função não mostram a linha de cards do topo
+                                           // (ou só numa tela: { cod, nome, montar, decisao: false })
    });
    Dentro de montar(area, ctx):
      Mesa.decisao(area, [{ r, v, d, principal: true }, …])        // linha de decisão no topo da tela
@@ -41,8 +42,8 @@ const Mesa = (function () {
   function decisao(area, itens) {
     const d = el("div", "m-decisao");
     // função registrada com decisao: false não mostra a linha de cards (o elemento volta solto, para quem o redesenha)
-    const f = FUNCS.find(x => x.cod === atual.cod);
-    if (f && f.decisao === false) return d;
+    const f = FUNCS.find(x => x.cod === atual.cod), t = f && f.telas[atual.n - 1];
+    if (f && (f.decisao === false || (t && t.decisao === false))) return d;  // por função ou só numa tela
     d.innerHTML = itens.map(i => `<div class="${i.principal ? "principal" : ""}"><span class="r">${i.r}</span><span class="v num">${i.v}</span>${i.d != null ? `<span class="d ${i.tom || ""}">${i.d}</span>` : ""}</div>`).join("");
     area.append(d); return d;
   }
