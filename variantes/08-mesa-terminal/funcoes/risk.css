@@ -78,7 +78,11 @@ table.risk-mat td.ok { background: color-mix(in srgb, var(--accent) 18%, var(--s
 @container (max-width: 560px) { .risk-mult { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .risk-mult .mini { cursor: pointer; padding: 4px 6px; }
 .risk-mult .mini .ttl { font-size: 0.74rem; }
-.risk-ctl.risk-ctl13 { padding-block: 4px 0; justify-content: flex-start; gap: 4px 10px; }
+.risk-ctl.risk-ctl13 { padding-block: 4px 0; justify-content: flex-start; align-items: flex-end; gap: 6px 0; }
+/* grupos de filtros do RISK-13: rótulo pequeno em cima e um fio separando um grupo do outro */
+.risk-grp { display: grid; gap: 2px; padding: 0 10px; border-left: 1px solid var(--rule); }
+.risk-grp:first-child { padding-left: 0; border-left: 0; }
+.risk-grp-r { font: 500 0.58rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.05em; }
 .risk-ctl13 .abas button { padding: 2px 4px; font-size: 0.68rem; }
 .risk-anos button { border-bottom: 3px solid var(--c, var(--ink-3)); }
 /* ano visível: fundo neutro e a borda na cor da linha do ano (o âmbar de "selecionado" escondia a legenda) */

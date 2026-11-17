@@ -994,9 +994,12 @@
     const p13 = Mesa.painel(g, { cod: "RISK-13", titulo: "Perfil por mês do ano", tam: "full", ajuda: "perfil-ano", classe: "risk-p13" });
     const ctl13 = mk("div", "risk-ctl risk-ctl13"), anosBox = mk("div", "abas risk-anos"); anosBox.setAttribute("role", "group"); anosBox.setAttribute("aria-label", "Anos visíveis");
     const redesenhar = () => { guardar(); desenharPerfil(); };
-    ctl13.append(abas(VARS.map(v => [v[0], VCURTO[v[0]]]), EST.aVar, v => { EST.aVar = v; redesenhar(); }, "Variável deste painel"),
-      abas(SUBS_FIS, EST.aSub, v => { EST.aSub = v; redesenhar(); }, "Submercado deste painel"),
-      abas([["hora", "Por hora"], ["mes", "Média do mês"]], EST.visao, v => { EST.visao = v; redesenhar(); }, "Modo: perfil por hora do dia ou média do mês por ano"), anosBox);
+    // cada grupo de filtros com um rótulo pequeno em cima, para separar onde começa um e termina o outro
+    const grupo = (rotulo, conteudo) => { const gr = mk("div", "risk-grp"); gr.append(mk("span", "risk-grp-r", rotulo), conteudo); return gr; };
+    ctl13.append(grupo("Variável", abas(VARS.map(v => [v[0], VCURTO[v[0]]]), EST.aVar, v => { EST.aVar = v; redesenhar(); }, "Variável deste painel")),
+      grupo("Submercado", abas(SUBS_FIS, EST.aSub, v => { EST.aSub = v; redesenhar(); }, "Submercado deste painel")),
+      grupo("Modo", abas([["hora", "Por hora"], ["mes", "Média do mês"]], EST.visao, v => { EST.visao = v; redesenhar(); }, "Modo: perfil por hora do dia ou média do mês por ano")),
+      grupo("Anos", anosBox));
     p13.cab.after(ctl13);
     anosBox.addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return;
       if (b.dataset.v === "todos") EST.aOcultos = [];
