@@ -102,7 +102,7 @@ PARE depois de cada tela.
 ```
 Passo 4.2, RISK: porte funcoes/risk.js (e risk.css) da 08 para o módulo do Risk Lab DESSEM no app, ligado aos dados
 reais, uma tela por vez, parando depois de cada uma:
-  1 MON Monitor · 2 SIM Simulador · 3 PER Perfis · 4 IND Indicadores · 5 DES Desempenho · 6 MET Metodologia
+  1 MON Monitor · 2 PER Perfis · 3 IND Indicadores · 4 SIM Simulador · 5 DES Desempenho · 6 MET Metodologia
 - SIM usa o simulador_conta.js do app, sem mudança. O sinal acompanha o simulador (Mesa.atualizarSinal).
 - Mantenha os filtros por bloco (D084) e os rótulos obrigatórios do simulador.
 - Por tela: os números para eu bater com o Acompanhamento ou o Simulador da 07 (mesmo DECOMP).

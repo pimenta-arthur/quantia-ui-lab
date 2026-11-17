@@ -32,7 +32,7 @@ um aplicativo só, que ocupa a tela, em que se chega a qualquer coisa pelo tecla
 | Função | Telas (tecla) |
 |---|---|
 | BAND · Forecast Bandeiras | 1 MON Monitor · 2 CEN Cenários · 3 HIS Histórico · 4 REL Relato do DECOMP · 5 DES Desempenho · 6 MET Metodologia |
-| RISK · Risk Lab DESSEM | 1 MON Monitor · 2 SIM Simulador · 3 PER Perfis · 4 IND Indicadores · 5 DES Desempenho · 6 MET Metodologia |
+| RISK · Risk Lab DESSEM | 1 MON Monitor · 2 PER Perfis · 3 IND Indicadores · 4 SIM Simulador · 5 DES Desempenho · 6 MET Metodologia |
 | NEN · Pricing Descolamento | 1 COT Cotação · 2 DES Descolamento · 3 FUN Fundamentos e realizado · 4 FIS Física · 5 BT Backtest da cotação · 6 MOD Desempenho do modelo · 7 MET Metodologia |
 | HYD · Hydro Inflow Similarity | 1 ENA Afluências · 2 TRJ Trajetória e histórico · 3 CLI Indicadores climáticos · 4 FUN Fundamentos · 5 DES Desempenho e rodadas · 6 MET Metodologia |
 | MKT · Mercado (BBCE, simulado) | 1 CAN Candles · 2 CUR Curva · 3 NEG Negócios · 4 MET Fonte e método |
