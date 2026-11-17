@@ -27,6 +27,8 @@
   const VARS = [["pld", "PLD", "R$/MWh"], ["decomp", "DECOMP vigente", "R$/MWh"], ["carga_liquida", "Carga líquida", "MW"], ["demanda", "Demanda bruta", "MW"], ["demanda_sem_mmgd", "Demanda sem MMGD", "MW"],
     ["renov_com_mmgd", "Renovável com MMGD", "MW"], ["renov_sem_mmgd", "Renovável sem MMGD", "MW"], ["renov_saida", "Renovável gerada (saída)", "MW"]];
   const VCURTO = { pld: "PLD", decomp: "DECOMP", carga_liquida: "Carga líq.", demanda: "Demanda", demanda_sem_mmgd: "Dem. s/MMGD", renov_com_mmgd: "Ren. c/MMGD", renov_sem_mmgd: "Ren. s/MMGD", renov_saida: "Ren. gerada" };
+  // RISK-26 (protótipo): cada tipo de rótulo do desenho pode ser desligado aqui
+  const ROT26 = { fim: true, decomp: true, pico: true, legendaNoDesenho: true };
   const classe = d => (d < -5 ? "desconto" : d > 5 ? "prêmio" : "neutro");
   const tomDir = d => (d === "desconto" ? "desce" : d === "prêmio" ? "sobe" : "neutro");
   const corDir = d => (d === "desconto" ? "var(--risk-vale)" : d === "prêmio" ? "var(--risk-verm)" : "var(--ink-3)");
@@ -426,12 +428,51 @@
 
     // RISK-26 · protótipo: PLD do dia num gráfico só (faixa mín–máx, vale, ponta, média, DECOMP em degraus), para comparar com o RISK-1
     const p26 = Mesa.painel(g, { cod: "RISK-26", titulo: "PLD do dia · DESSEM × DECOMP · protótipo", unidade: `R$/MWh · ${SUBN[sub]}`, tam: "full", ajuda: "pld-dia-proto" });
-    EST.perN26 = valido(EST.perN26, PER_N, "mes");
-    abasEm(p26, PER_N, EST.perN26, v => { EST.perN26 = v; guardar(); desenhar26(); }, "Período");
+    const PER_N26 = [PER_N[0], PER_N[1], ["2m", "2 meses"], ...PER_N.slice(2)];
+    EST.perN26 = valido(EST.perN26, PER_N26, "mes");
+    abasEm(p26, PER_N26, EST.perN26, v => { EST.perN26 = v; guardar(); desenhar26(); }, "Período");
     const bHor = mk("button", "risk-btn", "ver horário"); bHor.type = "button"; bHor.setAttribute("aria-pressed", String(!!EST.p26h)); noCab(p26, bHor);
     bHor.addEventListener("click", () => { EST.p26h = !EST.p26h; bHor.setAttribute("aria-pressed", String(EST.p26h)); bHor.textContent = EST.p26h ? "ver símbolos" : "ver horário"; guardar(); desenhar26(); });
     bHor.textContent = EST.p26h ? "ver símbolos" : "ver horário";
     const leg26 = mk("p", "leg"); p26.el.append(leg26);
+    // rótulos do RISK-26, um tipo por função (ligados por ROT26)
+    function rotulos26(c) {
+      if (ROT26.decomp) rot26Decomp(c);
+      if (ROT26.pico && c.poucos) rot26Pico(c);
+      if (ROT26.fim) rot26Fim(c);
+      if (c.legNoDesenho) rot26Legenda(c);
+    }
+    // 2 · valor do DECOMP pequeno sobre o degrau, no começo de cada revisão
+    function rot26Decomp({ svg, x0, xc, y, grupos, legNoDesenho }) {
+      grupos.forEach((k, j) => { if (x0(k.i1 + 1) - x0(k.i0) < 22) return; const v = k.sel[0].dec;
+        // na primeira revisão, com a legenda no desenho à esquerda do 1º dia, o número vai para depois da barra
+        S(svg, "text", { x: j === 0 && legNoDesenho ? xc(k.i0) + 12 : x0(k.i0) + 3, y: y(v) - 3, style: "fill:var(--ink-2);font-size:9px" }, n(v, 0)); });
+    }
+    // 3 · só o maior máximo de cada revisão ganha o número acima da barra (os acima da escala já têm o número ao lado do ▲)
+    function rot26Pico({ svg, xc, y, ax, itens, grupos }) {
+      grupos.forEach(k => { let best = -1, v = -Infinity; for (let i = k.i0; i <= k.i1; i++) if (itens[i].mx != null && itens[i].mx > v) { v = itens[i].mx; best = i; }
+        if (best < 0 || v > ax.b) return;
+        S(svg, "text", { x: xc(best), y: y(v) - 4, "text-anchor": "middle", style: "fill:var(--ink-2);font-size:9px" }, n(v, 0)); });
+    }
+    // 1 · fim da linha: média, ponta e vale do dia mais recente e o DECOMP atual, à direita, sem encostar
+    function rot26Fim({ svg, w, m, y, ax, itens }) {
+      const u2 = itens[itens.length - 1], x = w - m.r + 6, lista = [];
+      const add = (v, txt, cor) => { if (v == null || v > ax.b) return; lista.push({ el: S(svg, "text", { x, y: y(v) + 3, class: "forte", style: `fill:${cor};font-size:10px` }, txt), x, y: y(v) + 3 }); };
+      add(u2.dec, `DECOMP ${n(u2.dec, 0)}`, "var(--ink-2)");
+      add(u2.med, `média ${n(u2.med, 0)}`, "var(--accent)");
+      if (u2.ponta != null) add(u2.ponta, `ponta ${n(u2.ponta, 0)}`, "var(--risk-ponta)");
+      if (u2.vale != null) add(u2.vale, `vale ${n(u2.vale, 0)}`, "var(--risk-vale)");
+      lista.sort((a, b) => b.y - a.y); empilharRotulos(lista, 60, 11);
+    }
+    // 4 · legenda no desenho, uma vez só: chamadas na barra do primeiro dia com vale e ponta (ou do segundo)
+    function rot26Legenda({ svg, xc, y, bw, itens }) {
+      const i = itens.findIndex(x => x.vale != null); if (i < 0 || i > 1) return;
+      const it = itens[i], tw = Math.min(bw * 0.38, 9), xt = xc(i) - tw - 14;
+      const ch = [[it.mx, "máx"], [it.ponta, "ponta"], [it.med, "média"], [it.vale, "vale"], [it.mn, "mín"]].filter(([v]) => v != null).map(([v, t]) => ({ v, t, y: y(v) + 3 }));
+      const lista = ch.map(c => ({ el: S(svg, "text", { x: xt, y: c.y, "text-anchor": "end", style: "fill:var(--ink-3);font-size:9px" }, c.t), x: xt, y: c.y, c }));
+      lista.sort((a, b) => b.y - a.y); empilharRotulos(lista, 40, 10);
+      lista.forEach(l => { const ty = +l.el.getAttribute("y") - 3; S(svg, "path", { d: `M${xt + 2},${ty}L${xc(i) - tw - 2},${y(l.c.v)}`, fill: "none", stroke: "var(--ink-3)", "stroke-width": 0.6 }); });
+    }
     function desenhar26() {
       limpar(p26.corpo);
       const ult = u[0];
@@ -439,7 +480,7 @@
       if (EST.perN26 === "rev") { const sa = inicioSemana(ult); lin = lin.filter(r => inicioSemana(r[0]) === sa); }
       else if (EST.perN26 === "mes") lin = lin.filter(r => r[0].startsWith(ult.slice(0, 7)));
       else if (EST.perN26 === "ano") lin = lin.filter(r => r[0].startsWith(ult.slice(0, 4)));
-      else if (EST.perN26 === "3m") { const d = new Date(ult + "T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() - 3); const c = d.toISOString().slice(0, 10); lin = lin.filter(r => r[0] > c); }
+      else if (EST.perN26 === "3m" || EST.perN26 === "2m") { const d = new Date(ult + "T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() - (EST.perN26 === "2m" ? 2 : 3)); const c = d.toISOString().slice(0, 10); lin = lin.filter(r => r[0] > c); }
       const horasM = new Map(); Object.values((D.dias_perfil || {})[sub] || {}).flat().forEach(d => horasM.set(d.data, d.pld));
       let itens = lin.map(r => { const v = horasM.get(r[0]), it = { d: r[0], med: r[1], dec: r[2], piso: r[3], vp: r[4], tipo: r[5], mn: r[6], mx: r[7], h: v || null, calc: r[0] > ref.ultimo_publicado };
         if (v) { const b = blocoMedias(v); it.vale = b.vale; it.ponta = b.ponta; it.hmn = v.indexOf(Math.min(...v)); it.hmx = v.indexOf(Math.max(...v)); } return it; });
@@ -453,9 +494,13 @@
       const grupos = [];
       if (!semanal) itens.forEach((it, i) => { const ini = inicioSemana(it.d); let k = grupos[grupos.length - 1]; if (!k || k.ini !== ini) { const gg = gs.find(x => x.ini === ini) || { nome: "RV ?", ini }; k = { ...gg, ini, i0: i, i1: i, sel: [] }; grupos.push(k); } k.i1 = i; k.sel.push(it); });
       grupos.forEach(k => { k.dc = media(k.sel.map(x => x.dec)); k.ds = media(k.sel.map(x => x.med)); });
-      legenda(p26.corpo, [["color-mix(in srgb, var(--ink-2) 55%, transparent)", "Mínimo a máximo do dia"], ["var(--accent)", "Média do dia", "l"], ["var(--risk-vale)", "Vale 8h–15h", "l"], ["var(--risk-ponta)", "Ponta 18h–21h", "l"], ["var(--ink-2)", "DECOMP", "t"], ["var(--ink-3)", "Piso", "t"]]);
+      const poucos = !semanal && N <= 62;  // mês e 2 meses: todos os rótulos; com mais dias, só o fim da linha e o DECOMP de cada degrau
+      const legNoDesenho = ROT26.legendaNoDesenho && poucos && !EST.p26h && itens.some(x => x.vale != null);
+      legenda(p26.corpo, (legNoDesenho ? [] : [["color-mix(in srgb, var(--ink-2) 55%, transparent)", "Mínimo a máximo do dia"], ["var(--accent)", "Média do dia", "l"], ["var(--risk-vale)", "Vale 8h–15h", "l"], ["var(--risk-ponta)", "Ponta 18h–21h", "l"]])
+        .concat([["var(--ink-2)", "DECOMP", "t"], ["var(--ink-3)", "Piso", "t"], ["var(--ink-2)", "Calculado do deck: barra tracejada, ponto vazado", "t"]]));
+      if (legNoDesenho) p26.corpo.lastElementChild.classList.add("risk-leg-peq");
       G(p26.corpo, 236, (svg, w, hh) => {
-        const comCab = grupos.length > 0, m = { l: 42, r: 10, t: comCab ? 22 : 8, b: N <= 45 && !semanal ? 30 : 20 };
+        const comCab = grupos.length > 0, m = { l: legNoDesenho ? 84 : 42, r: ROT26.fim ? 86 : 10, t: comCab ? 22 : 8, b: N <= 45 && !semanal ? 30 : 20 };
         if (!N) { S(svg, "text", { x: w / 2, y: hh / 2, "text-anchor": "middle" }, "sem dados no período"); return; }
         // um pico isolado não achata o resto: o eixo vai até ~1,1 × o percentil 90 dos máximos; acima disso, ▲ no topo (valor na dica)
         const mxs = itens.map(x => x.mx).filter(v => v != null).sort((a, b) => a - b), q90 = mxs.length ? mxs[Math.floor((mxs.length - 1) * 0.9)] : 0;
@@ -466,11 +511,14 @@
         grupos.forEach((k, j) => { if (j % 2 === 0) S(svg, "rect", { x: x0(k.i0), y: m.t, width: x0(k.i1 + 1) - x0(k.i0), height: hh - m.t - m.b, fill: "var(--vazio)", opacity: 0.55 });
           S(svg, "line", { x1: x0(k.i0), x2: x0(k.i0), y1: 2, y2: hh - m.b, stroke: "var(--ink-3)", opacity: 0.6 }); });
         if (!semanal) itens.forEach((it, i) => { if (it.tipo && it.tipo !== "útil") S(svg, "rect", { x: x0(i), y: m.t, width: bw, height: hh - m.t - m.b, fill: "color-mix(in srgb, var(--ink) 6%, transparent)" }); });
-        ax.t.forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 6, y: y(t) + 3, "text-anchor": "end" }, n(t)); });
+        ax.t.forEach(t => { S(svg, "line", { x1: m.l, x2: w - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: legNoDesenho ? 36 : m.l - 6, y: y(t) + 3, "text-anchor": "end" }, n(t)); });
         // cabeçalho de cada revisão: "RV2 · DECOMP 141 · DESSEM 109 · ▼ −32" (encurta quando não cabe)
         grupos.forEach(k => { const larg = x0(k.i1 + 1) - x0(k.i0) - 6, dv = k.ds - k.dc, dvT = `${seta(dv)} ${sn(dv, 0)}`;
-          const cheio = `${k.nome} · DECOMP ${n(k.dc, 0)} · DESSEM ${n(k.ds, 0)} · `, curto = `${k.nome} · `;
-          const pre = (cheio.length + dvT.length) * 6.2 <= larg ? cheio : (curto.length + dvT.length) * 6.2 <= larg ? curto : null; if (pre == null) return;
+          // largo: datas da semana operativa (e "em curso (N dias)"), DECOMP, DESSEM e desvio; médio: datas curtas; estreito: só RV e desvio
+          const fim = k.fim || somaDias(k.ini, 6), nd = (k.dias || k.sel).length, mesmoMes = k.ini.slice(5, 7) === fim.slice(5, 7);
+          const largo = `${k.nome} · ${ddmm(k.ini)}–${ddmm(fim)}${k.emCurso ? ` · em curso (${nd} ${nd === 1 ? "dia" : "dias"})` : ""} · DECOMP ${n(k.dc, 0)} · DESSEM ${n(k.ds, 0)} · `;
+          const medio = `${k.nome} · ${k.emCurso ? `${ddmm(k.ini)}– · ${nd} d` : mesmoMes ? `${k.ini.slice(8, 10)}–${ddmm(fim)}` : `${ddmm(k.ini)}–${ddmm(fim)}`} · `, curto = `${k.nome} · `;
+          const pre = [largo, medio, curto].find(t => (t.length + dvT.length) * 6.2 <= larg); if (pre == null) return;
           const t = S(svg, "text", { x: x0(k.i0) + 4, y: 14, class: "forte" }); S(t, "tspan", {}, pre); S(t, "tspan", { style: `fill:var(--${dv < 0 ? "desce" : "sobe"})` }, dvT); });
         // piso e DECOMP em degraus
         const degrau = key => itens.map((it, i) => `${i ? "L" : "M"}${x0(i)},${y(it[key])}L${x0(i + 1)},${y(it[key])}`).join("");
@@ -485,13 +533,15 @@
         } else {
           itens.forEach((it, i) => { if (it.mn == null || it.mx == null) return;
             S(svg, "rect", { x: xc(i) - (bw >= 4 ? 1.5 : 0.5), y: y(it.mx), width: bw >= 4 ? 3 : 1, height: Math.max(1, y(it.mn) - y(it.mx)), fill: "color-mix(in srgb, var(--ink-2) 55%, transparent)", opacity: it.calc ? 0.5 : 1, stroke: it.calc ? "var(--ink-2)" : null, "stroke-dasharray": it.calc ? "2 2" : null, "stroke-width": it.calc ? 0.8 : null });
-            if (it.mx > ax.b) S(svg, "text", { x: xc(i), y: m.t + 8, "text-anchor": "middle", style: "fill:var(--ink-2);font-size:9px" }, "▲");
+            if (it.mx > ax.b) { S(svg, "text", { x: xc(i), y: m.t + 8, "text-anchor": "middle", style: "fill:var(--ink-2);font-size:9px" }, "▲");
+              if (ROT26.pico && poucos) S(svg, "text", { x: xc(i) + 6, y: m.t + 8, style: "fill:var(--ink-2);font-size:9px" }, n(it.mx, 0)); }
             if (!finos && it.vale != null) { const tw = Math.min(bw * 0.38, 9);
               S(svg, "line", { x1: xc(i) - tw, x2: xc(i) + tw, y1: y(it.vale), y2: y(it.vale), stroke: "var(--risk-vale)", "stroke-width": 2.2, opacity: it.calc ? 0.6 : 1 });
               S(svg, "line", { x1: xc(i) - tw, x2: xc(i) + tw, y1: y(it.ponta), y2: y(it.ponta), stroke: "var(--risk-ponta)", "stroke-width": 2.2, opacity: it.calc ? 0.6 : 1 }); } });
           S(svg, "path", { d: itens.map((it, i) => `${i ? "L" : "M"}${xc(i)},${y(it.med)}`).join(""), fill: "none", stroke: "var(--accent)", "stroke-width": 1, opacity: 0.8 });
           if (bw >= 4) itens.forEach((it, i) => S(svg, "circle", { cx: xc(i), cy: y(it.med), r: Math.min(3, bw / 3), fill: it.calc ? "var(--surface)" : "var(--accent)", stroke: "var(--accent)", "stroke-width": 1.2 }));
         }
+        rotulos26({ svg, w, hh, m, x0, xc, y, ax, bw, N, itens, grupos, poucos, legNoDesenho });
         // eixo X: dia e inicial do dia da semana; com muitos dias, só os inícios de mês (ou de ano, no semanal)
         let ultX = -1e9;
         itens.forEach((it, i) => {

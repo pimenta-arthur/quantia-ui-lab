@@ -218,3 +218,4 @@ table.risk-ph tr.risk-h-ponta td:first-child { box-shadow: inset 3px 0 0 var(--r
 table.risk-ph tr.risk-ph-dia td { border-top: 2px solid var(--t-ambar); }
 table.risk-ph .risk-ph-d { color: var(--t-ambar); }
 table.risk-ph .risk-ph-oculta { visibility: hidden; }
+.legenda-mini.risk-leg-peq { font-size: 0.6rem; color: var(--ink-3); }
