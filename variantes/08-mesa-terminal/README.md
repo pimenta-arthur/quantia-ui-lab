@@ -58,3 +58,8 @@ research ainda não existem.
   bacias, acumulado do dia e de 7 dias contra o previsto, efeito esperado na ENA. Na MESA fica só o resumo atual
   (barra observada, traço do ECMWF e marca de ritmo). A decidir: lista de bacias, perfil típico do dia (climatologia
   horária) e previsão de referência (ECMWF 00z, rodada mais recente, outros modelos).
+
+## Padrão
+Esta variante virou o padrão [quantia-padrao-mesa](https://github.com/pimenta-arthur/quantia-padrao-mesa) (v3.0), onde
+ela é o demo de referência. Mudanças aprovadas aqui que valem para todos os projetos vão também para lá (GUIA,
+catálogo, núcleo e demo no mesmo commit).

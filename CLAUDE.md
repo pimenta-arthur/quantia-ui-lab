@@ -6,3 +6,5 @@ Laboratório de front-end isolado do Quantia Energia App. Responder sempre em po
   `padrao/` é cópia congelada, não editar: variações vão em `variantes/<NN-nome>/tema.css`.
 - Seguir `padrao/GUIA.md` (tokens como variáveis em `:root`, com tema escuro; português com acentuação; números pt-BR).
 - Nova variante: copiar `variantes/_modelo` e registrar em `index.html`.
+- O formato Mesa (variante 08) virou o padrão `quantia-padrao-mesa` (repositório próprio). Aqui ficam os experimentos;
+  o que for aprovado para todos os projetos é levado ao padrão (GUIA, catálogo, núcleo e demo juntos).

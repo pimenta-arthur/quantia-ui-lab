@@ -27,3 +27,11 @@ e com fila de conexões maior (com a fila padrão, as variantes às vezes abriam
 
 ## Levar uma variante aprovada para o app
 Feito à mão no `quant-energia-app`, fora deste repositório: aqui nada é sincronizado.
+
+## Padrão Mesa (v3.0)
+O formato aprovado na variante 08 virou um padrão próprio, no repositório
+[quantia-padrao-mesa](https://github.com/pimenta-arthur/quantia-padrao-mesa): guia com as regras numeradas, núcleo,
+modelos de projeto e de função, catálogo das peças, o demo (a 08) e os prompts. **Projeto novo ou função nova: use o
+padrão, não os exemplos de `migracao-terminal/`** (esses são do terminal por páginas, v2.0, caminho da 07).
+Mudança aprovada aqui no laboratório que vale para todos os projetos: levar ao padrão (prompt 7 de `docs/PROMPTS.md`
+de lá).

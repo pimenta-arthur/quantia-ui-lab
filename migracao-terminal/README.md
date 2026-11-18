@@ -1,4 +1,10 @@
-# Migração para o padrão v2.0 (terminal)
+# Migração para o padrão v2.0 (terminal por páginas)
+
+> **Atenção:** este pacote é o do terminal **por páginas** (v2.0), caminho da migração do app para a variante 07.
+> O formato de uma tela (Mesa, a variante 08) virou o padrão
+> [quantia-padrao-mesa](https://github.com/pimenta-arthur/quantia-padrao-mesa) (v3.0), com guia, catálogo e prompts
+> próprios. Os exemplos daqui (VG-1, BAND-2…) são da primeira rodada e não refletem o app real: para peças novas, use o
+> catálogo do padrão Mesa.
 
 Pacote para levar o visual da variante **02 · Terminal** ao Quant Energia App (e depois aos repositórios
 `*-page`). Tudo aqui é estático e com dados fictícios. Este laboratório não altera o app: a migração é feita
