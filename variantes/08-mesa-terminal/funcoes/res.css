@@ -138,3 +138,77 @@ tr.res-ref-l td:first-child { font-size: 0.66rem; }
 /* horizonte (LP hoje; seletor LP/CP só com mais de um horizonte) */
 .res-hor { background: var(--surface); padding: 4px 8px; border: 1px solid var(--rule); }
 .res-tag-hor { background: none; color: var(--t-ambar); border: 1px solid var(--t-ambar); margin-right: 4px; }
+
+/* REU · Morning Call (RES-12 a RES-16). Cores novas: escuro em :root, claro em :root[data-theme="light"] */
+:root {
+  --res-merc: #6fa6e6;                                        /* curva de mercado (BBCE) */
+  --res-umido: #4f8fe0; --res-seco: #e3a06c;                  /* ENA acima / abaixo da MLT */
+  --res-hist: color-mix(in srgb, #8a949e 13%, transparent);   /* histórico mín–máx do armazenamento */
+  --res-rec: color-mix(in srgb, #8a949e 40%, transparent);    /* recomposição p10–p90 */
+}
+:root[data-theme="light"] {
+  --res-merc: #2a62b0;
+  --res-umido: #2a78d6; --res-seco: #c86a22;
+  --res-hist: color-mix(in srgb, #6b7680 16%, transparent);
+  --res-rec: color-mix(in srgb, #6b7680 36%, transparent);
+}
+.res-reu-topo { min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; gap: 2px 18px; padding: 6px 2px 8px; font: 0.72rem var(--f-data); color: var(--ink-3); }
+.res-reu-topo b { color: var(--t-ambar); }
+.res-reu-nota { flex: 1 1 min(100%, 320px); min-width: 0; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res-filtro { padding: 2px 0 6px; }
+.res-fr { font: 500 0.58rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.05em; }
+.res-reu-preco .graf { height: 250px; }
+.res-reu-preco .graf svg text.res-rot-merc { fill: var(--ink); font-weight: 500; }
+.res-reu-preco .graf svg text.res-rot-dif { fill: var(--ink-2); font-size: 10.5px; }
+.res-leque .graf svg text.res-rot-lin, .res-ear svg text.res-rot-lin { fill: var(--ink-3); font-size: 10px; }
+.res-tab-cen td, .res-tab-pld td, .res-tab-ena td { white-space: nowrap; }
+.res-tab-cen tbody tr, .res-tab-ena tbody tr { cursor: pointer; }
+.res-sens { color: var(--ink-2); }
+.res-antiga { color: var(--ink-3); }
+.res-tr-merc td { color: var(--ink-2); border-top: 1px solid var(--rule); }
+.res-ena { display: inline-grid; min-width: 46px; padding: 1px 5px; text-align: right; line-height: 1.2; }
+.res-ena small { font-size: 0.62rem; color: var(--ink-3); font-weight: 400; }
+.res-ear { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; padding-top: 4px; }
+@media (max-width: 560px) { .res-ear { grid-template-columns: minmax(0, 1fr); } }
+.res-ear-sub { min-width: 0; }
+.res-ear-t { margin: 0; font: 0.7rem var(--f-data); color: var(--ink-2); }
+.res-ear-t span { color: var(--ink-3); }
+.res-ear .graf { height: 230px; }
+.res-ear .graf svg .res-tracos { pointer-events: none; }
+.res-ear .graf svg .res-col { fill: transparent; cursor: pointer; }
+.res-ear .graf svg .res-col:hover { fill: color-mix(in srgb, var(--ink) 5%, transparent); }
+.res-ear .graf svg text.res-rot-esp { fill: var(--t-ambar); font-weight: 600; font-size: 10px; }
+.res-ear .graf svg text.res-rot-part { fill: var(--ink); font-weight: 600; font-size: 10px; }
+.res-tab-cen td:first-child { white-space: normal; max-width: 0; width: 62%; }
+.res-cen-n { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res-cen-p { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.66rem; line-height: 1.35; color: var(--ink-3); padding: 1px 0 2px 14px; }
+.res-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 0; padding: 4px 0 2px; }
+.res-sum > div { display: grid; gap: 1px; padding: 0 14px; border-left: 1px solid var(--rule); min-width: 0; }
+.res-sum > div:nth-child(3n + 1) { border-left: 0; padding-left: 0; }
+.res-sum-r { font: 500 0.6rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; }
+.res-sum-v { font: 600 1.05rem var(--f-data); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res-sum-d { font: 0.68rem var(--f-data); color: var(--ink-3); }
+.res-sum-nota { margin: 10px 0 0; font: 0.74rem var(--f-body); color: var(--ink-2); }
+.res-sum-nota b { color: var(--ink); }
+.res-sub-t { margin: 6px 0 2px; font: 500 0.6rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; }
+.res-sub-t:first-child { margin-top: 0; }
+.res-merc { color: var(--res-merc); font-weight: 600; }
+.res-tab-ear td, .res-tab-umido td { white-space: nowrap; }
+@media (max-width: 760px) { .res-sum { grid-template-columns: minmax(0, 1fr); } .res-sum > div { border-left: 0; padding-left: 0; } .res-ear { grid-template-columns: minmax(0, 1fr); } }
+/* REU: tabela de preço e ENA (colunas fixas, para os meses ficarem alinhados de cima a baixo) */
+html[data-tela="RES-REU"] .t-fita { display: none; }
+table.res-pe { table-layout: fixed; width: 100%; min-width: 1080px; }
+table.res-pe col.res-pe-rot { width: 150px; }
+table.res-pe td, table.res-pe th { white-space: nowrap; }
+table.res-pe td:first-child { overflow: hidden; text-overflow: ellipsis; }
+table.res-pe .res-pe-div { border-left: 1px solid var(--ink-3); }
+table.res-pe thead tr.res-pe-blocos th { text-align: center; color: var(--ink); font-weight: 600; border-bottom: 0; padding-bottom: 0; }
+table.res-pe thead tr.res-pe-blocos th small { color: var(--ink-3); font-weight: 400; }
+table.res-pe tr.res-pe-grupo td { padding-top: 8px; font: 500 0.6rem var(--f-data); color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--rule); }
+.res-cen-mini { font-size: 0.64rem; color: var(--ink-3); }
+.res-merc-in { width: 100%; max-width: 72px; font: 600 0.78rem var(--f-data); text-align: right; color: var(--res-merc); background: var(--res-in); border: 1px solid var(--rule); padding: 1px 4px; border-radius: 0; }
+.res-merc-in:focus { outline: 1px solid var(--t-ambar); border-color: var(--t-ambar); }
+.res-merc-in.digitado { border-color: var(--res-merc); }
+.res-merc-in.erro { border-color: var(--desce); background: var(--res-erro); }
+.res-merc-fonte { margin: 6px 0 0; font: 0.7rem var(--f-data); color: var(--ink-3); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.res-merc-fonte b { color: var(--ink-2); font-weight: 500; }

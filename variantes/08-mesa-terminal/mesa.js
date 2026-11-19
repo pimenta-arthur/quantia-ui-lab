@@ -153,6 +153,7 @@ const Mesa = (function () {
     if (!f) { cod = "MESA"; n = 0; } else n = Math.min(Math.max(1, n), f.telas.length);
     atual = { cod, n };
     document.documentElement.dataset.func = cod;
+    document.documentElement.dataset.tela = cod === "MESA" ? "MESA" : `${cod}-${f.telas[n - 1].cod}`;   // ex.: "RES-REU", para estilos de uma tela só
     $$("#m-fn a").forEach(a => a.dataset.cod === cod ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     montarTelas();
     const area = $("#m-area"); area.replaceChildren(); area.scrollTop = 0;

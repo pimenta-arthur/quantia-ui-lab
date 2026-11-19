@@ -95,7 +95,12 @@
           SE: se.map(val), S: se.map((x, i) => val(x + dS[i] * c.f[i])),
           NE: se.map((x, i) => val(x + dNE[i] * c.k * b.kd)), N: se.map((x, i) => val(x + dN[i] * c.k * b.kd)) } };
       }),
-    }));
+    })).map((v, _, todas) => {
+      // a sensibilidade de carga não foi refeita em 14/11: repete os valores da rodada de 07/11
+      if (v.id !== "v20261114") return v;
+      const de = todas.find(x => x.id === "v20261107").cen.find(c => c.id === "sen-carga");
+      return { ...v, cen: v.cen.map(c => (c.id === "sen-carga" ? { ...c, v: JSON.parse(JSON.stringify(de.v)) } : c)) };
+    });
   }
   const EXEMPLO = gerarExemplo();
   const versaoValida = v => v && typeof v.id === "string" && typeof v.data === "string" && Array.isArray(v.cen) && v.cen.length &&
@@ -279,8 +284,8 @@
         SUBS.map(s => { const x = vDe(E, s.k, i), se = vDe(E, "SE", i), d = delta(E, ant, s.k, i); return [s.nome, n(x, 2), d == null ? "—" : dl(d, 2), s.k === "SE" || x == null || se == null ? "" : sn(x - se, 2)]; }), "densa res-tab-insp");
       const prem = ordenar(v.cen).filter(c => (c.prem || "").trim());
       if (prem.length) { el.append(h("h3", null, "Premissas")); QC.pares(el, prem.map(c => [esc(curto(c, v)), esc(c.prem)]), "premissas res-prem-insp"); }
-      const a = h("a", "res-link", "Abrir na comparação ›"); a.href = "#RES-2";
-      a.addEventListener("click", ev => { ev.preventDefault(); LS.gravar("subCmp", sub); LS.gravar("mesCmp", String(i)); LS.gravar("abrirCmp", "1"); Mesa.ir("RES", 2); });
+      const a = h("a", "res-link", "Abrir na comparação ›"); a.href = `#RES-${T("CMP")}`;
+      a.addEventListener("click", ev => { ev.preventDefault(); LS.gravar("subCmp", sub); LS.gravar("mesCmp", String(i)); LS.gravar("abrirCmp", "1"); Mesa.ir("RES", T("CMP")); });
       el.append(a);
     };
   }
@@ -335,7 +340,271 @@
   }
 
   // ================================================================================================
-  // tela 1 · CAD Cadastro
+  // tela 1 · REU Morning Call: a rodada vigente numa tela só, para a reunião de 15 minutos
+  // ================================================================================================
+  // Hidrologia e mercado de EXEMPLO (FICTÍCIOS, semente fixa). No app: a ENA (% MLT) e o armazenamento de partida
+  // de cada cenário vêm do cadastro do research; o histórico de armazenamento, do ONS; a curva, da BBCE (a mesma do MKT).
+  const HID = (function () {
+    let s = 20261119;
+    const rnd = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const gauss = () => { let u = 0; while (!u) u = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); };
+    const r1 = v => Math.round(v * 10) / 10, lim = v => Math.max(3, Math.min(99, v));
+    // armazenamento médio de fim de mês (% da EARmáx), jan a dez, por submercado
+    const CLIMA = {
+      SE: [46, 55, 62, 66, 66, 63, 58, 52, 45, 38, 33, 37], S: [62, 59, 56, 55, 60, 68, 75, 77, 75, 72, 67, 63],
+      NE: [48, 58, 65, 69, 69, 66, 61, 54, 46, 39, 35, 39], N: [52, 70, 87, 96, 97, 92, 82, 68, 52, 40, 35, 40],
+    };
+    const OFF26 = { SE: -8, S: 7, NE: -11, N: -5 };
+    const ear = {};
+    SUBS.forEach(({ k }) => {
+      ear[k] = {};
+      for (let a = 2001; a <= 2026; a++) {
+        let o = a === 2026 ? OFF26[k] : gauss() * 9;
+        ear[k][a] = CLIMA[k].map(c => { o = o * 0.96 + gauss() * (a === 2026 ? 1 : 2.6); return r1(lim(c + o)); });
+      }
+      ear[k][2026] = ear[k][2026].slice(0, 11);   // 2026 até novembro: o de nov é a partida (30/11) da rodada
+    });
+    // ENA de cada cenário de exemplo, % MLT, dez/26 a mai/27
+    const ESP = { SE: [85, 88, 92, 95, 96, 98], S: [104, 97, 94, 100, 110, 116], NE: [70, 74, 80, 85, 88, 90], N: [80, 84, 88, 92, 95, 98] };
+    const FAT = { esp: () => 1, sup: () => 0.76, inf: () => 1.29, "sen-seca": k => (k === "SE" ? 0.9 : 1), "sen-carga": () => 1 };
+    const ena = (c, k) => (FAT[c.id] ? ESP[k].map(v => Math.round(v * FAT[c.id](k))) : null);
+    return { CLIMA, ear, ena, lim, r1 };
+  })();
+  // eixo do armazenamento: jan/26 a mai/27 (observado até nov/26, partida em 30/11, projeção de dez/26 a mai/27)
+  const EAR_X = []; for (let i = 0; i < 17; i++) { const a = 2026 + Math.floor(i / 12), m = i % 12; EAR_X.push({ a, m, p: `${a}-${String(m + 1).padStart(2, "0")}` }); }
+  const I_PART = 10;   // nov/26
+  const partida = k => HID.ear[k][2026][10];
+  const pctl = (a, p) => { const o = a.slice().sort((x, y) => x - y), i = (o.length - 1) * p, f = Math.floor(i); return o[f] + (o[Math.min(f + 1, o.length - 1)] - o[f]) * (i - f); };
+  /** faixa histórica (2001–2025) do mês do calendário */
+  const histMes = (k, m) => { const v = []; for (let a = 2001; a <= 2025; a++) v.push(HID.ear[k][a][m]); return { min: Math.min(...v), max: Math.max(...v), med: pctl(v, 0.5) }; };
+  /** recomposição: a partida somada à variação de cada um dos últimos 10 anos (nov → dez…mai seguinte) */
+  const REC_ANOS = Array.from({ length: 10 }, (_, i) => 2016 + i);
+  function recomposicao(k) {
+    const p = partida(k);
+    const traj = REC_ANOS.map(y => MESES.map((_, j) => { const v = j === 0 ? HID.ear[k][y][11] : HID.ear[k][y + 1][j - 1]; return HID.lim(p + v - HID.ear[k][y][10]); }));
+    return MESES.map((_, j) => { const c = traj.map(t => t[j]); return { med: HID.r1(c.reduce((s, v) => s + v, 0) / c.length), p10: HID.r1(pctl(c, 0.1)), p90: HID.r1(pctl(c, 0.9)) }; });
+  }
+  /** trajetória do armazenamento num cenário: média do mês + 0,12 p.p. por p.p. de ENA acima/abaixo da MLT */
+  function earCen(c, k) {
+    const e = HID.ena(c, k); if (!e) return null;
+    let v = partida(k);
+    return MESES.map((_, j) => { const m = (11 + j) % 12, ant = (10 + j) % 12; v = HID.lim(v + HID.CLIMA[k][m] - HID.CLIMA[k][ant] + 0.12 * (e[j] - 100) - (c.id === "sen-carga" ? 0.5 : 0)); return HID.r1(v); });
+  }
+  // curva de mercado SE (BBCE, fechamento de 14/11/26, fictícia, na mesma base do MKT); mar/27 sai do 1T27 e
+  // abr–mai do 2T27, porque esses meses não são negociados sozinhos
+  const MERC = [
+    { v: 214, o: "produto dez/26" }, { v: 222, o: "produto jan/27" }, { v: 205, o: "produto fev/27" },
+    { v: 3 * 212 - 222 - 205, o: "implícito: 1T27 a R$ 212 menos jan e fev" }, { v: 188, o: "2T27 (trimestre)" }, { v: 188, o: "2T27 (trimestre)" },
+  ];
+  const MERC_FONTE = "BBCE, fechamento de 14/11/26 (fictício)";
+  /** preço de mercado digitado na tela (R$/MWh, um por mês; null = usa o de exemplo). No app irá para o servidor. */
+  let MERC_USR = (() => { const a = LS.json("merc", null); return Array.isArray(a) && a.length === MESES.length ? a.map(v => (typeof v === "number" && isFinite(v) ? v : null)) : MESES.map(() => null); })();
+  const mercV = i => (MERC_USR[i] != null ? MERC_USR[i] : MERC[i].v);
+  const nMerc = v => n(v, Number.isInteger(v) ? 0 : 2);
+  const mercDigitado = () => MERC_USR.some(v => v != null);
+  const mercInfo = () => { const q = LS.ler("mercQuando", ""); return mercDigitado() ? `digitado na tela${q ? ` em ${dataBr(q)} ${q.slice(11, 16)}` : ""}` : MERC_FONTE; };
+  /** data do cenário: a primeira versão, voltando a partir de v, em que ele já tinha os mesmos valores */
+  function dataCen(c, v) {
+    let i = VERS.indexOf(v), d = v.data;
+    while (i > 0) { const a = par(c, VERS[i - 1]); if (!a || JSON.stringify(a.v) !== JSON.stringify(c.v)) break; d = VERS[i - 1].data; i--; }
+    return d;
+  }
+  const ehBase = c => c.tipo !== "sen";
+  const T = cod => TELAS.findIndex(t => t.cod === cod) + 1;
+  const corEna = v => v == null ? "transparent" : `color-mix(in srgb, ${v >= 100 ? "var(--res-umido)" : "var(--res-seco)"} ${Math.round(Math.min(1, Math.abs(v - 100) / 40) * 55)}%, transparent)`;
+
+  /** inspetor de um cenário: premissa, data, PLD nos quatro submercados, ENA e armazenamento */
+  function inspCen(c, V) {
+    return el => {
+      const ant = antDe(V), d = dataCen(c, V);
+      el.append(h("p", "res-insp-cab", `${ehBase(c) ? "Cenário base" : "Sensibilidade"} · atualizado em <b>${dataBr(d)}</b>${d !== V.data ? ` (repetido na rodada de ${dataBr(V.data)})` : ""}`));
+      if ((c.prem || "").trim()) el.append(h("p", null, esc(c.prem)));
+      el.append(h("h3", null, "PLD · R$/MWh"));
+      QC.tabela(el, [{ t: "Sub." }, ...MESES.map(m => ({ t: rot(m), n: true }))],
+        SUBS.map(s => [s.nome, ...MESES.map((_, i) => `${n(vDe(c, s.k, i))}${ant ? dl(delta(c, ant, s.k, i)) : ""}`)]).concat([["Merc. SE", ...MESES.map((_, i) => nMerc(mercV(i)))]]), "densa res-tab-insp");
+      el.append(h("h3", null, "ENA · % MLT"));
+      const tem = HID.ena(c, "SE");
+      if (tem) QC.tabela(el, [{ t: "Sub." }, ...MESES.map(m => ({ t: rot(m), n: true }))], SUBS.map(s => [s.nome, ...HID.ena(c, s.k).map(v => n(v))]), "densa res-tab-insp");
+      else el.append(h("p", "leg", "Sem premissa de ENA no cadastro deste cenário."));
+      el.append(h("h3", null, "Armazenamento · % EARmáx"));
+      if (tem) QC.tabela(el, [{ t: "Sub." }, { t: "Partida 30/11", n: true }, { t: `Fim ${rot(MESES[5])}`, n: true }, { t: "Rec. média", n: true }],
+        SUBS.map(s => [s.nome, n(partida(s.k), 1), n(earCen(c, s.k)[5], 1), n(recomposicao(s.k)[5].med, 1)]), "densa res-tab-insp");
+      const a = h("a", "res-link", "Abrir no cadastro ›"); a.href = `#RES-${T("CAD")}`;
+      el.append(a);
+      el.append(h("p", "leg", FICT));
+    };
+  }
+
+  /** RES-16: armazenamento de um submercado, jan/26 a mai/27, contra o histórico e a recomposição */
+  function earSub(svg, W, H, k, V) {
+    const m = { l: 30, r: 46, t: 10, b: 20 }, nX = EAR_X.length;
+    const x = i => m.l + (W - m.l - m.r) * i / (nX - 1), y = v => m.t + (H - m.t - m.b) * (1 - v / 100);
+    [0, 25, 50, 75, 100].forEach(t => { S(svg, "line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: "var(--rule)" }); S(svg, "text", { x: m.l - 4, y: y(t) + 3, "text-anchor": "end" }, t); });
+    rotulosX(svg, EAR_X.map((_, i) => i).filter(i => i % 4 === 0), x, H - 5, i => rot(EAR_X[i].p), 34);
+    const hist = EAR_X.map(p => histMes(k, p.m)), rec = recomposicao(k), obs = HID.ear[k][2026];
+    const cs = ordenar(V.cen).filter(c => HID.ena(c, k)), E = cs.find(c => c.tipo === "esp");
+    // colunas com dica e inspetor
+    EAR_X.forEach((p, i) => {
+      const w = (W - m.l - m.r) / (nX - 1), r = S(svg, "rect", { x: x(i) - w / 2, y: m.t, width: w, height: H - m.t - m.b, class: "res-col" });
+      const j = i - I_PART - 1;
+      dicaEm(r, () => `<b>${SUBN[k]} · ${rot(p.p)}</b><span class="dica-l">Histórico 2001–2025: ${n(hist[i].min)}–${n(hist[i].max)}% (mediana ${n(hist[i].med)}%)</span>` +
+        (i <= I_PART ? `<span class="dica-l">${i === I_PART ? "Partida (30/11)" : "Observado"}: <b>${n(obs[i], 1)}%</b></span>` :
+          `<span class="dica-l">Recomposição: média <b>${n(rec[j].med)}%</b> · p10–p90 ${n(rec[j].p10)}–${n(rec[j].p90)}%</span>` + cs.map(c => `<span class="dica-l"><i style="background:${corDe(c, V)}"></i>${esc(nomeDe(c))}: <b>${n(earCen(c, k)[j], 1)}%</b></span>`).join("")));
+      Mesa.alvo(r, `Armazenamento ${SUBN[k]}`, el => inspEar(el, k, V));
+    });
+    const g = S(svg, "g", { class: "res-tracos" });
+    S(g, "polygon", { points: [...hist.map((h2, i) => `${x(i)},${y(h2.max)}`), ...hist.slice().reverse().map((h2, i) => `${x(nX - 1 - i)},${y(h2.min)}`)].join(" "), fill: "var(--res-hist)" });
+    const xs = [I_PART, ...MESES.map((_, j) => I_PART + 1 + j)], p0 = partida(k);
+    S(g, "polygon", { points: [...xs.map((i, q) => `${x(i)},${y(q ? rec[q - 1].p90 : p0)}`), ...xs.slice().reverse().map((i, q) => { const qq = xs.length - 1 - q; return `${x(i)},${y(qq ? rec[qq - 1].p10 : p0)}`; })].join(" "), fill: "var(--res-rec)" });
+    const lin = (pts, at) => S(g, "polyline", { points: pts.map(([i, v]) => `${x(i)},${y(v)}`).join(" "), fill: "none", "stroke-linejoin": "round", ...at });
+    lin(xs.map((i, q) => [i, q ? rec[q - 1].med : p0]), { stroke: "var(--ink-2)", "stroke-width": 1.3, "stroke-dasharray": "2 3" });
+    cs.filter(c => c !== E).forEach(c => lin(xs.map((i, q) => [i, q ? earCen(c, k)[q - 1] : p0]), c.tipo === "sen" ? { stroke: corDe(c, V), "stroke-width": 1.3, "stroke-dasharray": "5 4" } : { stroke: "var(--res-faixa)", "stroke-width": 1.1 }));
+    lin(obs.map((v, i) => [i, v]), { stroke: "var(--ink)", "stroke-width": 1.8 });
+    if (E) lin(xs.map((i, q) => [i, q ? earCen(E, k)[q - 1] : p0]), { stroke: "var(--t-ambar)", "stroke-width": 2.2 });
+    S(g, "circle", { cx: x(I_PART), cy: y(p0), r: 3.5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 1.5 });
+    S(g, "text", { x: x(I_PART), y: y(p0) + (p0 > 50 ? 15 : -8), "text-anchor": "middle", class: "res-rot-part" }, `${n(p0, 0)}%`);
+    // rótulos no fim: esperado e recomposição média, afastados se encostarem
+    const fim = [...(E ? [{ t: `Esp. ${n(earCen(E, k)[5])}`, v: earCen(E, k)[5], cls: "res-rot-esp" }] : []), { t: `Rec. ${n(rec[5].med)}`, v: rec[5].med, cls: "res-rot-lin" }].map(o => ({ ...o, py: y(o.v) + 3 })).sort((a, b) => a.py - b.py);
+    if (fim.length > 1 && fim[1].py - fim[0].py < 11) { const c = (fim[0].py + fim[1].py) / 2; fim[0].py = c - 5.5; fim[1].py = c + 5.5; }
+    fim.forEach(o => S(g, "text", { x: W - m.r + 4, y: o.py, class: o.cls }, o.t));
+  }
+  function inspEar(el, k, V) {
+    const rec = recomposicao(k), cs = ordenar(V.cen).filter(c => HID.ena(c, k));
+    el.append(h("p", "res-insp-cab", `Partida em 30/11: <b>${n(partida(k), 1)}% da EARmáx</b> · histórico de nov (2001–2025): ${n(histMes(k, 10).min)}–${n(histMes(k, 10).max)}%`));
+    el.append(h("h3", null, `${SUBN[k]} · % EARmáx no fim do mês`));
+    QC.tabela(el, [{ t: "Mês" }, { t: "Hist. mín–máx", n: true }, { t: "Rec. p10–p90", n: true }, { t: "Rec. méd.", n: true }, ...cs.map(c => ({ t: esc(curto(c, V)), n: true }))],
+      MESES.map((mes, j) => { const hm = histMes(k, (11 + j) % 12); return [rot(mes), `${n(hm.min)}–${n(hm.max)}`, `${n(rec[j].p10)}–${n(rec[j].p90)}`, n(rec[j].med), ...cs.map(c => n(earCen(c, k)[j], 1))]; }), "densa res-tab-insp");
+    el.append(h("p", "leg", `Recomposição: a partida somada à variação, de novembro a cada mês seguinte, de cada um dos anos de ${REC_ANOS[0]} a ${REC_ANOS[REC_ANOS.length - 1]}. Cenários: armazenamento que resulta da ENA de cada um. ${FICT}`));
+  }
+
+  // MLT mensal por submercado (MWmed), a mesma da HYD; ENA em MWmed = % MLT × MLT do mês
+  const MLT_SUB = (window.HYD && window.HYD.produto && window.HYD.produto.mlt_sub) || null;
+  const mltMes = (k, j) => (MLT_SUB && MLT_SUB[k] ? MLT_SUB[k][(11 + j) % 12] : null);
+  const mwmed = (k, j, pct) => { const m = mltMes(k, j); return m == null || pct == null ? null : pct / 100 * m; };
+  const UMIDO = [0, 1, 2, 3, 4];   // dez a abr
+  const media = a => a.reduce((s2, v) => s2 + v, 0) / a.length;
+  /** posição da partida entre os novembros de 2001 a 2025: % dos anos com armazenamento menor */
+  const posHist = k => { let c = 0; for (let a = 2001; a <= 2025; a++) if (HID.ear[k][a][10] < partida(k)) c++; return Math.round(c / 25 * 100); };
+  const cabMeses = (extra = []) => [{ t: "Sub." }, ...MESES.map(m => ({ t: rot(m), n: true })), ...extra];
+
+  function telaREU(area) {
+    const V = VIG(), ant = antDe(V), E = espDe(V), cs = ordenar(V.cen), Su = doTipo(V, "sup"), In = doTipo(V, "inf");
+    const redesenhar = () => { area.replaceChildren(); telaREU(area); };
+    seletorHorizonte(area, redesenhar);
+    const g = Mesa.grade(area);
+
+    // ---- RES-12 · preço e ENA na mesma linha, numa tabela só (os meses ficam sempre nas mesmas colunas) ----
+    const p1 = painel(g, { cod: "RES-12", titulo: `ENA e preço · rodada ${V.horizonte} ${dataBr(V.data)}`, unidade: "ENA % MLT e MWmed · PLD R$/MWh", tam: "full", ajuda: "reuniao",
+      leg: `${ant ? `▲▼ contra a rodada de ${dataBr(ant.data)}. ` : ""}ENA: laranja abaixo da MLT, azul acima; embaixo, em MWmed (MLT da HYD). Úmido: média de dez a abr. Mercado: digite o preço de cada mês (Enter passa ao próximo; vazio volta ao exemplo); o exemplo usa mar/27 implícito do 1T27 e abr–mai/27 pelo 2T27. Clique numa célula para o detalhe.` });
+    const nM = MESES.length;
+    const celP = (v, d) => `<span class="num">${n(v)}</span>${d === undefined ? "" : dl(d)}`;
+    const celE = (k, j, v) => v == null ? "" : `<span class="res-ena" style="background:${corEna(v)}"><b>${n(v)}</b>${j == null ? "" : `<small>${n(mwmed(k, j, v))}</small>`}</span>`;
+    const umido = e => media(UMIDO.map(j => e[j]));
+    const difMerc = i => { const d = mercV(i) - vDe(E, "SE", i); return `<span class="res-d ${tom(d)}">${seta(d)} ${sn(d)}</span>`; };
+    const linhas = [];   // { cls, rot, ena: [html] (nM + 1), pld: [html], alvoE, alvoP }
+    const grupo = t => linhas.push({ grupo: t });
+    grupo("Esperado · todos os submercados");
+    SUBS.forEach(s2 => { const e = HID.ena(E, s2.k);
+      linhas.push({ rot: s2.nome, ena: [...e.map((v, j) => celE(s2.k, j, v)), celE(s2.k, null, umido(e))], pld: MESES.map((_, i) => celP(vDe(E, s2.k, i), ant ? delta(E, ant, s2.k, i) : undefined)),
+        alvoE: j => [`ENA ${s2.nome} · ${rot(MESES[j])}`, inspEna(s2.k, j, V)], alvoP: i => [`${s2.nome} · ${rot(MESES[i])}`, inspMes(V, s2.k, i)] }); });
+    grupo("SE/CO · cenários e mercado");
+    cs.forEach(c => { const e = HID.ena(c, "SE");
+      linhas.push({ cls: c === E ? "destaque" : "", rot: `<span title="${esc(nomeDe(c))}"><i class="res-sw" style="background:${corDe(c, V)}"></i>${esc(curto(c, V))}${c.tipo === "sen" ? ` <small class="res-cen-mini">${esc(nomeDe(c))}</small>` : ""}</span>`,
+        ena: e ? [...e.map((v, j) => celE("SE", j, v)), celE("SE", null, umido(e))] : Array(nM + 1).fill("—"), pld: MESES.map((_, i) => celP(vDe(c, "SE", i))),
+        alvoE: j => [`ENA SE/CO · ${rot(MESES[j])}`, inspEna("SE", j, V)], alvoP: i => [`SE/CO · ${rot(MESES[i])}`, inspMes(V, "SE", i)] }); });
+    linhas.push({ cls: "res-tr-merc", rot: `Mercado <small class="res-cen-mini">digite</small>`, ena: Array(nM + 1).fill(""),
+      pld: MESES.map((m, i) => `<input class="res-merc-in${MERC_USR[i] != null ? " digitado" : ""}" data-i="${i}" inputmode="decimal" aria-label="Preço de mercado SE/CO ${rot(m)}" title="Exemplo: ${n(MERC[i].v)} (${MERC[i].o})" value="${nMerc(mercV(i))}">`) });
+    linhas.push({ cls: "res-tr-merc res-tr-dif", rot: "Merc − Esp.", ena: Array(nM + 1).fill(""), pld: MESES.map((_, i) => difMerc(i)) });
+    const thM = (bordaNo0) => MESES.map((m, j) => `<th class="n${bordaNo0 && j === 0 ? " res-pe-div" : ""}">${rot(m)}</th>`).join("");
+    const rol = h("div", "rolagem"); p1.corpo.append(rol);
+    const t = h("table", "densa res-pe");
+    t.innerHTML = `<colgroup><col class="res-pe-rot">${"<col>".repeat(2 * nM + 1)}</colgroup>` +
+      `<thead><tr class="res-pe-blocos"><th></th><th colspan="${nM + 1}">ENA · % MLT <small>e MWmed</small></th><th colspan="${nM}" class="res-pe-div">PLD · R$/MWh</th></tr>` +
+      `<tr><th>Sub. / cenário</th>${thM(false)}<th class="n">Úmido</th>${thM(true)}</tr></thead><tbody>` +
+      linhas.map(l => l.grupo ? `<tr class="res-pe-grupo"><td colspan="${2 * nM + 2}">${l.grupo}</td></tr>` :
+        `<tr class="${l.cls || ""}"><td>${l.rot}</td>${l.ena.map(x => `<td class="n">${x}</td>`).join("")}${l.pld.map((x, i) => `<td class="n${i === 0 ? " res-pe-div" : ""}">${x}</td>`).join("")}</tr>`).join("") + "</tbody>";
+    rol.append(t);
+    let r = 0;
+    t.querySelectorAll("tbody tr").forEach(tr => {
+      if (tr.classList.contains("res-pe-grupo")) { r++; return; }
+      const l = linhas[r++]; const tds = tr.querySelectorAll("td");
+      if (l.alvoE) for (let j = 0; j < nM; j++) Mesa.alvo(tds[1 + j], ...l.alvoE(j));
+      if (l.alvoP) for (let i = 0; i < nM; i++) Mesa.alvo(tds[2 + nM + i], ...l.alvoP(i));
+    });
+    // preço de mercado digitado: grava no navegador, refaz a linha Merc − Esp. e o rodapé, sem redesenhar a tabela
+    const linhaDif = t.querySelector("tr.res-tr-dif"), fonteM = h("p", "res-merc-fonte");
+    const atualizarFonte = () => { fonteM.innerHTML = `Mercado: <b>${mercInfo()}</b>${mercDigitado() ? ' · <button type="button" class="res-btn" data-volta>Voltar ao exemplo</button>' : ""}`; };
+    p1.corpo.insertBefore(fonteM, p1.corpo.querySelector(".leg"));
+    atualizarFonte();
+    const gravar = inp => {
+      const i = +inp.dataset.i, v = lerNum(inp.value);
+      if (Number.isNaN(v)) { inp.classList.add("erro"); inp.title = "Não é um número: use 214 ou 214,50"; return; }
+      inp.classList.remove("erro");
+      MERC_USR[i] = v == null ? null : v;
+      inp.classList.toggle("digitado", MERC_USR[i] != null);
+      inp.value = nMerc(mercV(i));
+      LS.gravar("merc", JSON.stringify(MERC_USR)); LS.gravar("mercQuando", agora());
+      linhaDif.querySelectorAll("td")[2 + nM + i].innerHTML = difMerc(i);
+      atualizarFonte();
+    };
+    t.querySelectorAll(".res-merc-in").forEach((inp, i, todos) => {
+      inp.addEventListener("focus", () => inp.select());
+      inp.addEventListener("change", () => gravar(inp));
+      inp.addEventListener("keydown", ev => {
+        if (ev.key === "Enter" || (ev.key === "Tab" && !ev.shiftKey && i < todos.length - 1)) { ev.preventDefault(); gravar(inp); (todos[i + 1] || inp).focus(); }
+        else if (ev.key === "Escape") { inp.value = nMerc(mercV(i)); inp.blur(); }
+        ev.stopPropagation();   // números e setas são do campo, não atalhos da mesa
+      });
+    });
+    fonteM.addEventListener("click", ev => { if (!ev.target.closest("[data-volta]")) return; MERC_USR = MESES.map(() => null); LS.apagar("merc"); LS.apagar("mercQuando"); redesenhar(); });
+
+    // ---- RES-13 · armazenamento: partida, mesma data do ano anterior e fim do período úmido ----
+    const p2 = painel(g, { cod: "RES-13", titulo: "Armazenamento: partida e fim do período úmido", unidade: "% EARmáx", tam: "xl", ajuda: "reuniao-ear",
+      leg: `A partida é a mesma em todos os cenários da rodada (condição inicial do deck); se uma sensibilidade mudar a partida, ela aparece na coluna do cenário. Recomposição: partida + variação de cada ano de ${REC_ANOS[0]} a ${REC_ANOS[REC_ANOS.length - 1]}. Clique numa linha para o mês a mês.` });
+    const rolA = h("div", "rolagem"); p2.corpo.append(rolA);
+    const sens = cs.filter(c => c.tipo === "sen" && HID.ena(c, "SE"));
+    const ta = QC.tabela(rolA, [{ t: "Sub." }, { t: "Partida 30/11/26", n: true }, { t: "30/11/25", n: true }, { t: "Δ ano", n: true }, { t: "Na história", n: true },
+      { t: `Fim ${rot(MESES[4])} · Esp.`, n: true }, { t: "Sup. – Inf.", n: true }, ...sens.map(c => ({ t: `<span title="${esc(nomeDe(c))}">${esc(curto(c, V))}</span>`, n: true })), { t: "Recomp. méd.", n: true }, { t: "p10–p90", n: true }],
+      SUBS.map(s2 => { const p0 = partida(s2.k), a25 = HID.ear[s2.k][2025][10], rc = recomposicao(s2.k)[4], dA = p0 - a25;
+        return [s2.nome, `<b>${n(p0, 1)}</b>`, n(a25, 1), `<span class="res-d ${tom(dA)}">${seta(dA)} ${sn(dA, 1)}</span>`, `<span title="Novembros de 2001 a 2025 com armazenamento menor">acima de ${posHist(s2.k)}%</span>`,
+          `<b>${n(earCen(E, s2.k)[4], 1)}</b>`, `${n(earCen(Su, s2.k)[4])}–${n(earCen(In, s2.k)[4])}`, ...sens.map(c => n(earCen(c, s2.k)[4], 1)), n(rc.med, 1), `${n(rc.p10)}–${n(rc.p90)}`]; }), "densa res-tab-ear");
+    ta.querySelectorAll("tbody tr").forEach((tr, i) => Mesa.alvo(tr, `Armazenamento ${SUBS[i].nome}`, el => inspEar(el, SUBS[i].k, V)));
+
+    // ---- RES-14 · cenários da rodada: tipo e data, no canto ----
+    const p3 = painel(g, { cod: "RES-14", titulo: "Cenários e datas", tam: "s", ajuda: "reuniao",
+      leg: "Data: rodada em que o cenário mudou pela última vez; cinza = repetido. Clique para a premissa." });
+    const tc = QC.tabela(p3.corpo, [{ t: "Cenário" }, { t: "Tipo" }, { t: "Data", n: true }],
+      cs.map(c => { const d = dataCen(c, V);
+        return [`<span class="res-cen-n" title="${esc(c.prem || "")}"><i class="res-sw" style="background:${corDe(c, V)}"></i>${c.tipo === "sen" ? `${esc(curto(c, V))} · ` : ""}${esc(nomeDe(c))}</span>`,
+          ehBase(c) ? "Base" : '<span class="res-sens">Sensib.</span>',
+          `<span class="${d !== V.data ? "res-antiga" : ""}" title="${d !== V.data ? "Repetido de uma rodada anterior" : "Atualizado nesta rodada"}">${dataBr(d).slice(0, 5)}</span>`]; }), "densa res-tab-cen");
+    tc.querySelectorAll("tbody tr").forEach((tr, i) => Mesa.alvo(tr, nomeDe(cs[i]), inspCen(cs[i], V)));
+
+    // ---- RES-15 · trajetórias do armazenamento ----
+    const p5 = painel(g, { cod: "RES-15", titulo: "Armazenamento: trajetória", unidade: "% EARmáx, fim do mês", tam: "full", ajuda: "reuniao-ear",
+      leg: `Faixa fraca = mínimo a máximo de 2001 a 2025 em cada mês; faixa forte = recomposição (partida + variação de cada ano de ${REC_ANOS[0]} a ${REC_ANOS[REC_ANOS.length - 1]}), p10 a p90, média pontilhada. Clique num gráfico para a tabela mês a mês.` });
+    p5.corpo.insertAdjacentHTML("beforeend", QC.legenda([["var(--ink)", "2026 observado e partida", "l"], ["var(--t-ambar)", "Esperado", "l"], ["var(--res-faixa)", "Superior e inferior", "l"],
+      ...sens.map(c => [corDe(c, V), esc(nomeDe(c)), "t"]), ["var(--res-hist)", "Histórico mín–máx"], ["var(--res-rec)", "Recomposição p10–p90"], ["var(--ink-2)", "Recomposição média", "t"]]));
+    const gr = h("div", "res-ear"); p5.corpo.append(gr);
+    SUBS.forEach(s2 => {
+      const b = h("div", "res-ear-sub", `<p class="res-ear-t"><b>${s2.nome}</b> partida <b>${n(partida(s2.k), 1)}%</b> <span>· 30/11/25 ${n(HID.ear[s2.k][2025][10], 1)}% · mediana de nov ${n(histMes(s2.k, 10).med, 0)}%</span></p>`);
+      gr.append(b);
+      grafico(b, (svg, W, H) => earSub(svg, W, H, s2.k, V), null, `Armazenamento ${s2.nome}`);
+    });
+  }
+  /** inspetor da ENA: todos os cenários num submercado e mês */
+  function inspEna(k, j, V) {
+    return el => {
+      const mlt = mltMes(k, j);
+      el.append(h("p", "res-insp-cab", `MLT de ${rot(MESES[j]).slice(0, 3)}: <b>${n(mlt)} MWmed</b>`));
+      QC.tabela(el, [{ t: "Cenário" }, { t: "% MLT", n: true }, { t: "MWmed", n: true }],
+        ordenar(V.cen).filter(c => HID.ena(c, k)).map(c => { const v = HID.ena(c, k)[j]; return [`<i class="res-sw" style="background:${corDe(c, V)}"></i>${esc(nomeDe(c))}`, n(v), n(mwmed(k, j, v))]; }), "densa res-tab-insp");
+      el.append(h("p", "leg", FICT));
+    };
+  }
+
+  // ================================================================================================
+  // tela 2 · CAD Cadastro
   // ================================================================================================
   function telaCAD(area) {
     const R = rascunho();
@@ -521,7 +790,7 @@
         el.append(h("p", null, `Versão <b>${rotVer(r.versao)}</b> salva${r.aviso ? ` com ${r.aviso} ${r.aviso === 1 ? "aviso" : "avisos"}` : ""}. Ela passa a ser a vigente: sinal, resumo da MESA e alertas já usam os novos valores.`));
         el.append(h("p", "leg", esc(r.versao.nota)));
         el.append(h("p", "leg", SERVIDOR));
-        const a = h("a", "res-link", "Ver o que mudou (VER) ›"); a.href = "#RES-3"; el.append(a);
+        const a = h("a", "res-link", "Ver o que mudou (VER) ›"); a.href = `#RES-${T("VER")}`; el.append(a);
       });
     });
     form.querySelector('[data-acao="descartar"]').addEventListener("click", () => { descartarRascunho(); area.replaceChildren(); telaCAD(area); });
@@ -615,7 +884,7 @@
   }
 
   // ================================================================================================
-  // tela 3 · VER Versões
+  // tela 4 · VER Versões
   // ================================================================================================
   function telaVER(area) {
     const V = VIG(), ant = antDe(V), mud = mudancas(ant, V);
@@ -700,6 +969,11 @@
   // tela 4 · MET Como usar
   // ================================================================================================
   const SECOES = [
+    { id: "reuniao", titulo: "Morning Call (tela REU)", html: `<p>A rodada vigente em uma tela, para a reunião, sempre com os quatro submercados de uma vez. RES-12 junta ENA (à esquerda) e preço (à direita) numa tabela só, com o preço de mercado digitado na própria tela,, com cada mês sempre na mesma coluna: o esperado dos quatro submercados e, embaixo, o SE/CO em todos os cenários contra o mercado. RES-13 traz o armazenamento de partida, a mesma data do ano anterior e o fim do período úmido; RES-14, o tipo e a data de cada cenário; RES-15, as trajetórias. O detalhe fica no inspetor; cadastro, comparação e versões, nas outras telas.</p>
+      <p><b>Mercado</b>: curva da BBCE no SE/CO (a mesma do MKT). Meses que não são negociados sozinhos saem dos produtos maiores: mar/27 = 3 × 1T27 − jan − fev; abr e mai/27 = 2T27. <b>Data do cenário</b>: a rodada em que os valores dele mudaram pela última vez; uma sensibilidade repetida de uma rodada anterior aparece com a data antiga, em cinza.</p>
+      <p class="leg">${FICT} ENA, armazenamento e curva de mercado também são fictícios; no app, ENA e partida virão do cadastro do research e o histórico, do ONS.</p>` },
+    { id: "reuniao-ear", titulo: "Armazenamento (RES-16)", html: `<p>Armazenamento de fim de mês em % da EARmáx, de jan/26 a mai/27, por submercado. Até novembro, o observado; o ponto em 30/11 é a <b>partida</b> da rodada.</p>
+      <p><b>Faixa fraca, ao fundo</b>: mínimo a máximo de 2001 a 2025 em cada mês do ano. <b>Recomposição</b> (faixa forte e linha pontilhada): a partida somada à variação de novembro até cada mês seguinte observada em cada ano de ${REC_ANOS[0]} a ${REC_ANOS[REC_ANOS.length - 1]}; mostra a faixa p10–p90 e a média, isto é, onde o armazenamento chegaria se os próximos meses se comportassem como nos últimos anos. <b>Cenários</b>: a trajetória que resulta da ENA de cada um (aqui, uma regra simples de exemplo: a variação média do mês mais 0,12 p.p. por p.p. de ENA acima ou abaixo da MLT).</p>` },
     { id: "resumo", titulo: "Em uma tela", html: `<p>A RES guarda os cenários de PLD que o time de research da mesa monta toda semana: o PLD médio mensal, em R$/MWh, de cada submercado (SE/CO, S, NE e N) nos próximos seis meses (M+1 a M+6, hoje ${rot(MESES[0])} a ${rot(MESES[5])}). Cada publicação é uma <b>versão</b>, com data, autor e uma nota do que mudou; a última é a vigente, que alimenta o sinal, o resumo da MESA e os alertas.</p>
       <p>A RES não calcula bandeira nem roda modelo: guarda e compara o que o research cadastrou. A única referência externa é o PLD do deck que a BAND usa, no SE/CO.</p>
       <p class="leg">${FICT} Premissas do laboratório ainda não confirmadas com o research: PLD médio mensal por submercado, horizonte de M+1 a M+6, cadastro feito pelo próprio research.</p>` },
@@ -781,14 +1055,14 @@
   function alertas() {
     const V = VIG(), ant = antDe(V), L = [], quando = V.data.slice(0, 16);
     const hoje = quando.slice(0, 10) === agora().slice(0, 10);
-    L.push({ quando, tela: 3, nivel: hoje ? "alto" : "normal", texto: `${hoje ? `Nova versão ${V.horizonte} publicada hoje` : `${verLP(V)} vigente`} (${esc(V.autor)}): ${V.cen.length} cenários · ${esc(mudancas(ant, V).txt)}` });
+    L.push({ quando, tela: T("VER"), nivel: hoje ? "alto" : "normal", texto: `${hoje ? `Nova versão ${V.horizonte} publicada hoje` : `${verLP(V)} vigente`} (${esc(V.autor)}): ${V.cen.length} cenários · ${esc(mudancas(ant, V).txt)}` });
     const inc = foraDeOrdem(V);
-    if (inc.length) L.push({ quando, tela: 1, nivel: "alto", texto: `${inc[0]}${inc.length > 1 ? ` e mais ${inc.length - 1}` : ""}: confira com o research` });
+    if (inc.length) L.push({ quando, tela: T("CAD"), nivel: "alto", texto: `${inc[0]}${inc.length > 1 ? ` e mais ${inc.length - 1}` : ""}: confira com o research` });
     const m = mudancas(ant, V).maior;
-    if (ant && m && Math.abs(m.d) >= 3) L.push({ quando, tela: 2, nivel: Math.abs(m.d) >= 15 ? "alto" : "normal", texto: `Maior revisão do esperado ${V.horizonte}: ${SUBN[m.sub]} ${rot(MESES[m.i])} ${sn(m.d, 0)} (R$ ${n(m.de, 0)} → ${n(m.para, 0)})` });
+    if (ant && m && Math.abs(m.d) >= 3) L.push({ quando, tela: T("CMP"), nivel: Math.abs(m.d) >= 15 ? "alto" : "normal", texto: `Maior revisão do esperado ${V.horizonte}: ${SUBN[m.sub]} ${rot(MESES[m.i])} ${sn(m.d, 0)} (R$ ${n(m.de, 0)} → ${n(m.para, 0)})` });
     else if (TEM_REF) {
       const E = espDe(V), i = refSE.findIndex(v => v != null), e = vDe(E, "SE", i);
-      if (i >= 0 && e != null) L.push({ quando, tela: 2, nivel: "normal", texto: `Esperado SE/CO ${rot(MESES[i])} ${srs(e - refSE[i], 0)} contra o PLD do deck da BAND (${rs(refSE[i], 0)})` });
+      if (i >= 0 && e != null) L.push({ quando, tela: T("CMP"), nivel: "normal", texto: `Esperado SE/CO ${rot(MESES[i])} ${srs(e - refSE[i], 0)} contra o PLD do deck da BAND (${rs(refSE[i], 0)})` });
     }
     return L.slice(0, 3);
   }
@@ -796,14 +1070,17 @@
   // ================================================================================================
   // registro
   // ================================================================================================
+  // a ordem define o número (tecla) de cada tela; referências internas usam T("<código>")
+  const TELAS = [
+    { cod: "REU", nome: "Morning Call", montar: telaREU },
+    { cod: "CAD", nome: "Cadastro", montar: telaCAD },
+    { cod: "CMP", nome: "Comparação", montar: telaCMP },
+    { cod: "VER", nome: "Versões", montar: telaVER },
+    { cod: "MET", nome: "Como usar", montar: area => Mesa.met(area, SECOES) },
+  ];
   Mesa.registrar({
     cod: "RES", decisao: false, mesa: { ordem: 2 }, nome: "Cenários do research LP", desc: "PLD médio mensal de M+1 a M+6 por submercado, nos cenários de longo prazo do research",
     sinal, fita, resumo, alertas,
-    telas: [
-      { cod: "CAD", nome: "Cadastro", montar: telaCAD },
-      { cod: "CMP", nome: "Comparação", montar: telaCMP },
-      { cod: "VER", nome: "Versões", montar: telaVER },
-      { cod: "MET", nome: "Como usar", montar: area => Mesa.met(area, SECOES) },
-    ],
+    telas: TELAS,
   });
 })();
