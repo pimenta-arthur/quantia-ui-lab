@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Comparação de fontes · Mesa</title>
+<!-- Comparação de fontes para o terminal/Mesa: amostras lado a lado e a variante 08 de verdade, com as fontes trocadas
+     ao vivo (as variáveis --f-display, --f-body e --f-data do padrão são reescritas dentro do quadro). -->
+<script>try { if (localStorage.getItem("quantia-tema") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="fontes-todas" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Barlow+Semi+Condensed:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&family=Roboto+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../migracao-terminal/padrao/base.css">
+<link rel="stylesheet" href="../migracao-terminal/padrao/painel.css">
+<style>
+  main { gap: 2px; }
+  .amostras { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 2px; background: var(--rule); border: 1px solid var(--rule); }
+  .amostra { background: var(--surface); padding: 12px 14px; display: grid; gap: 8px; align-content: start; cursor: pointer; border: 2px solid transparent; }
+  .amostra:hover { border-color: color-mix(in srgb, var(--t-ambar) 50%, transparent); }
+  .amostra[aria-pressed="true"] { border-color: var(--t-ambar); }
+  .amostra .nome { font: 600 0.72rem "IBM Plex Mono", monospace; color: var(--t-ambar); text-transform: uppercase; letter-spacing: 0.04em; display: flex; justify-content: space-between; gap: 8px; }
+  .amostra .nome span { color: var(--ink-3); text-transform: none; font-weight: 400; }
+  .a-ttl { font-weight: 600; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--t-ambar); }
+  .a-num { font-weight: 600; font-size: 1.6rem; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .a-det { font-size: 0.74rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .a-tab { width: 100%; border-collapse: collapse; font-size: 0.78rem; font-variant-numeric: tabular-nums; background: none; }
+  .a-tab td, .a-tab th { padding: 2px 6px; border-bottom: 1px solid var(--rule); text-align: right; }
+  .a-tab td:first-child, .a-tab th:first-child { text-align: left; }
+  .a-tab th { font-size: 0.62rem; color: var(--t-ambar); text-transform: uppercase; }
+  .a-txt { font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); }
+  .sobe { color: var(--sobe); } .desce { color: var(--desce); }
+  .previa-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; background: var(--surface); padding: 8px 10px; }
+  .previa-cab b { font: 600 0.74rem "IBM Plex Mono", monospace; color: var(--t-ambar); text-transform: uppercase; }
+  .previa-cab .abas button { font-family: "IBM Plex Mono", monospace; }
+  .previa-cab .dica-f { margin-left: auto; font: 0.7rem "IBM Plex Mono", monospace; color: var(--ink-3); }
+  iframe { width: 100%; height: 900px; border: 1px solid var(--rule); background: var(--bg); display: block; }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <header class="t-topo">
+    <a class="t-marca" href="../index.html" title="Voltar à galeria do laboratório">QUANT ENERGIA</a>
+    <span class="t-pg"><b>FONTES</b> Comparação para o terminal / Mesa</span>
+    <span class="t-hora"><span class="num" data-relogio></span> BRT</span>
+    <button class="t-btn" type="button" data-tema>Tema claro</button>
+  </header>
+  <main>
+    <section class="hero">
+      <span class="rotulo">Laboratório · tipografia</span>
+      <h1>Qual combinação de fontes usar no terminal</h1>
+      <div class="meta"><span>Clique numa amostra para aplicá-la à mesa logo abaixo. Hoje o padrão usa a primeira (IBM Plex Mono + IBM Plex Sans Condensed).</span></div>
+    </section>
+    <div class="amostras" id="amostras"></div>
+    <div class="previa-cab">
+      <b>Mesa com a fonte escolhida</b>
+      <div class="abas" id="telas" role="group" aria-label="Tela da mesa"></div>
+      <span class="dica-f" id="escolhida"></span>
+    </div>
+    <iframe id="mesa" title="Variante 08 com a fonte escolhida" src="../variantes/08-mesa-terminal/index.html#MESA"></iframe>
+  </main>
+  <footer class="t-status"><span>Laboratório · dados fictícios</span><span>A fonte só muda nesta página: o padrão não é alterado</span></footer>
+</div>
+<script src="../migracao-terminal/padrao/graficos.js"></script>
+<script src="../migracao-terminal/padrao/componentes.js"></script>
+<script src="../migracao-terminal/padrao/terminal.js"></script>
+<script>
+  // títulos e números (display/data) e texto corrido (body) de cada combinação
+  const PARES = [
+    { id: "atual", nome: "IBM Plex Mono + IBM Plex Sans Condensed", nota: "atual", dados: "'IBM Plex Mono'", texto: "'IBM Plex Sans Condensed'" },
+    { id: "plex", nome: "IBM Plex Mono + IBM Plex Sans", nota: "texto sem condensar (v1.3.1)", dados: "'IBM Plex Mono'", texto: "'IBM Plex Sans'" },
+    { id: "barlow", nome: "Roboto Mono + Barlow Semi Condensed", nota: "a da variante 04", dados: "'Roboto Mono'", texto: "'Barlow Semi Condensed'" },
+    { id: "source", nome: "Source Code Pro + Source Sans 3", nota: "família Adobe", dados: "'Source Code Pro'", texto: "'Source Sans 3'" },
+    { id: "roboto", nome: "Roboto Mono + Roboto Condensed", nota: "família Google", dados: "'Roboto Mono'", texto: "'Roboto Condensed'" },
+    { id: "jetbrains", nome: "JetBrains Mono em tudo", nota: "só mono, mais terminal", dados: "'JetBrains Mono'", texto: "'JetBrains Mono'" },
+  ];
+  const URL_FONTES = document.getElementById("fontes-todas").href;
+  const box = document.getElementById("amostras");
+  box.innerHTML = PARES.map(p => `
+    <div class="amostra" role="button" tabindex="0" data-id="${p.id}" aria-pressed="false">
+      <div class="nome">${p.nome}<span>${p.nota}</span></div>
+      <div class="a-ttl" style="font-family:${p.dados}">PLD médio do dia · DESSEM × DECOMP</div>
+      <div class="a-num" style="font-family:${p.dados}">R$ 171,25</div>
+      <div class="a-det" style="font-family:${p.dados}"><span class="sobe">▲ +12,32</span> vs. ontem · <span class="desce">▼ −14,2</span> sobre DECOMP · 0123456789</div>
+      <table class="a-tab" style="font-family:${p.dados}">
+        <thead><tr><th>Hora</th><th>SE/CO</th><th>NE</th><th>NE − SE</th></tr></thead>
+        <tbody><tr><td>18h</td><td>299,40</td><td>254,10</td><td>−45,30</td></tr><tr><td>19h</td><td>345,80</td><td>301,20</td><td>−44,60</td></tr><tr><td>20h</td><td>353,10</td><td>309,90</td><td>−43,20</td></tr></tbody>
+      </table>
+      <p class="a-txt" style="font-family:${p.texto}">Previsão de afluência acima da média no Sudeste; ponta útil mais cara que a de sábado, domingo e feriado. Ação, ênfase, revisão, média — acentuação e cedilha.</p>
+    </div>`).join("");
+
+  const quadro = document.getElementById("mesa");
+  let atual = PARES[0];
+  function aplicar(p) {
+    atual = p;
+    box.querySelectorAll(".amostra").forEach(a => a.setAttribute("aria-pressed", String(a.dataset.id === p.id)));
+    document.getElementById("escolhida").textContent = `Aplicada: ${p.nome}`;
+    const doc = quadro.contentDocument; if (!doc || !doc.documentElement) return;
+    if (!doc.getElementById("fontes-lab")) { const l = doc.createElement("link"); l.id = "fontes-lab"; l.rel = "stylesheet"; l.href = URL_FONTES; doc.head.append(l); }
+    const r = doc.documentElement.style;
+    r.setProperty("--f-display", `${p.dados}, ui-monospace, monospace`);
+    r.setProperty("--f-data", `${p.dados}, ui-monospace, monospace`);
+    r.setProperty("--f-body", `${p.texto}, Arial, sans-serif`);
+    try { localStorage.setItem("lab.fonte", p.id); } catch (e) {}
+  }
+  box.addEventListener("click", ev => { const a = ev.target.closest(".amostra"); if (a) aplicar(PARES.find(p => p.id === a.dataset.id)); });
+  box.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { const a = ev.target.closest(".amostra"); if (a) { ev.preventDefault(); aplicar(PARES.find(p => p.id === a.dataset.id)); } } });
+  quadro.addEventListener("load", () => aplicar(atual));
+  // as telas mudam o endereço dentro do quadro; a fonte continua (as variáveis ficam no <html> do quadro)
+  QC.abas(document.getElementById("telas"), [["MESA", "MESA"], ["RISK-1", "RISK Monitor"], ["RISK-2", "RISK Perfis"], ["NEN-1", "NEN Cotação"], ["HYD-1", "HYD Afluências"], ["BAND-6", "Metodologia"]], h => { if (quadro.contentWindow && quadro.contentWindow.location.hash !== "#" + h) quadro.contentWindow.location.hash = h; }, "Tela da mesa");
+  try { const s = localStorage.getItem("lab.fonte"); const p = PARES.find(x => x.id === s); if (p) atual = p; } catch (e) {}
+  aplicar(atual);
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+[submodule "quantia-padrao-mesa"]
+	path = quantia-padrao-mesa
+	url = https://github.com/pimenta-arthur/quantia-padrao-mesa.git
